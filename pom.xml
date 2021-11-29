@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>ui</module>
         <module>shop</module>
         <module>product</module>
         <module>order</module>
