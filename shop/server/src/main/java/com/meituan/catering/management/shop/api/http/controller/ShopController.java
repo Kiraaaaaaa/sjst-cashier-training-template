@@ -40,6 +40,7 @@ public class ShopController {
             @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) {
         ShopPageHttpResponse response = new ShopPageHttpResponse();
         response.setPageIndex(1);
+
         response.setPageSize(10);
         return response;
     }
