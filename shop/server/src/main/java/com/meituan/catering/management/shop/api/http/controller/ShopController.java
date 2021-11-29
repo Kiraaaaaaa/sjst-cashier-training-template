@@ -38,7 +38,10 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) {
-        return null;
+        ShopPageHttpResponse response = new ShopPageHttpResponse();
+        response.setPageIndex(1);
+        response.setPageSize(10);
+        return response;
     }
 
     @ApiOperation("查看单个门店详情")
