@@ -99,7 +99,7 @@ public class ShopControllerTest {
         appendHeaders(postRequest);
         mvc.perform(postRequest.content(JSON.toJSONString(httpRequest)))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(result -> {
                     Date endTime = setMilliseconds(addSeconds(new Date(), 1), 0);
                     ShopDetailHttpResponse response = getHttpResponseEntity(result, ShopDetailHttpResponse.class);
