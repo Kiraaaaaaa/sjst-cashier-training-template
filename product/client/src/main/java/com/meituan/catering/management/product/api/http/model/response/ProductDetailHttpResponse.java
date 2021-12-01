@@ -82,9 +82,6 @@ public class ProductDetailHttpResponse {
     @ApiModel("商品加料组")
     public static class AccessoryGroup {
 
-        @ApiModelProperty("物理ID")
-        private Long id;
-
         @ApiModelProperty("加料组名")
         private String name;
 
