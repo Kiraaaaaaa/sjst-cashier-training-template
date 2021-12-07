@@ -35,7 +35,7 @@ public class CateringOrderBillOrderCase extends BaseCateringOrderControllerCase 
         BillCateringOrderHttpRequest httpRequest = new BillCateringOrderHttpRequest();
         httpRequest.setVersion(5);
         httpRequest.setPromotion(BigDecimal.valueOf(10));
-        httpRequest.setPaid(BigDecimal.valueOf(68.8));
+        httpRequest.setPaid(BigDecimal.valueOf(155));
         httpRequest.setPaymentChannel(CateringOrderPaymentChannelEnum.ALIPAY);
         return httpRequest;
     }
@@ -50,7 +50,7 @@ public class CateringOrderBillOrderCase extends BaseCateringOrderControllerCase 
         // Header
         assertEquals(BILLED, response.getStatus());
         assertEquals(new BigDecimal("10.00"), response.getBilling().getPromotion());
-        assertEquals(new BigDecimal("68.80"), response.getBilling().getPaid());
+        assertEquals(new BigDecimal("155.00"), response.getBilling().getPaid());
         assertEquals(CateringOrderPaymentChannelEnum.ALIPAY, response.getBilling().getPaymentChannel());
     }
 }

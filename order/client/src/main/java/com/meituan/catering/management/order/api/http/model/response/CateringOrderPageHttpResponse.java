@@ -63,5 +63,21 @@ public class CateringOrderPageHttpResponse {
         @ApiModelProperty("备注")
         private String comment;
 
+        @ApiModelProperty("订单快照")
+        private final ShopSnapshot shopSnapshotOnPlace = new ShopSnapshot();
+
+        @Data
+        @ApiModel("订单门店快照")
+        public static class ShopSnapshot {
+
+            @ApiModelProperty("物理ID")
+            private Long id;
+
+            @ApiModelProperty("门店业务号")
+            private String businessNo;
+
+            @ApiModelProperty("门店名")
+            private String name;
+        }
     }
 }

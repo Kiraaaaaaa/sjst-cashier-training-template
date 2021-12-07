@@ -41,7 +41,7 @@ public class CateringOrderFindByIdCase extends BaseCateringOrderControllerCase {
         assertEquals(PLACED, response.getStatus());
         assertEquals("A08", response.getTableNo());
         assertEquals(Integer.valueOf(2), response.getCustomerCount());
-        assertEquals(new BigDecimal("204.40"), response.getTotalPrice());
+        assertEquals(new BigDecimal("207.40"), response.getTotalPrice());
         assertEquals("主营经典川菜系列", response.getComment());
         // Shop
         assertEquals(Long.valueOf(100), response.getShopSnapshotOnPlace().getId());

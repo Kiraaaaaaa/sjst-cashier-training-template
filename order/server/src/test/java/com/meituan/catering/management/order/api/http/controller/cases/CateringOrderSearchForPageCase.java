@@ -7,10 +7,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderStatusEnum.PLACED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class CateringOrderSearchForPageCase extends BaseCateringOrderControllerCase {
@@ -38,7 +38,7 @@ public class CateringOrderSearchForPageCase extends BaseCateringOrderControllerC
         SearchCateringOrderHttpRequest.Condition condition = httpRequest.getCondition();
         condition.setStatus(PLACED);
         condition.setCustomerCount(2);
-        condition.setTableNo("A");
+        condition.setTableNo("A08");
         // Sort Fields
         httpRequest.getSortFields().add(new SearchCateringOrderHttpRequest.SortField("total_price", true));
         return httpRequest;
@@ -54,12 +54,30 @@ public class CateringOrderSearchForPageCase extends BaseCateringOrderControllerC
         assertNotNull(records);
         int recordSize = records.size();
         assertEquals(1, recordSize);
-        records.forEach(record -> {
-            assertNotNull(record);
-            assertNotNull(record.getId());
-            assertNotNull(record.getTenantId());
-            assertNotNull(record.getVersion());
-            // TODO
-        });
+        records.forEach(this::assertCateringOrderPageHttpResponseRecord);
+    }
+
+    private void assertCateringOrderPageHttpResponseRecord(CateringOrderPageHttpResponse.Record record) {
+        assertNotNull(record);
+        assertNotNull(record.getId());
+        assertNotNull(record.getTenantId());
+        assertNotNull(record.getAuditing());
+        assertNotNull(record.getAuditing().getCreatedAt());
+        assertNotNull(record.getAuditing().getCreatedBy());
+        if (Objects.equals(record.getVersion(), 1L)) {
+            assertNull(record.getAuditing().getLastModifiedAt());
+            assertNull(record.getAuditing().getLastModifiedBy());
+        } else {
+            assertNotNull(record.getAuditing().getLastModifiedAt());
+            assertNotNull(record.getAuditing().getLastModifiedBy());
+        }
+        assertNotNull(record.getStatus());
+        assertNotNull(record.getTableNo());
+        assertNotNull(record.getCustomerCount());
+        assertNotNull(record.getTotalPrice());
+        assertNotNull(record.getShopSnapshotOnPlace());
+        assertNotNull(record.getShopSnapshotOnPlace().getId());
+        assertNotNull(record.getShopSnapshotOnPlace().getName());
+        assertNotNull(record.getShopSnapshotOnPlace().getBusinessNo());
     }
 }

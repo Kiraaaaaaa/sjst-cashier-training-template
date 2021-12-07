@@ -26,6 +26,8 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 /**
  * 门店管理Http API
+ *
+ * @author dulinfeng
  */
 @Api(tags = "门店管理")
 @RestController

@@ -26,7 +26,7 @@ values ( 10000
        , '海棠川菜馆'
        , 'A08'
        , 2
-       , 204.4
+       , 207.4
        , '主营经典川菜系列'
        , 2)
 on duplicate key update tenant_id = 500;
@@ -204,7 +204,7 @@ values ( 10001
        , '海棠川菜馆'
        , 'B23'
        , 4
-       , 204.4
+       , 117
        , '主营经典川菜系列'
        , 2)
 on duplicate key update tenant_id = 500;
@@ -291,7 +291,7 @@ values ( 10002
        , '聚源美食'
        , 'C01'
        , 9
-       , 782
+       , 865.4
        , '使用包间C01'
        , 3)
 on duplicate key update tenant_id = 500;
@@ -545,12 +545,12 @@ values ( 10003
        , 11000
        , '2021-10-06 12:33'
        , 'PREPARED'
-       , 102
+       , 106.6
        , '1234567892'
        , '皮特西餐馆'
        , 'A03'
        , 9
-       , 165
+       , 106.6
        , '单人餐'
        , 5)
 on duplicate key update tenant_id = 500;
@@ -666,7 +666,7 @@ values ( 10004
        , '海棠川菜馆'
        , 'B23'
        , 4
-       , 204.4
+       , 117
        , '主营经典川菜系列'
        , 2)
 on duplicate key update tenant_id = 500;
@@ -753,7 +753,7 @@ values ( 10005
        , '聚源美食'
        , 'C01'
        , 9
-       , 782
+       , 865.4
        , '使用包间C01'
        , 3)
 on duplicate key update tenant_id = 500;

@@ -81,7 +81,7 @@ public class CateringOrderPlaceOrderCase extends BaseCateringOrderControllerCase
     private void buildRequestHeader(PlaceCateringOrderHttpRequest httpRequest) {
         httpRequest.setTableNo("B04");
         httpRequest.setCustomerCount(7);
-        httpRequest.setTotalPrice(new BigDecimal("386.50"));
+        httpRequest.setTotalPrice(new BigDecimal("266"));
         httpRequest.setComment("少盐少油");
         httpRequest.setShopBusinessNo("1234567891");
     }
@@ -99,7 +99,7 @@ public class CateringOrderPlaceOrderCase extends BaseCateringOrderControllerCase
         assertEquals(PLACED, response.getStatus());
         assertEquals("B04", response.getTableNo());
         assertEquals(Integer.valueOf(7), response.getCustomerCount());
-        assertEquals(new BigDecimal("386.50"), response.getTotalPrice());
+        assertEquals(new BigDecimal("266.00"), response.getTotalPrice());
         assertEquals("少盐少油", response.getComment());
         // Shop
         assertEquals(Long.valueOf(101), response.getShopSnapshotOnPlace().getId());
@@ -187,7 +187,7 @@ public class CateringOrderPlaceOrderCase extends BaseCateringOrderControllerCase
         assertEquals(Long.valueOf(10012), accessory1.getProductAccessorySnapshotOnPlace().getId());
         assertEquals("辣椒酱", accessory1.getProductAccessorySnapshotOnPlace().getName());
         assertEquals("配菜", accessory1.getProductAccessorySnapshotOnPlace().getGroupName());
-        assertEquals(new BigDecimal("3.00"), accessory1.getProductAccessorySnapshotOnPlace().getUnitPrice());
+        assertEquals(new BigDecimal("1.00"), accessory1.getProductAccessorySnapshotOnPlace().getUnitPrice());
         assertEquals("两", accessory1.getProductAccessorySnapshotOnPlace().getUnitOfMeasure());
     }
 

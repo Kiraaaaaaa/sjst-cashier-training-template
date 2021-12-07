@@ -278,7 +278,7 @@ public class CateringOrderAdjustStayInPreparingOrderCase extends BaseCateringOrd
         assertEquals(Long.valueOf(10012L), accessory71.getProductAccessorySnapshotOnPlace().getId());
         assertEquals("辣椒酱", accessory71.getProductAccessorySnapshotOnPlace().getName());
         assertEquals("配菜", accessory71.getProductAccessorySnapshotOnPlace().getGroupName());
-        assertEquals(new BigDecimal("3.00"), accessory71.getProductAccessorySnapshotOnPlace().getUnitPrice());
+        assertEquals(new BigDecimal("1.00"), accessory71.getProductAccessorySnapshotOnPlace().getUnitPrice());
         assertEquals("两", accessory71.getProductAccessorySnapshotOnPlace().getUnitOfMeasure());
         // Item 7 - Accessory 2
         CateringOrderDetailHttpResponse.Item.Accessory accessory72 = item7.getAccessories().get(1);
