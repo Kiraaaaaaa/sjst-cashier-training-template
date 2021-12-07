@@ -12,6 +12,11 @@ import lombok.RequiredArgsConstructor;
 public enum CateringOrderStatusEnum implements DescribableEnum {
 
     /**
+     * 待下单
+     */
+    DRAFT(0, "待下单"),
+
+    /**
      * 已下单
      */
     PLACED(100, "已下单"),
