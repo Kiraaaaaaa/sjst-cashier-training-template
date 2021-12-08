@@ -81,6 +81,7 @@ public class CateringOrderAdjustPreparedToPreparingOrderCase extends BaseCaterin
         assertEquals(Integer.valueOf(6), response.getVersion());
         // Header
         assertEquals(PREPARING, response.getStatus());
+        assertEquals(new BigDecimal("213.20"), response.getTotalPrice());
     }
 
     private void assertOrderItems(CateringOrderDetailHttpResponse response) {

@@ -136,6 +136,7 @@ public class CateringOrderAdjustPreparingToCancelledOrderCase extends BaseCateri
         assertEquals(Integer.valueOf(4), response.getVersion());
         // Header
         assertEquals(CANCELLED, response.getStatus());
+        assertEquals(new BigDecimal("0.00"), response.getTotalPrice());
     }
 
     private void assertOrderItems(CateringOrderDetailHttpResponse response) {
