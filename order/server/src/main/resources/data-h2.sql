@@ -852,7 +852,7 @@ values ( 100055
        , 500
        , 10005
        , '5'
-       , 'PREPARED'
+       , 'PREPARING'
        , 3
        , 0
        , 3
