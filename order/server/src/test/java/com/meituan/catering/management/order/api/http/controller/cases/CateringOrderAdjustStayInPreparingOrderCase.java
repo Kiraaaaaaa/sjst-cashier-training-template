@@ -157,10 +157,10 @@ public class CateringOrderAdjustStayInPreparingOrderCase extends BaseCateringOrd
         assertTrue(response.getAuditing().getCreatedAt().before(new Date()));
         assertEquals(USER_ID, response.getAuditing().getLastModifiedBy());
         assertTrue(response.getAuditing().getLastModifiedAt().before(new Date()));
-        assertEquals(Integer.valueOf(3), response.getVersion());
+        assertEquals(Integer.valueOf(4), response.getVersion());
         // Header
         assertEquals(PREPARING, response.getStatus());
-        assertEquals(new BigDecimal("865.40"), response.getTotalPrice());
+        assertEquals(new BigDecimal("767.20"), response.getTotalPrice());
     }
 
     private void assertOrderItems(CateringOrderDetailHttpResponse response) {
