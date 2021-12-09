@@ -343,7 +343,7 @@ values ( 10012
        , 500
        , '辣椒酱'
        , '配菜'
-       , 3
+       , 1
        , '两')
 on duplicate key update unit_price = 1;
 

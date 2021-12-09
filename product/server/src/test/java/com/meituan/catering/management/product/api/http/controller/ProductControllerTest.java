@@ -122,7 +122,7 @@ public class ProductControllerTest {
                     assertEquals("份", option1.getUnitOfMeasure());
                     ProductDetailHttpResponse.AccessoryGroup.Option option2 = accessoryGroup.getOptions().get(1);
                     assertEquals("辣椒酱", option2.getName());
-                    assertEquals(new BigDecimal("3.00"), option2.getUnitPrice());
+                    assertEquals(new BigDecimal("1.00"), option2.getUnitPrice());
                     assertEquals("两", option2.getUnitOfMeasure());
                     ProductDetailHttpResponse.AccessoryGroup.Option option3 = accessoryGroup.getOptions().get(2);
                     assertEquals("米饭", option3.getName());
