@@ -21,6 +21,8 @@ import static java.lang.Boolean.FALSE;
 
 /**
  * 搜索订单的Http请求体
+ *
+ * @author dulinfeng
  */
 @Data
 @ApiModel("搜索订单的Http请求体")
@@ -43,7 +45,7 @@ public class SearchCateringOrderHttpRequest {
     private final Condition condition = new Condition();
 
     @Data
-    @ApiModel("搜索订单的搜索条件")
+    @ApiModel("搜索订单的Http请求体-搜索条件")
     public static class Condition {
 
         @ApiModelProperty("订单状态（精确匹配）")
@@ -71,7 +73,7 @@ public class SearchCateringOrderHttpRequest {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    @ApiModel("排序字段请求")
+    @ApiModel("搜索订单的Http请求体-排序字段")
     public static class SortField {
 
         @NotBlank
@@ -86,7 +88,7 @@ public class SearchCateringOrderHttpRequest {
     }
 
     @Data
-    @ApiModel("订单总价区间")
+    @ApiModel("搜索订单的Http请求体-搜索条件-订单总价区间")
     public static class TotalPriceRange {
 
         @Min(0)

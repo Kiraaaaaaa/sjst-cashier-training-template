@@ -17,6 +17,8 @@ import java.util.List;
 
 /**
  * 下新订单Http请求体
+ *
+ * @author dulinfeng
  */
 @Data
 @ApiModel("下新订单的Http请求体")
@@ -48,7 +50,7 @@ public class PlaceCateringOrderHttpRequest {
     private final List<Item> items = new LinkedList<>();
 
     @Data
-    @ApiModel("订单子项实例")
+    @ApiModel("下新订单的Http请求体-订单子项实例")
     public static class Item {
 
         @NotBlank

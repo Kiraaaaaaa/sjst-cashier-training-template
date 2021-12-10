@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 
 /**
  * 订单结账Http请求体
+ *
+ * @author dulinfeng
  */
 @Data
 @ApiModel("订单结账Http请求体")
