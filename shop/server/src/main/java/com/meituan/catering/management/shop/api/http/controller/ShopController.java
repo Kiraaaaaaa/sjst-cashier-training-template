@@ -7,9 +7,13 @@ import com.meituan.catering.management.shop.api.http.model.request.SearchShopHtt
 import com.meituan.catering.management.shop.api.http.model.request.UpdateShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
 import com.meituan.catering.management.shop.api.http.model.response.ShopPageHttpResponse;
+import com.meituan.catering.management.shop.biz.model.ShopBO;
+import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpResponseConverter;
+import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -33,6 +38,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/shop")
 public class ShopController {
+
+    @Resource
+    private ShopBizService shopBizService;
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
@@ -49,7 +57,9 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo) {
-        return null;
+
+        ShopBO shopBO=shopBizService.findByBusinessNo(tenantId,userId,businessNo);
+        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
     }
 
     @ApiOperation("创建新门店")

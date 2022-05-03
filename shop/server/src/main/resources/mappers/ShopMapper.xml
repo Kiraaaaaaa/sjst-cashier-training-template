@@ -1,5 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meituan.catering.management.shop.dao.mapper.ShopMapper">
+    <resultMap id="BaseResultMap" type="com.meituan.catering.management.shop.dao.model.ShopDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="last_modified_by" jdbcType="BIGINT" property="lastModifiedBy"/>
+        <result column="last_modified_at" jdbcType="TIMESTAMP" property="lastModifiedAt"/>
+        <result column="business_no" jdbcType="NVARCHAR" property="businessNo"/>
+        <result column="name" jdbcType="NVARCHAR" property="name"/>
+        <result column="business_type" jdbcType="TINYINT" property="businessType"/>
+        <result column="contact_telephone" jdbcType="NVARCHAR" property="contactTelephone"/>
+        <result column="contact_cellphone" jdbcType="NVARCHAR" property="contactCellphone"/>
+        <result column="contact_name" jdbcType="NVARCHAR" property="contactName"/>
+        <result column="contact_address" jdbcType="NVARCHAR" property="contactAddress"/>
+        <result column="management_type" jdbcType="TINYINT" property="managementType"/>
+        <result column="opening_hours_open_time" jdbcType="NVARCHAR" property="openingHoursOpenTime"/>
+        <result column="opening_hours_close_time" jdbcType="NVARCHAR" property="openingHoursCloseTime"/>
+        <result column="business_area" jdbcType="VARCHAR" property="businessArea"/>
+        <result column="comment" jdbcType="NVARCHAR" property="comment"/>
+        <result column="enabled" jdbcType="TINYINT" property="enabled"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+    </resultMap>
 
+    <sql id="Base_Column_List">
+        id
+        ,tenant_id
+        ,created_by
+        ,created_at
+        ,last_modified_by
+        ,last_modified_at
+        ,name
+        ,business_no
+        ,business_type
+        ,management_type
+        ,contact_telephone
+        ,contact_cellphone
+        ,contact_name
+        ,contact_address
+        ,opening_hours_open_time
+        ,opening_hours_close_time
+        ,business_area
+        ,comment
+        ,enabled
+        ,version
+    </sql>
+
+    <select id="findByBusinessNo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM shop
+        <where>
+            tenant_id = #{tenantId}
+            AND created_by = #{userId}
+            AND business_no = #{businessNo}
+            LIMIT 1
+        </where>
+    </select>
 </mapper>

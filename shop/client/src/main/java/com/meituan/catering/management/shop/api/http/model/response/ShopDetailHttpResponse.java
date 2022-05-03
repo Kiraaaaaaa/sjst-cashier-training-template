@@ -22,7 +22,7 @@ public class ShopDetailHttpResponse {
     private Long tenantId;
 
     @ApiModelProperty("审计信息")
-    private final AuditingHttpModel auditing = new AuditingHttpModel();
+    private AuditingHttpModel auditing;
 
     @ApiModelProperty("业务号")
     private String businessNo;
@@ -37,10 +37,10 @@ public class ShopDetailHttpResponse {
     private BusinessTypeEnum businessType;
 
     @ApiModelProperty("联系方式")
-    private final ContactHttpModel contact = new ContactHttpModel();
+    private ContactHttpModel contact;
 
     @ApiModelProperty("营业时间段")
-    private final OpeningHoursTimeRange openingHours = new OpeningHoursTimeRange();
+    private OpeningHoursTimeRange openingHours;
 
     @ApiModelProperty("营业面积")
     private String businessArea;

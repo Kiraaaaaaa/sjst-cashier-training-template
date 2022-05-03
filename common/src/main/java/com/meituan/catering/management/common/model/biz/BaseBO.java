@@ -26,5 +26,5 @@ public abstract class BaseBO {
     /**
      * 审计信息BO
      */
-    private final AuditingBO auditing = new AuditingBO();
+    private AuditingBO auditing;
 }

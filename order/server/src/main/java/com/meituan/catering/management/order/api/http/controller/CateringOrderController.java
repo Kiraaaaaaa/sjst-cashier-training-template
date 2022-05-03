@@ -8,6 +8,7 @@ import com.meituan.catering.management.order.api.http.model.request.ProduceCater
 import com.meituan.catering.management.order.api.http.model.request.SearchCateringOrderHttpRequest;
 import com.meituan.catering.management.order.api.http.model.response.CateringOrderDetailHttpResponse;
 import com.meituan.catering.management.order.api.http.model.response.CateringOrderPageHttpResponse;
+import com.meituan.catering.management.order.remote.ShopRemoteService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 /**
@@ -28,6 +30,9 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/order/catering")
 public class CateringOrderController {
+
+    @Resource
+    private ShopRemoteService shopRemoteService;
 
     @ApiOperation("分页搜索订单的概要信息列表")
     @PostMapping("/search")
@@ -44,6 +49,7 @@ public class CateringOrderController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId) {
+        shopRemoteService.findByBusinessNo(tenantId,userId,"1234567890");
         return null;
     }
 
