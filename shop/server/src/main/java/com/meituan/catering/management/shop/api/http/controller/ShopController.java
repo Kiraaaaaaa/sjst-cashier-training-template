@@ -65,7 +65,6 @@ public class ShopController {
 
     @ApiOperation("创建新门店")
     @PostMapping
-    @ResponseStatus(CREATED)
     public ShopDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,

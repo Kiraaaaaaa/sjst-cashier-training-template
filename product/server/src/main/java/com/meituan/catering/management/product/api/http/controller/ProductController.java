@@ -53,7 +53,6 @@ public class ProductController {
 
     @ApiOperation("创建新商品")
     @PostMapping
-    @ResponseStatus(CREATED)
     public ProductDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
