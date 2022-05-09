@@ -26,7 +26,13 @@
             <artifactId>com-meituan-catering-management-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-
+        <!-- 先声明jmockit的依赖 -->
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>1.36</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

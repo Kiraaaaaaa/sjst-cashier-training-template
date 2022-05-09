@@ -30,5 +30,22 @@
 启动成功后，MySQL中会自动创建表并添加测试数据
 
 ### Step 5：
+示例程序：
 
-如果需要测试功能，可以通过运行对应的测试用例，放在各自工程的src/test/java下
+#### http接口示例：
+<ul>
+    <li>
+GET类型接口：shop模块中ShopController#findByBusinessNo</li>
+<li>
+POST类型接口：shop模块中ShopController#create</li>
+</ul>
+
+#### thrift接口示例：
+<ul>
+<li>
+thrift接口：shop模块中ShopThriftServiceImpl#findByBusinessNo
+</li>
+<li>
+调用该thrift接口：order模块中ShopRemoteServiceImpl#findByBusinessNo
+</li>
+</ul>
