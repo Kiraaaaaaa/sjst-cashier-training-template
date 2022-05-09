@@ -7,13 +7,14 @@ import com.meituan.catering.management.shop.api.http.model.request.SearchShopHtt
 import com.meituan.catering.management.shop.api.http.model.request.UpdateShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
 import com.meituan.catering.management.shop.api.http.model.response.ShopPageHttpResponse;
+import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
+import com.meituan.catering.management.shop.biz.model.converter.SaveShopBizRequestConverter;
 import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpResponseConverter;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,7 +70,9 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
-        return null;
+        SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
+        ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
+        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
     }
 
     @ApiOperation("更新已有门店的信息")

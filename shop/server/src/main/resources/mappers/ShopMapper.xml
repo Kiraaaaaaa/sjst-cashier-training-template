@@ -31,8 +31,8 @@
         ,created_at
         ,last_modified_by
         ,last_modified_at
-        ,name
         ,business_no
+        ,name
         ,business_type
         ,management_type
         ,contact_telephone
@@ -47,6 +47,7 @@
         ,version
     </sql>
 
+
     <select id="findByBusinessNo" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
@@ -57,5 +58,42 @@
             AND business_no = #{businessNo}
             LIMIT 1
         </where>
+    </select>
+
+
+    <insert id="insert"
+            parameterType="com.meituan.catering.management.shop.dao.model.ShopDO"
+            keyProperty="id"
+            useGeneratedKeys="true">
+        INSERT INTO shop (<include refid="Base_Column_List"/>)
+        VALUES (
+        0
+        ,#{tenantId}
+        ,#{createdBy}
+        ,#{createdAt}
+        ,#{lastModifiedBy}
+        ,#{lastModifiedAt}
+        ,#{businessNo}
+        ,#{name}
+        ,#{businessType}
+        ,#{managementType}
+        ,#{contactTelephone}
+        ,#{contactCellphone}
+        ,#{contactName}
+        ,#{contactAddress}
+        ,#{openingHoursOpenTime}
+        ,#{openingHoursCloseTime}
+        ,#{businessArea}
+        ,#{comment}
+        ,#{enabled}
+        ,1
+        )
+    </insert>
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from shop
+        where
+        id = #{id,jdbcType=BIGINT}
     </select>
 </mapper>
