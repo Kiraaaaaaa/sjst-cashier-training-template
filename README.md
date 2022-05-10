@@ -52,3 +52,5 @@ thrift接口：shop模块中ShopThriftServiceImpl#findByBusinessNo
 
 #### 测试用例示例：
 shop模块中ShopBizServiceImplTest。
+
+哈哈
