@@ -49,3 +49,6 @@ thrift接口：shop模块中ShopThriftServiceImpl#findByBusinessNo
 调用该thrift接口：order模块中ShopRemoteServiceImpl#findByBusinessNo
 </li>
 </ul>
+
+#### 测试用例示例：
+shop模块中ShopBizServiceImplTest。
