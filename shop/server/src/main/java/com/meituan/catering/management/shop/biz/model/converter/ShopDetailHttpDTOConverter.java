@@ -3,14 +3,15 @@ package com.meituan.catering.management.shop.biz.model.converter;
 import com.meituan.catering.management.common.model.api.http.AuditingHttpModel;
 import com.meituan.catering.management.common.model.api.http.ContactHttpModel;
 import com.meituan.catering.management.common.model.biz.AuditingBO;
+import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
 import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 
-public class ShopDetailHttpResponseConverter extends ShopHttpVOConverter{
+public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter{
 
-    public static ShopDetailHttpResponse toShopDetailHttpResponse(ShopBO shopBO) {
-        ShopDetailHttpResponse shopDetailHttpResponse = new ShopDetailHttpResponse();
+    public static ShopDetailHttpDTO toShopDetailHttpResponse(ShopBO shopBO) {
+        ShopDetailHttpDTO shopDetailHttpResponse = new ShopDetailHttpDTO();
         shopDetailHttpResponse.setId(shopBO.getId());
         shopDetailHttpResponse.setTenantId(shopBO.getTenantId());
         shopDetailHttpResponse.setAuditing(toAuditingHttpModel(shopBO.getAuditing()));
@@ -29,8 +30,8 @@ public class ShopDetailHttpResponseConverter extends ShopHttpVOConverter{
 
     }
 
-    private static ShopDetailHttpResponse.OpeningHoursTimeRange toOpeningHoursTimeRange(String openTime, String closeTime) {
-        ShopDetailHttpResponse.OpeningHoursTimeRange openingHoursTimeRange = new ShopDetailHttpResponse.OpeningHoursTimeRange();
+    private static ShopDetailHttpDTO.OpeningHoursTimeRange toOpeningHoursTimeRange(String openTime, String closeTime) {
+        ShopDetailHttpDTO.OpeningHoursTimeRange openingHoursTimeRange = new ShopDetailHttpDTO.OpeningHoursTimeRange();
         openingHoursTimeRange.setOpenTime(openTime);
         openingHoursTimeRange.setCloseTime(closeTime);
         return openingHoursTimeRange;

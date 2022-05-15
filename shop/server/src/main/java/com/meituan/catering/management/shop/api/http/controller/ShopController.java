@@ -1,5 +1,11 @@
 package com.meituan.catering.management.shop.api.http.controller;
 
+import com.meituan.catering.management.common.exception.BizRuntimeException;
+import com.meituan.catering.management.common.helper.StatusHelper;
+import com.meituan.catering.management.common.model.api.BaseResponse;
+import com.meituan.catering.management.common.model.api.Status;
+import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.OpenShopHttpRequest;
@@ -10,7 +16,7 @@ import com.meituan.catering.management.shop.api.http.model.response.ShopPageHttp
 import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.converter.SaveShopBizRequestConverter;
-import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpResponseConverter;
+import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpDTOConverter;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,13 +28,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-
-import static org.springframework.http.HttpStatus.CREATED;
 
 /**
  * 门店管理Http API
@@ -60,7 +63,9 @@ public class ShopController {
             @ApiParam("门店业务号") @PathVariable String businessNo) {
 
         ShopBO shopBO=shopBizService.findByBusinessNo(tenantId,userId,businessNo);
-        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
+        ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
+
+        return new ShopDetailHttpResponse(StatusHelper.success(),shopDetailHttpDTO);
     }
 
     @ApiOperation("创建新门店")
@@ -71,7 +76,7 @@ public class ShopController {
             @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
         SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
         ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
-        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
+        return new ShopDetailHttpResponse(StatusHelper.success(),ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
     }
 
     @ApiOperation("更新已有门店的信息")

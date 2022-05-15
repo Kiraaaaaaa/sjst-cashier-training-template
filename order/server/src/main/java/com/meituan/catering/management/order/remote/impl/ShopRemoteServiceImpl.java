@@ -1,6 +1,8 @@
 package com.meituan.catering.management.order.remote.impl;
 
+import com.meituan.catering.management.common.exception.BizRuntimeException;
 import com.meituan.catering.management.common.model.api.thrift.UserContextThriftRequest;
+import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.common.remote.BaseThriftRemoteService;
 import com.meituan.catering.management.order.remote.ShopRemoteService;
 import com.meituan.catering.management.order.remote.model.converter.ShopDetailRemoteResponseConverter;
@@ -26,7 +28,10 @@ public class ShopRemoteServiceImpl extends BaseThriftRemoteService implements Sh
         userContextThriftRequest.setUserId(userId);
         userContextThriftRequest.setTenantId(tenantId);
         ShopDetailThriftResponse shopDetailThriftResponse = shopThriftService.get().findByBusinessNo(userContextThriftRequest, businessNo);
+        if (shopDetailThriftResponse.getStatus().isFailed()){
+            throw new BizRuntimeException(ErrorCode.SYSTEM_ERROR);
+        }
 
-        return ShopDetailRemoteResponseConverter.toShopDetailRemoteResponse(shopDetailThriftResponse);
+        return ShopDetailRemoteResponseConverter.toShopDetailRemoteResponse(shopDetailThriftResponse.getData());
     }
 }
