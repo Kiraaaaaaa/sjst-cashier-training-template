@@ -8,9 +8,12 @@ import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum
 import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
 import lombok.Data;
 
+/**
+ * @author mac
+ */
 @Data
 @ThriftStruct
-public class ShopDetailThriftDTO {
+public final class ShopDetailThriftDTO {
 
     @ThriftField(10)
     public Long id;
@@ -58,7 +61,7 @@ public class ShopDetailThriftDTO {
      */
     @Data
     @ThriftStruct("营业时间段")
-    public static final class OpeningHoursTimeRange {
+    public final static class OpeningHoursTimeRange {
 
         @ThriftField(value = 10, name = "开始营业时间")
         public String openTime;

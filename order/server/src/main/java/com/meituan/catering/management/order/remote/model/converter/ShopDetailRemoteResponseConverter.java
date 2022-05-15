@@ -10,6 +10,7 @@ import springfox.documentation.spring.web.json.Json;
  */
 public class ShopDetailRemoteResponseConverter {
     public static ShopDetailRemoteResponse toShopDetailRemoteResponse(ShopDetailThriftDTO shopDetailThriftDTO) {
+        System.out.println(shopDetailThriftDTO);
         return null;
     }
 }

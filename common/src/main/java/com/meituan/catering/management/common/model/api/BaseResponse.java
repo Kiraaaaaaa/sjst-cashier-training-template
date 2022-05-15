@@ -2,23 +2,41 @@ package com.meituan.catering.management.common.model.api;
 
 import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
-import lombok.Data;
+import lombok.*;
 
 /**
  * @author mac
  */
-@Data
+
 @ThriftStruct
 public class BaseResponse<T> {
-    @ThriftField(1)
     private Status status;
-
-    @ThriftField(2)
     private T data;
 
-    public BaseResponse(Status status,T data) {
-        this.status=status;
-        this.data=data;
+    @ThriftField(
+            value = 1,
+            requiredness = com.facebook.swift.codec.ThriftField.Requiredness.REQUIRED
+    )
+    public Status getStatus() {
+        return status;
+    }
+
+    @ThriftField
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    @ThriftField(
+            value = 2,
+            requiredness = com.facebook.swift.codec.ThriftField.Requiredness.OPTIONAL
+    )
+    public T getData() {
+        return data;
+    }
+
+    @ThriftField
+    public void setData(T data) {
+        this.data = data;
     }
 
     @Override

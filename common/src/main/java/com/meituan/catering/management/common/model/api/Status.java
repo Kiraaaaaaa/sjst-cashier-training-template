@@ -7,14 +7,11 @@ import lombok.Data;
 /**
  * @author mac
  */
-@Data
 @ThriftStruct
-public class Status {
+public final class Status {
 
-    @ThriftField(1)
     private Integer code = 0;
 
-    @ThriftField(2)
     private String msg = "成功";
 
     public Status() {
@@ -22,6 +19,32 @@ public class Status {
 
     public Status(Integer code, String msg) {
         this.code = code;
+        this.msg = msg;
+    }
+
+    @ThriftField(
+            value = 1,
+            requiredness = com.facebook.swift.codec.ThriftField.Requiredness.REQUIRED
+    )
+    public Integer getCode() {
+        return code;
+    }
+
+    @ThriftField
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    @ThriftField(
+            value = 2,
+            requiredness = com.facebook.swift.codec.ThriftField.Requiredness.REQUIRED
+    )
+    public String getMsg() {
+        return msg;
+    }
+
+    @ThriftField
+    public void setMsg(String msg) {
         this.msg = msg;
     }
 

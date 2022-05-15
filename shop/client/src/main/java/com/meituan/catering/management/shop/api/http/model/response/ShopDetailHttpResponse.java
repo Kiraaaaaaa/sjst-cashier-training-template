@@ -9,16 +9,16 @@ import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO
 import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+import lombok.*;
 
 /**
  * 门店详情的Http返回体
  * @author mac
  */
 @ApiModel("门店详情的Http返回体")
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class ShopDetailHttpResponse extends BaseResponse<ShopDetailHttpDTO> {
 
-    public ShopDetailHttpResponse(Status status, ShopDetailHttpDTO data) {
-        super(status, data);
-    }
 }

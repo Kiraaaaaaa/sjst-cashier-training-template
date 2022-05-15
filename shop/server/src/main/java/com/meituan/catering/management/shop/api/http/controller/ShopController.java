@@ -64,8 +64,10 @@ public class ShopController {
 
         ShopBO shopBO=shopBizService.findByBusinessNo(tenantId,userId,businessNo);
         ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
-
-        return new ShopDetailHttpResponse(StatusHelper.success(),shopDetailHttpDTO);
+        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
+        response.setStatus(StatusHelper.success());
+        response.setData(shopDetailHttpDTO);
+        return response;
     }
 
     @ApiOperation("创建新门店")
@@ -76,7 +78,10 @@ public class ShopController {
             @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
         SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
         ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
-        return new ShopDetailHttpResponse(StatusHelper.success(),ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
+        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
+        return response;
     }
 
     @ApiOperation("更新已有门店的信息")
