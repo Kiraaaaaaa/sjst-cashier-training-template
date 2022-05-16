@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Data
 @ThriftStruct
-public class ProductDetailThriftDTO {
+public final class ProductDetailThriftDTO {
     @ThriftField(value = 10, name = "物理ID")
     public Long id;
 

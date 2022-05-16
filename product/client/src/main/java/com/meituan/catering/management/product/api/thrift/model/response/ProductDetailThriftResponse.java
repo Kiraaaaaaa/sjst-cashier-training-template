@@ -16,6 +16,6 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 @ThriftStruct
-public class ProductDetailThriftResponse extends BaseResponse<ProductDetailThriftDTO> {
+public final class ProductDetailThriftResponse extends BaseResponse<ProductDetailThriftDTO> {
 
 }

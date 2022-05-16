@@ -1,10 +1,7 @@
 package com.meituan.catering.management.shop.api.http.controller;
 
-import com.meituan.catering.management.common.exception.BizRuntimeException;
+import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.helper.StatusHelper;
-import com.meituan.catering.management.common.model.api.BaseResponse;
-import com.meituan.catering.management.common.model.api.Status;
-import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
@@ -18,6 +15,7 @@ import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.converter.SaveShopBizRequestConverter;
 import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpDTOConverter;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
+import com.meituan.catering.management.shop.biz.validator.ShopBizServiceValidator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -46,6 +44,9 @@ public class ShopController {
     @Resource
     private ShopBizService shopBizService;
 
+    @Resource
+    private ShopBizServiceValidator shopBizServiceValidator;
+
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
     public ShopPageHttpResponse searchForPage(
@@ -62,7 +63,7 @@ public class ShopController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo) {
 
-        ShopBO shopBO=shopBizService.findByBusinessNo(tenantId,userId,businessNo);
+        ShopBO shopBO= shopBizService.findByBusinessNo(tenantId,userId,businessNo);
         ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
         ShopDetailHttpResponse response=new ShopDetailHttpResponse();
         response.setStatus(StatusHelper.success());
@@ -76,11 +77,17 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
-        SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
-        ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
         ShopDetailHttpResponse response=new ShopDetailHttpResponse();
-        response.setStatus(StatusHelper.success());
-        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
+        try {
+            shopBizServiceValidator.createValid(tenantId,userId,request);
+            SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
+            ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
+            response.setStatus(StatusHelper.success());
+            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
+        } catch (BizException e) {
+            response.setStatus(StatusHelper.failure(e.getErrorCode()));
+        }
+
         return response;
     }
 

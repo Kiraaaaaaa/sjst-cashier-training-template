@@ -5,17 +5,17 @@ import com.meituan.catering.management.common.model.enumeration.IError;
 /**
  * @author mac
  */
-public class BizRuntimeException extends RuntimeException{
+public class BizException extends Exception{
     private IError errorCode;
 
-    public BizRuntimeException(IError errorCode) {
+    public BizException(IError errorCode) {
         super(errorCode.getMessage());
         this.setErrorCode(errorCode);
     }
 
-    public BizRuntimeException(Integer code, String msg) {
+    public BizException(Integer code, String msg) {
         super(msg);
-        this.setErrorCode(new BizRuntimeException.BaseErrorCode(code, msg));
+        this.setErrorCode(new BizException.BaseErrorCode(code, msg));
     }
 
     public IError getErrorCode() {
@@ -35,10 +35,12 @@ public class BizRuntimeException extends RuntimeException{
             this.errorMsg = errorMsg;
         }
 
+        @Override
         public int getCode() {
             return this.errorCode;
         }
 
+        @Override
         public String getMessage() {
             return this.errorMsg;
         }
