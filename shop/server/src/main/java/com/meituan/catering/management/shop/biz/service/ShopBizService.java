@@ -1,5 +1,6 @@
 package com.meituan.catering.management.shop.biz.service;
 
+import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 

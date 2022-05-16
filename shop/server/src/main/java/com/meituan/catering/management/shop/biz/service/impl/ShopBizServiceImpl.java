@@ -1,9 +1,12 @@
 package com.meituan.catering.management.shop.biz.service.impl;
 
+import com.meituan.catering.management.common.exception.BizException;
+import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.converter.ShopBOConverter;
 import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
+import com.meituan.catering.management.shop.biz.validator.ShopBizServiceValidator;
 import com.meituan.catering.management.shop.dao.converter.ShopDOConverter;
 import com.meituan.catering.management.shop.dao.mapper.ShopMapper;
 import com.meituan.catering.management.shop.dao.model.ShopDO;

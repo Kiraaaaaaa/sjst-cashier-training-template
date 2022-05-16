@@ -1,5 +1,8 @@
 package com.meituan.catering.management.shop.api.http.controller;
 
+import com.meituan.catering.management.common.exception.BizException;
+import com.meituan.catering.management.common.helper.StatusHelper;
+import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.OpenShopHttpRequest;
@@ -10,8 +13,9 @@ import com.meituan.catering.management.shop.api.http.model.response.ShopPageHttp
 import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.converter.SaveShopBizRequestConverter;
-import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpResponseConverter;
+import com.meituan.catering.management.shop.biz.model.converter.ShopDetailHttpDTOConverter;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
+import com.meituan.catering.management.shop.biz.validator.ShopBizServiceValidator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,13 +26,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-
-import static org.springframework.http.HttpStatus.CREATED;
 
 /**
  * 门店管理Http API
@@ -42,6 +43,9 @@ public class ShopController {
 
     @Resource
     private ShopBizService shopBizService;
+
+    @Resource
+    private ShopBizServiceValidator shopBizServiceValidator;
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
@@ -59,8 +63,12 @@ public class ShopController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo) {
 
-        ShopBO shopBO=shopBizService.findByBusinessNo(tenantId,userId,businessNo);
-        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
+        ShopBO shopBO= shopBizService.findByBusinessNo(tenantId,userId,businessNo);
+        ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
+        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
+        response.setStatus(StatusHelper.success());
+        response.setData(shopDetailHttpDTO);
+        return response;
     }
 
     @ApiOperation("创建新门店")
@@ -69,9 +77,18 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
-        SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
-        ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
-        return ShopDetailHttpResponseConverter.toShopDetailHttpResponse(shopBO);
+        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
+        try {
+            shopBizServiceValidator.createValid(tenantId,userId,request);
+            SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
+            ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
+            response.setStatus(StatusHelper.success());
+            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
+        } catch (BizException e) {
+            response.setStatus(StatusHelper.failure(e.getErrorCode()));
+        }
+
+        return response;
     }
 
     @ApiOperation("更新已有门店的信息")

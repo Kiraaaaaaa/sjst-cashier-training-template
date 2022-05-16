@@ -2,30 +2,34 @@ package com.meituan.catering.management.shop.biz.model.converter;
 
 import com.meituan.catering.management.common.model.api.thrift.AuditingThriftModel;
 import com.meituan.catering.management.common.model.api.thrift.ContactThriftModel;
+import com.meituan.catering.management.shop.api.thrift.model.dto.ShopDetailThriftDTO;
 import com.meituan.catering.management.shop.api.thrift.model.response.ShopDetailThriftResponse;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 
-public class ShopDetailThriftResponseConverter {
-    public static ShopDetailThriftResponse toShopDetailThriftResponse(ShopBO shopBO) {
-        ShopDetailThriftResponse shopDetailThriftResponse = new ShopDetailThriftResponse();
-        shopDetailThriftResponse.setId(shopBO.getId());
-        shopDetailThriftResponse.setTenantId(shopBO.getTenantId());
-        shopDetailThriftResponse.setAuditing(toAuditingThriftModel(shopBO));
-        shopDetailThriftResponse.setBusinessNo(shopBO.getBusinessNo());
-        shopDetailThriftResponse.setName(shopBO.getName());
-        shopDetailThriftResponse.setBusinessType(shopBO.getBusinessType());
-        shopDetailThriftResponse.setContact(toContactThriftModel(shopBO));
-        shopDetailThriftResponse.setManagementType(shopBO.getManagementType());
-        shopDetailThriftResponse.setOpeningHours(toOpeningHoursTimeRange(shopBO));
-        shopDetailThriftResponse.setBusinessArea(shopBO.getBusinessArea());
-        shopDetailThriftResponse.setComment(shopBO.getComment());
-        shopDetailThriftResponse.setEnabled(shopBO.getEnabled());
-        shopDetailThriftResponse.setVersion(shopBO.getVersion());
-        return shopDetailThriftResponse;
+/**
+ * @author mac
+ */
+public class ShopDetailThriftDTOConverter {
+    public static ShopDetailThriftDTO toShopDetailThriftDTO(ShopBO shopBO) {
+        ShopDetailThriftDTO shopDetailThriftDTO = new ShopDetailThriftDTO();
+        shopDetailThriftDTO.setId(shopBO.getId());
+        shopDetailThriftDTO.setTenantId(shopBO.getTenantId());
+        shopDetailThriftDTO.setAuditing(toAuditingThriftModel(shopBO));
+        shopDetailThriftDTO.setBusinessNo(shopBO.getBusinessNo());
+        shopDetailThriftDTO.setName(shopBO.getName());
+        shopDetailThriftDTO.setBusinessType(shopBO.getBusinessType());
+        shopDetailThriftDTO.setContact(toContactThriftModel(shopBO));
+        shopDetailThriftDTO.setManagementType(shopBO.getManagementType());
+        shopDetailThriftDTO.setOpeningHours(toOpeningHoursTimeRange(shopBO));
+        shopDetailThriftDTO.setBusinessArea(shopBO.getBusinessArea());
+        shopDetailThriftDTO.setComment(shopBO.getComment());
+        shopDetailThriftDTO.setEnabled(shopBO.getEnabled());
+        shopDetailThriftDTO.setVersion(shopBO.getVersion());
+        return shopDetailThriftDTO;
     }
 
-    private static ShopDetailThriftResponse.OpeningHoursTimeRange toOpeningHoursTimeRange(ShopBO shopBO) {
-        ShopDetailThriftResponse.OpeningHoursTimeRange openingHoursTimeRange = new ShopDetailThriftResponse.OpeningHoursTimeRange();
+    private static ShopDetailThriftDTO.OpeningHoursTimeRange toOpeningHoursTimeRange(ShopBO shopBO) {
+        ShopDetailThriftDTO.OpeningHoursTimeRange openingHoursTimeRange = new ShopDetailThriftDTO.OpeningHoursTimeRange();
         openingHoursTimeRange.setOpenTime(shopBO.getOpenTime());
         openingHoursTimeRange.setCloseTime(shopBO.getCloseTime());
         return openingHoursTimeRange;

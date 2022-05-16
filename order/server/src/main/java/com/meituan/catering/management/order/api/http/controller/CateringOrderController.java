@@ -1,5 +1,6 @@
 package com.meituan.catering.management.order.api.http.controller;
 
+import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.order.api.http.model.request.AdjustCateringOrderHttpRequest;
 import com.meituan.catering.management.order.api.http.model.request.BillCateringOrderHttpRequest;
 import com.meituan.catering.management.order.api.http.model.request.PlaceCateringOrderHttpRequest;
@@ -49,7 +50,12 @@ public class CateringOrderController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId) {
-        shopRemoteService.findByBusinessNo(tenantId,userId,"1234567890");
+        //以下为示例，请正式开发时修改代码
+        try {
+            shopRemoteService.findByBusinessNo(tenantId,userId,"1234567890");
+        } catch (BizException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
