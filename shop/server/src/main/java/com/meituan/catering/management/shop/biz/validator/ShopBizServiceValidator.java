@@ -18,32 +18,32 @@ public class ShopBizServiceValidator {
     private ShopMapper shopMapper;
 
     public void createValid(Long tenantId, Long userId, CreateShopHttpRequest createShopHttpRequest) throws BizException {
-        //以下为示例
-        if (userId < 0 || tenantId < 0) {
-            throw new BizException(ErrorCode.PARAM_ERROR);
-        }
+        baseValid(tenantId,userId);
     }
 
     public void updateValid(Long tenantId, Long userId, String businessNo, UpdateShopHttpRequest updateShopHttpRequest) throws BizException {
-        if (userId < 0) {
-            throw new BizException(ErrorCode.PARAM_ERROR);
-        }
+        baseValid(tenantId,userId,businessNo);
     }
 
     public void searchValid(Long tenantId, Long userId, SearchShopHttpRequest searchShopHttpRequest) throws BizException {
-        if (userId < 0) {
-            throw new BizException(ErrorCode.PARAM_ERROR);
-        }
+        baseValid(tenantId,userId);
     }
 
     public void closeValid(Long tenantId, Long userId,String businessNo, CloseShopHttpRequest closeShopHttpRequest) throws BizException {
-        if (userId < 0) {
-            throw new BizException(ErrorCode.PARAM_ERROR);
-        }
+        baseValid(tenantId,userId,businessNo);
     }
 
     public void openValid(Long tenantId, Long userId, String businessNo,OpenShopHttpRequest openShopHttpRequest) throws BizException {
-        if (userId < 0) {
+        baseValid(tenantId,userId,businessNo);
+    }
+
+    private static void baseValid(Long tenantId,Long userId,String businessNo) throws BizException {
+        if (userId < 0 || tenantId < 0 || businessNo==null){
+            throw new BizException(ErrorCode.PARAM_ERROR);
+        }
+    }
+    private static void baseValid(Long tenantId,Long userId) throws BizException {
+        if (userId < 0 || tenantId < 0){
             throw new BizException(ErrorCode.PARAM_ERROR);
         }
     }

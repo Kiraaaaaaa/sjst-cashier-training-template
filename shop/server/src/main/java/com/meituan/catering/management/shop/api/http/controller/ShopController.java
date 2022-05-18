@@ -2,6 +2,7 @@ package com.meituan.catering.management.shop.api.http.controller;
 
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.helper.StatusHelper;
+import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
@@ -60,12 +61,13 @@ public class ShopController {
             List<ShopBO> shopBOS = shopBizService.searchByConditional(tenantId, userId, searchShopBizRequest);
             response.setStatus(StatusHelper.success());
             response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(request.getPageIndex(),request.getPageSize(),shopBOS));
-        } catch (BizException e) {
+        }catch (BizException e) {
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
         }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(-1,"未找到指定内容"));
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
         }
-
         return response;
     }
 
@@ -81,13 +83,13 @@ public class ShopController {
             ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
             response.setStatus(StatusHelper.success());
             response.setData(shopDetailHttpDTO);
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
         }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(-1,"未找到指定内容"));
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
         }
-
         return response;
     }
-
     @ApiOperation("创建新门店")
     @PostMapping
     public ShopDetailHttpResponse create(
@@ -103,10 +105,13 @@ public class ShopController {
             response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         }catch (BizException e) {
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
+        }catch (NullPointerException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
         }
         return response;
     }
-
     @ApiOperation("更新已有门店的信息")
     @PutMapping("/{businessNo}")
     public ShopDetailHttpResponse update(
@@ -124,7 +129,9 @@ public class ShopController {
         }catch (BizException e) {
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
         }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(-1,"请输入正确参数"));
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
         }
         return response;
     }
@@ -146,7 +153,9 @@ public class ShopController {
         }catch (BizException e){
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
         }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(-1,"请输入正确参数"));
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
         }
         return response;
     }
@@ -168,7 +177,9 @@ public class ShopController {
         }catch (BizException e){
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
         }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(-1,"请输入正确参数"));
+            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
+        }catch (IllegalStateException e){
+            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
         }
         return response;
     }

@@ -108,20 +108,20 @@
             <if test="tenantId != null">
                 and `tenant_id` = #{tenantId}
             </if>
-            <if test="condition.getKeyWordLike != null">
+            <if test="condition.getKeyWordLike != null and condition.getKeyWordLike != ''">
                 and `name` like  #{condition.keyWordLike}
             </if>
             <if test="condition.enabled != null">
                 and `enabled` =  #{condition.enabled}
             </if>
-            <if test="condition.managementTypes != null">
+            <if test="condition.managementTypes != null and condition.managementTypes.size > 0">
                 and `management_type` in
                 <foreach collection="condition.managementTypes" item="managementTypeItem"
                          separator="," open="(" close=")">
                     #{managementTypeItem}
                 </foreach>
             </if>
-            <if test="condition.businessTypes != null">
+            <if test="condition.businessTypes != null and condition.businessTypes.size > 0">
                 and `business_type` in
                 <foreach collection="condition.businessTypes" item="businessTypeItem"
                          separator="," open="(" close=")">
@@ -129,7 +129,7 @@
                 </foreach>
             </if>
         </where>
-        <if test="sortFields != null">
+        <if test="sortFields != null and sortFields.size > 0">
             order By
             <foreach collection="sortFields" item="sortFieldItem" separator=",">
                 ${sortFieldItem.field} ${sortFieldItem.asc}
@@ -157,12 +157,12 @@
         , `business_area` = #{businessArea}
         , `last_modified_by` = #{lastModifiedBy}
         , `last_modified_at` = #{lastModifiedAt}
-        , `version` = #{version}
+        , `version` = #{version}+1
         <where>
             `tenant_id` = #{tenantId}
             and `business_no` = #{businessNo}
+            and `version` = #{version}
         </where>
-
     </update>
 
     <update id="open">
@@ -171,9 +171,10 @@
             `enabled` = 1
             ,`last_modified_by` = #{lastModifiedBy}
             ,`last_modified_at` = #{lastModifiedAt}
-            ,`version` = #{version}
+            ,`version` = #{version}+1
         </set>
         where business_no = #{businessNo}
+        and version = #{version}
     </update>
 
     <update id="close">
@@ -182,9 +183,10 @@
             `enabled` = 0
             ,`last_modified_by` = #{lastModifiedBy}
             ,`last_modified_at` = #{lastModifiedAt}
-            ,`version` = #{version}
+            ,`version` = #{version}+1
         </set>
         where business_no = #{businessNo}
+        and version = #{version}
     </update>
 
 </mapper>
