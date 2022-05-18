@@ -1,0 +1,32 @@
+.shop-head .ant-row{
+    background-color: lightgray;
+    height: 40px;
+}
+.shop-head .ant-col{
+    line-height: 36px;
+    font-size: 20px;
+}
+.create-shop-btn .ant-btn {
+    border-radius: 10px;
+    background-color: rgb(255, 189, 0) !important;
+}
+.create-shop-btn .ant-btn:hover {
+    color: black;
+    background-color: rgb(235 174 0) !important;
+    border-color: rgb(235 174 0) !important;
+}
+.create-shop-btn .ant-btn:focus {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(255, 189, 0);
+}
+.ant-btn-link{
+    color: rgb(255, 189, 0) !important;
+}
+.ant-form-item-label label{
+    background: whitesmoke;
+    color: gray !important;
+    border-radius: 10px 0 0 10px;
+    width: 180px;
+    padding-left: 66px;
+}
