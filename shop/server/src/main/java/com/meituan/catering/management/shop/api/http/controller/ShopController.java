@@ -15,7 +15,6 @@ import com.meituan.catering.management.shop.biz.model.request.*;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import com.meituan.catering.management.shop.biz.validator.ShopBizServiceValidator;
-import com.meituan.catering.management.shop.dao.converter.SwitchShopDateRequestConverter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
