@@ -1,9 +1,13 @@
 package com.meituan.catering.management.shop.dao.mapper;
-import java.util.List;
+import com.meituan.catering.management.shop.dao.model.request.CloseShopDataRequest;
+import com.meituan.catering.management.shop.dao.model.request.OpenShopDataRequest;
+import com.meituan.catering.management.shop.dao.model.request.SearchShopDataRequest;
 import org.apache.ibatis.annotations.Param;
 
 import com.meituan.catering.management.shop.dao.model.ShopDO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 门店对应的MyBatis Mapper
@@ -35,4 +39,31 @@ public interface ShopMapper {
      */
     ShopDO selectById(@Param("id") Long id);
 
+    /**
+     * 跟新门店信息
+     * @param shopDO
+     * @return
+     */
+    int update(ShopDO shopDO);
+
+    /**
+     * 分页查找
+     * @param request
+     * @return
+     */
+    List<ShopDO> selectByConditional(SearchShopDataRequest request);
+
+    /**
+     * 打开一个门店
+     * @param request
+     * @return
+     */
+    int open(OpenShopDataRequest request);
+
+    /**
+     * 关闭一个门店
+     * @param request
+     * @return
+     */
+    int close(CloseShopDataRequest request);
 }

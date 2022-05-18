@@ -7,7 +7,6 @@ import com.meituan.catering.management.shop.api.http.model.enumeration.Managemen
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.LinkedList;
 import java.util.List;

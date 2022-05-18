@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meituan.catering.management.shop.dao.mapper.ShopMapper">
+    
     <resultMap id="BaseResultMap" type="com.meituan.catering.management.shop.dao.model.ShopDO">
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
@@ -46,8 +47,7 @@
         ,enabled
         ,version
     </sql>
-
-
+    
     <select id="findByBusinessNo" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
@@ -59,7 +59,6 @@
             LIMIT 1
         </where>
     </select>
-
 
     <insert id="insert"
             parameterType="com.meituan.catering.management.shop.dao.model.ShopDO"
@@ -89,6 +88,7 @@
         ,1
         )
     </insert>
+
     <select id="selectById" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -96,4 +96,95 @@
         where
         id = #{id,jdbcType=BIGINT}
     </select>
+
+    <select id="selectByConditional" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `shop`
+        <where>
+            <if test="userId != null">
+                `created_by` = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="condition.getKeyWordLike != null">
+                and `name` like  #{condition.keyWordLike}
+            </if>
+            <if test="condition.enabled != null">
+                and `enabled` =  #{condition.enabled}
+            </if>
+            <if test="condition.managementTypes != null">
+                and `management_type` in
+                <foreach collection="condition.managementTypes" item="managementTypeItem"
+                         separator="," open="(" close=")">
+                    #{managementTypeItem}
+                </foreach>
+            </if>
+            <if test="condition.businessTypes != null">
+                and `business_type` in
+                <foreach collection="condition.businessTypes" item="businessTypeItem"
+                         separator="," open="(" close=")">
+                    #{businessTypeItem}
+                </foreach>
+            </if>
+        </where>
+        <if test="sortFields != null">
+            order By
+            <foreach collection="sortFields" item="sortFieldItem" separator=",">
+                ${sortFieldItem.field} ${sortFieldItem.asc}
+            </foreach>
+        </if>
+        <if test="pageIndex != null and pageSize != null">
+            limit #{skip},#{limit}
+        </if>
+    </select>
+
+    <update id="update"
+            keyProperty="id"
+            useGeneratedKeys="true">
+        UPDATE `shop`
+        set
+        `name` = #{name}
+        , `business_type` = #{businessType}
+        , `management_type` = #{managementType}
+        , `contact_telephone` = #{contactTelephone}
+        , `contact_cellphone` = #{contactCellphone}
+        , `contact_name` = #{contactName}
+        , `contact_address` = #{contactAddress}
+        , `opening_hours_open_time` = #{openingHoursOpenTime}
+        , `opening_hours_close_time` = #{openingHoursCloseTime}
+        , `business_area` = #{businessArea}
+        , `last_modified_by` = #{lastModifiedBy}
+        , `last_modified_at` = #{lastModifiedAt}
+        , `version` = #{version}
+        <where>
+            `tenant_id` = #{tenantId}
+            and `business_no` = #{businessNo}
+        </where>
+
+    </update>
+
+    <update id="open">
+        update `shop`
+        <set>
+            `enabled` = 1
+            ,`last_modified_by` = #{lastModifiedBy}
+            ,`last_modified_at` = #{lastModifiedAt}
+            ,`version` = #{version}
+        </set>
+        where business_no = #{businessNo}
+    </update>
+
+    <update id="close">
+        update `shop`
+        <set>
+            `enabled` = 0
+            ,`last_modified_by` = #{lastModifiedBy}
+            ,`last_modified_at` = #{lastModifiedAt}
+            ,`version` = #{version}
+        </set>
+        where business_no = #{businessNo}
+    </update>
+
 </mapper>

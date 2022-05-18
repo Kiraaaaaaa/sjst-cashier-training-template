@@ -1,45 +1,34 @@
-package com.meituan.catering.management.shop.dao.model.request;
+package com.meituan.catering.management.shop.biz.model.request;
 
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
 import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Boolean.FALSE;
+
 
 /**
- * 搜索门店的查询条件
+ * <p>
+ *
+ * <p>
+ *
+ * @Author:zhangzhefeng 2022/5/16 15:46
+ * @ClassName: SearchShopBizRequest
  */
 @Data
-public class SearchShopDataRequest {
-
-    private Long tenantId;
-
-    private Long userId;
+public class SearchShopBizRequest {
 
     private Integer pageIndex;
 
     private Integer pageSize;
 
     private Condition condition = new Condition();
-
-    private List<SortField> sortFields = new LinkedList<>();
-
-    public Integer getSkip() {
-        if (pageIndex==null || pageSize==null){
-            return null;
-        }
-        return(pageIndex-1)*pageSize;
-    }
-    public Integer getLimit(){
-        return pageSize;
-    }
-
 
     @Data
     public static class Condition {
@@ -50,17 +39,11 @@ public class SearchShopDataRequest {
 
         private Set<BusinessTypeEnum> businessTypes = new LinkedHashSet<>();
 
-        private Integer enabled;
-
-        public String getKeyWordLike(){
-            if (keyword==null){
-                return null;
-            }
-            return "%"+keyword+"%";
-        }
+        private Boolean enabled;
 
     }
 
+    private List<SortField> sortFields = new LinkedList<>();
 
     @Data
     @NoArgsConstructor
@@ -69,10 +52,8 @@ public class SearchShopDataRequest {
 
         private String field;
 
-        private String asc ;
+        private Boolean asc;
 
     }
-
-
 
 }
