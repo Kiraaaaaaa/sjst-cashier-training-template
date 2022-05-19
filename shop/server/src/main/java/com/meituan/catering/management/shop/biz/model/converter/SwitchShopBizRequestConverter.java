@@ -16,7 +16,7 @@ import com.meituan.catering.management.shop.biz.model.request.OpenShopBizRequest
  */
 public class SwitchShopBizRequestConverter {
 
-    public static OpenShopBizRequest toOpenShopBizRequest(OpenShopHttpRequest request){
+    public static OpenShopBizRequest toOpenShopBizRequest(OpenShopHttpRequest request) {
 
         OpenShopBizRequest openShopBizRequest = new OpenShopBizRequest();
         openShopBizRequest.setVersion(request.getVersion());
@@ -24,7 +24,7 @@ public class SwitchShopBizRequestConverter {
         return openShopBizRequest;
     }
 
-    public static CloseShopBizRequest toCloseShopBizRequest(CloseShopHttpRequest request){
+    public static CloseShopBizRequest toCloseShopBizRequest(CloseShopHttpRequest request) {
 
         CloseShopBizRequest closeShopBizRequest = new CloseShopBizRequest();
         closeShopBizRequest.setVersion(request.getVersion());

@@ -22,8 +22,6 @@ public class CateringManagementShopApplication {
         String port = env.getProperty("server.port");
         log.info("\n----------------------------------------------------------\n\t" +
                 "Application Declare is running! Access URLs:\n\t" +
-                "Local: \t\thttp://localhost:" + port + "/\n\t" +
-                "External: \thttps://" + "localhost" + ":" + port + "/\n\t" +
                 "Swagger-UI: \t\thttp://" + "localhost" + ":" + port + "/doc.html#/\n" +
                 "----------------------------------------------------------");
     }

@@ -15,7 +15,7 @@ import java.util.List;
  * @ClassName: SearchShopBizRequestConverter
  */
 public class SearchShopBizRequestConverter {
-    public static SearchShopBizRequest toSearchShopBizRequest(SearchShopHttpRequest request){
+    public static SearchShopBizRequest toSearchShopBizRequest(SearchShopHttpRequest request) {
         SearchShopBizRequest searchShopBizRequest = new SearchShopBizRequest();
         searchShopBizRequest.setPageIndex(request.getPageIndex());
         searchShopBizRequest.setPageSize(request.getPageSize());
@@ -24,7 +24,7 @@ public class SearchShopBizRequestConverter {
         return searchShopBizRequest;
     }
 
-    private static SearchShopBizRequest.Condition buildCondition(SearchShopHttpRequest.Condition request){
+    private static SearchShopBizRequest.Condition buildCondition(SearchShopHttpRequest.Condition request) {
         SearchShopBizRequest.Condition condition = new SearchShopBizRequest.Condition();
         condition.setKeyword(request.getKeyword());
         condition.setManagementTypes(request.getManagementTypes());
@@ -33,11 +33,11 @@ public class SearchShopBizRequestConverter {
         return condition;
     }
 
-    private static List<SearchShopBizRequest.SortField> buildSortField(List<SearchShopHttpRequest.SortField> requests){
+    private static List<SearchShopBizRequest.SortField> buildSortField(List<SearchShopHttpRequest.SortField> requests) {
         List<SearchShopBizRequest.SortField> sortFields = new ArrayList<>();
         for (SearchShopHttpRequest.SortField request : requests) {
             SearchShopBizRequest.SortField sortField =
-                    new SearchShopBizRequest.SortField(request.getField(),request.getAsc());
+                    new SearchShopBizRequest.SortField(request.getField(), request.getAsc());
             sortFields.add(sortField);
             sortField = null;
         }

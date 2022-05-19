@@ -5,6 +5,7 @@ import com.meituan.catering.management.shop.api.http.model.enumeration.Managemen
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;

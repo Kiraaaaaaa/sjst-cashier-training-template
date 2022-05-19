@@ -18,32 +18,37 @@ public class ShopBizServiceValidator {
     private ShopMapper shopMapper;
 
     public void createValid(Long tenantId, Long userId, CreateShopHttpRequest createShopHttpRequest) throws BizException {
-        baseValid(tenantId,userId);
+        baseValid(tenantId, userId);
     }
 
     public void updateValid(Long tenantId, Long userId, String businessNo, UpdateShopHttpRequest updateShopHttpRequest) throws BizException {
-        baseValid(tenantId,userId,businessNo);
+        baseValid(tenantId, userId, businessNo);
     }
 
-    public void searchValid(Long tenantId, Long userId, SearchShopHttpRequest searchShopHttpRequest) throws BizException {
-        baseValid(tenantId,userId);
+    public void searchValid(Long tenantId, Long userId, String businessNo) throws BizException {
+        baseValid(tenantId, userId, businessNo);
     }
 
-    public void closeValid(Long tenantId, Long userId,String businessNo, CloseShopHttpRequest closeShopHttpRequest) throws BizException {
-        baseValid(tenantId,userId,businessNo);
+    public void searchByValid(Long tenantId, Long userId, SearchShopHttpRequest searchShopHttpRequest) throws BizException {
+        baseValid(tenantId, userId);
     }
 
-    public void openValid(Long tenantId, Long userId, String businessNo,OpenShopHttpRequest openShopHttpRequest) throws BizException {
-        baseValid(tenantId,userId,businessNo);
+    public void closeValid(Long tenantId, Long userId, String businessNo, CloseShopHttpRequest closeShopHttpRequest) throws BizException {
+        baseValid(tenantId, userId, businessNo);
     }
 
-    private static void baseValid(Long tenantId,Long userId,String businessNo) throws BizException {
-        if (userId < 0 || tenantId < 0 || businessNo==null){
+    public void openValid(Long tenantId, Long userId, String businessNo, OpenShopHttpRequest openShopHttpRequest) throws BizException {
+        baseValid(tenantId, userId, businessNo);
+    }
+
+    private static void baseValid(Long tenantId, Long userId, String businessNo) throws BizException {
+        if (userId < 0 || tenantId < 0 || businessNo == null) {
             throw new BizException(ErrorCode.PARAM_ERROR);
         }
     }
-    private static void baseValid(Long tenantId,Long userId) throws BizException {
-        if (userId < 0 || tenantId < 0){
+
+    private static void baseValid(Long tenantId, Long userId) throws BizException {
+        if (userId < 0 || tenantId < 0) {
             throw new BizException(ErrorCode.PARAM_ERROR);
         }
     }

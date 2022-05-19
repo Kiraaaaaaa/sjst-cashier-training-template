@@ -17,7 +17,7 @@ import java.util.Date;
  */
 public class SwitchShopDateRequestConverter {
 
-    public static OpenShopDataRequest toOpenShopDataRequest(Long tenantId,Long userId,String businessNo,OpenShopBizRequest request){
+    public static OpenShopDataRequest toOpenShopDataRequest(Long tenantId, Long userId, String businessNo, OpenShopBizRequest request) {
         OpenShopDataRequest openShopDataRequest = new OpenShopDataRequest();
         openShopDataRequest.setVersion(request.getVersion());
         openShopDataRequest.setBusinessNo(businessNo);
@@ -28,7 +28,7 @@ public class SwitchShopDateRequestConverter {
     }
 
 
-    public static CloseShopDataRequest toCloseShopDataRequest(Long tenantId, Long userId,String businessNo,CloseShopBizRequest request){
+    public static CloseShopDataRequest toCloseShopDataRequest(Long tenantId, Long userId, String businessNo, CloseShopBizRequest request) {
         CloseShopDataRequest closeShopDataRequest = new CloseShopDataRequest();
         closeShopDataRequest.setVersion(request.getVersion());
         closeShopDataRequest.setBusinessNo(businessNo);

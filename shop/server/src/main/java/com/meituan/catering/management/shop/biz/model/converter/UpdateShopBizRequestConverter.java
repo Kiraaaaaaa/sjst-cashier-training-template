@@ -14,7 +14,7 @@ import com.meituan.catering.management.shop.biz.model.request.UpdateShopBizReque
  */
 public class UpdateShopBizRequestConverter {
 
-    public static UpdateShopBizRequest toUpdateShopBizRequest(UpdateShopHttpRequest request){
+    public static UpdateShopBizRequest toUpdateShopBizRequest(UpdateShopHttpRequest request) {
         UpdateShopBizRequest updateShopBizRequest = new UpdateShopBizRequest();
         updateShopBizRequest.setVersion(request.getVersion());
         updateShopBizRequest.setName(request.getName());

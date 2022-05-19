@@ -33,7 +33,7 @@ public class SearchShopDataRequestConverter {
         condition.setKeyword(request.getKeyword());
         condition.setManagementTypes(request.getManagementTypes());
         condition.setBusinessTypes(request.getBusinessTypes());
-        if (request.getEnabled() != null){
+        if (request.getEnabled() != null) {
             condition.setEnabled(request.getEnabled() ? 1 : 0);
         }
         return condition;
@@ -41,7 +41,7 @@ public class SearchShopDataRequestConverter {
 
     private static List<SearchShopDataRequest.SortField> buildSortField(List<SearchShopBizRequest.SortField> requests) {
         List<SearchShopDataRequest.SortField> sortFields = new ArrayList<>();
-        if (requests != null){
+        if (requests != null) {
             for (SearchShopBizRequest.SortField request : requests) {
                 SearchShopDataRequest.SortField sortField = new SearchShopDataRequest.SortField();
                 sortField.setField(request.getField());

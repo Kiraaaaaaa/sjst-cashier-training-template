@@ -33,7 +33,7 @@ public class ShopDOConverter {
         return shopDO;
     }
 
-    public static ShopDO toShopDO(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest){
+    public static ShopDO toShopDO(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) {
         ShopDO shopDO = new ShopDO();
         shopDO.setBusinessNo(businessNo);
         shopDO.setName(updateShopBizRequest.getName());

@@ -9,12 +9,14 @@ import java.util.List;
 
 /**
  * 门店管理服务
+ *
  * @author mac
  */
 public interface ShopBizService {
 
     /**
      * 根据商户号查询门店
+     *
      * @param tenantId
      * @param userId
      * @param businessNo
@@ -24,6 +26,7 @@ public interface ShopBizService {
 
     /**
      * 创建门店
+     *
      * @param tenantId
      * @param userId
      * @param saveShopBizRequest
@@ -33,6 +36,7 @@ public interface ShopBizService {
 
     /**
      * 跟新门店信息
+     *
      * @param tenantId
      * @param userId
      * @param businessNo
@@ -43,6 +47,7 @@ public interface ShopBizService {
 
     /**
      * 分页查找
+     *
      * @param tenantId
      * @param userId
      * @param searchShopBizRequest
@@ -51,8 +56,10 @@ public interface ShopBizService {
     List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) throws BizException;
 
     int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
+
     /**
      * 打开一个门店
+     *
      * @param tenantId
      * @param userId
      * @param businessNo
@@ -63,6 +70,7 @@ public interface ShopBizService {
 
     /**
      * 关闭一个门店
+     *
      * @param tenantId
      * @param userId
      * @param businessNo

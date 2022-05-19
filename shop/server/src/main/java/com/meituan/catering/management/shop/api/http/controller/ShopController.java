@@ -1,8 +1,7 @@
 package com.meituan.catering.management.shop.api.http.controller;
 
-import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.helper.StatusHelper;
-import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import com.meituan.catering.management.common.validation.annotation.RepeatSubmit;
 import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
@@ -50,138 +49,102 @@ public class ShopController {
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
+    @RepeatSubmit()
     public ShopPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) {
+            @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) throws Exception {
+        shopBizServiceValidator.searchByValid(tenantId, userId, request);
         ShopPageHttpResponse response = new ShopPageHttpResponse();
-        try {
-            shopBizServiceValidator.searchValid(tenantId,userId,request);
-            SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
-            List<ShopBO> shopBOS = shopBizService.searchByConditional(tenantId, userId, searchShopBizRequest);
-            int totalCount = shopBizService.searchTotalCount(tenantId,userId,searchShopBizRequest);
-            response.setStatus(StatusHelper.success());
-            response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(request.getPageIndex(),request.getPageSize(),totalCount,shopBOS));
-        }catch (BizException e) {
-            response.setStatus(StatusHelper.failure(e.getErrorCode()));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }
+        SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
+        List<ShopBO> shopBOS = shopBizService.searchByConditional(tenantId, userId, searchShopBizRequest);
+        int totalCount = shopBizService.searchTotalCount(tenantId, userId, searchShopBizRequest);
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(
+                request.getPageIndex(), request.getPageSize(), totalCount, shopBOS));
         return response;
     }
 
     @ApiOperation("查看单个门店详情")
     @GetMapping("/{businessNo}")
+    @RepeatSubmit()
     public ShopDetailHttpResponse findByBusinessNo(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("门店业务号") @PathVariable String businessNo) {
-        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
-        try{
-            ShopBO shopBO= shopBizService.findByBusinessNo(tenantId,userId,businessNo);
-            ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
-            response.setStatus(StatusHelper.success());
-            response.setData(shopDetailHttpDTO);
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }
+            @ApiParam("门店业务号") @PathVariable String businessNo) throws Exception {
+        shopBizServiceValidator.searchValid(tenantId, userId, businessNo);
+        ShopDetailHttpResponse response = new ShopDetailHttpResponse();
+        ShopBO shopBO = shopBizService.findByBusinessNo(tenantId, userId, businessNo);
+        ShopDetailHttpDTO shopDetailHttpDTO = ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO);
+        response.setStatus(StatusHelper.success());
+        response.setData(shopDetailHttpDTO);
         return response;
     }
+
     @ApiOperation("创建新门店")
     @PostMapping
+    @RepeatSubmit()
     public ShopDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
-        ShopDetailHttpResponse response=new ShopDetailHttpResponse();
-        try {
-            shopBizServiceValidator.createValid(tenantId,userId,request);
-            SaveShopBizRequest saveShopBizRequest= SaveShopBizRequestConverter.toSaveShopBizRequest(request);
-            ShopBO shopBO= shopBizService.create(tenantId,userId,saveShopBizRequest);
-            response.setStatus(StatusHelper.success());
-            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
-        }catch (BizException e) {
-            response.setStatus(StatusHelper.failure(e.getErrorCode()));
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }
+            @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) throws Exception {
+        ShopDetailHttpResponse response = new ShopDetailHttpResponse();
+        shopBizServiceValidator.createValid(tenantId, userId, request);
+        SaveShopBizRequest saveShopBizRequest = SaveShopBizRequestConverter.toSaveShopBizRequest(request);
+        ShopBO shopBO = shopBizService.create(tenantId, userId, saveShopBizRequest);
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
+
     @ApiOperation("更新已有门店的信息")
     @PutMapping("/{businessNo}")
+    @RepeatSubmit()
     public ShopDetailHttpResponse update(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo,
-            @ApiParam("门店信息") @Valid @RequestBody UpdateShopHttpRequest request) {
+            @ApiParam("门店信息") @Valid @RequestBody UpdateShopHttpRequest request) throws Exception {
+        shopBizServiceValidator.updateValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
-        try{
-            shopBizServiceValidator.updateValid(tenantId,userId,businessNo,request);
-            UpdateShopBizRequest updateShopBizRequest = UpdateShopBizRequestConverter.toUpdateShopBizRequest(request);
-            ShopBO shopBO = shopBizService.update(tenantId, userId, businessNo, updateShopBizRequest);
-            response.setStatus(StatusHelper.success());
-            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
-        }catch (BizException e) {
-            response.setStatus(StatusHelper.failure(e.getErrorCode()));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }
+        UpdateShopBizRequest updateShopBizRequest = UpdateShopBizRequestConverter.toUpdateShopBizRequest(request);
+        ShopBO shopBO = shopBizService.update(tenantId, userId, businessNo, updateShopBizRequest);
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
 
+    @RepeatSubmit()
     @ApiOperation("开放一个已关闭的门店")
     @PostMapping("/{businessNo}/open")
     public ShopDetailHttpResponse open(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo,
-            @ApiParam("开放信息") @Valid @RequestBody OpenShopHttpRequest request) {
+            @ApiParam("开放信息") @Valid @RequestBody OpenShopHttpRequest request) throws Exception {
+        shopBizServiceValidator.openValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
-        try {
-            shopBizServiceValidator.openValid(tenantId,userId,businessNo,request);
-            OpenShopBizRequest openShopBizRequest = SwitchShopBizRequestConverter.toOpenShopBizRequest(request);
-            ShopBO shopBO = shopBizService.open(tenantId, userId, businessNo, openShopBizRequest);
-            response.setStatus(StatusHelper.success());
-            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
-        }catch (BizException e){
-            response.setStatus(StatusHelper.failure(e.getErrorCode()));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }
+        OpenShopBizRequest openShopBizRequest = SwitchShopBizRequestConverter.toOpenShopBizRequest(request);
+        ShopBO shopBO = shopBizService.open(tenantId, userId, businessNo, openShopBizRequest);
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
 
+    @RepeatSubmit()
     @ApiOperation("关闭一个已开放的门店")
     @PostMapping("/{businessNo}/close")
     public ShopDetailHttpResponse close(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @PathVariable String businessNo,
-            @ApiParam("关闭信息") @Valid @RequestBody CloseShopHttpRequest request) {
+            @ApiParam("关闭信息") @Valid @RequestBody CloseShopHttpRequest request) throws Exception {
+        shopBizServiceValidator.closeValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
-        try{
-            shopBizServiceValidator.closeValid(tenantId,userId,businessNo,request);
-            CloseShopBizRequest closeShopBizRequest = SwitchShopBizRequestConverter.toCloseShopBizRequest(request);
-            ShopBO shopBO = shopBizService.close(tenantId, userId, businessNo, closeShopBizRequest);
-            response.setStatus(StatusHelper.success());
-            response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
-        }catch (BizException e){
-            response.setStatus(StatusHelper.failure(e.getErrorCode()));
-        }catch (NullPointerException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
-        }catch (IllegalStateException e){
-            response.setStatus(StatusHelper.failure(ErrorCode.SYSTEM_ERROR));
-        }
+        CloseShopBizRequest closeShopBizRequest = SwitchShopBizRequestConverter.toCloseShopBizRequest(request);
+        ShopBO shopBO = shopBizService.close(tenantId, userId, businessNo, closeShopBizRequest);
+        response.setStatus(StatusHelper.success());
+        response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
 }

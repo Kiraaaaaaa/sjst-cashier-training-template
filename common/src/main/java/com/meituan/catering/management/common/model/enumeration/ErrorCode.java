@@ -7,7 +7,7 @@ package com.meituan.catering.management.common.model.enumeration;
 public enum ErrorCode implements IError {
     PARAM_ERROR(630001, "参数错误"),
     SYSTEM_ERROR(630002, "系统异常"),
-    ;
+    REPEAT_ERROR(630003, "请勿多次提交");
 
     private final int code;
     private final String message;

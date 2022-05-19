@@ -31,12 +31,13 @@ public class SearchShopDataRequest {
     private List<SortField> sortFields = new LinkedList<>();
 
     public Integer getSkip() {
-        if (pageIndex==null || pageSize==null){
+        if (pageIndex == null || pageSize == null) {
             return null;
         }
-        return(pageIndex-1)*pageSize;
+        return (pageIndex - 1) * pageSize;
     }
-    public Integer getLimit(){
+
+    public Integer getLimit() {
         return pageSize;
     }
 
@@ -52,14 +53,15 @@ public class SearchShopDataRequest {
 
         private Integer enabled;
 
-        public String getKeyWordLike(){
-            if (keyword==null){
+        public String getKeyWordLike() {
+            if (keyword == null) {
                 return null;
             }
-            return "%"+keyword+"%";
+            return "%" + keyword + "%";
         }
 
     }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -67,7 +69,7 @@ public class SearchShopDataRequest {
 
         private String field;
 
-        private String asc ;
+        private String asc;
 
     }
 }

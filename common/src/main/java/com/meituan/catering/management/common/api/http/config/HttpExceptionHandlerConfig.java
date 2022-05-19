@@ -2,6 +2,8 @@ package com.meituan.catering.management.common.api.http.config;
 
 import com.google.common.collect.ImmutableMap;
 import com.meituan.catering.management.common.exception.BizException;
+import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -15,6 +17,7 @@ import java.util.Map;
  *
  * @author dulinfeng
  */
+@Order(4)
 @ControllerAdvice
 public class HttpExceptionHandlerConfig {
 
@@ -27,6 +30,7 @@ public class HttpExceptionHandlerConfig {
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
         return buildGlobalModelAndView(ex, HttpStatus.BAD_REQUEST);
     }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {

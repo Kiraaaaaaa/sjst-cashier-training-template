@@ -1,7 +1,6 @@
 package com.meituan.catering.management.shop.biz.model.converter;
 
 
-
 import com.meituan.catering.management.shop.api.http.model.dto.ShopPageHttpDTO;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 
@@ -18,12 +17,12 @@ import java.util.List;
  */
 public class ShopPageHttpDTOConverter {
 
-    public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize,Integer totalCount,List<ShopBO> shopBOS){
+    public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize, Integer totalCount, List<ShopBO> shopBOS) {
         ShopPageHttpDTO shopPageHttpDTO = new ShopPageHttpDTO();
         shopPageHttpDTO.setPageIndex(pageIndex);
         shopPageHttpDTO.setPageSize(pageSize);
         shopPageHttpDTO.setTotalCount(totalCount);
-        Integer totalPageCount = totalCount%pageSize==0?totalCount/pageSize:totalCount/pageSize+1;
+        Integer totalPageCount = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1;
         shopPageHttpDTO.setTotalPageCount(totalPageCount);
 
         List<ShopPageHttpDTO.Record> records = shopPageHttpDTO.getRecords();
@@ -34,8 +33,8 @@ public class ShopPageHttpDTOConverter {
         return shopPageHttpDTO;
     }
 
-    private static ShopPageHttpDTO.Record buildRecord(ShopBO shopBO){
-        if (shopBO==null){
+    private static ShopPageHttpDTO.Record buildRecord(ShopBO shopBO) {
+        if (shopBO == null) {
             return null;
         }
         ShopPageHttpDTO.Record record = new ShopPageHttpDTO.Record();
