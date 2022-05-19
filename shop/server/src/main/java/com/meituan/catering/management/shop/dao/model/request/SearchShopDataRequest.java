@@ -60,8 +60,6 @@ public class SearchShopDataRequest {
         }
 
     }
-
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -72,7 +70,4 @@ public class SearchShopDataRequest {
         private String asc ;
 
     }
-
-
-
 }

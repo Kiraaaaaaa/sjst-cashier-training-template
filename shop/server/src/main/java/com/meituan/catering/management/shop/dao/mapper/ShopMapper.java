@@ -54,6 +54,13 @@ public interface ShopMapper {
     List<ShopDO> selectByConditional(SearchShopDataRequest request);
 
     /**
+     * 分页查找-查找总条数
+     * @param request
+     * @return
+     */
+    List<ShopDO> selectTotalCount(SearchShopDataRequest request);
+
+    /**
      * 打开一个门店
      * @param request
      * @return

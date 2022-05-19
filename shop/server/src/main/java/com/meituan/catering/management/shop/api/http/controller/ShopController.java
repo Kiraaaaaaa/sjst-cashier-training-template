@@ -59,8 +59,9 @@ public class ShopController {
             shopBizServiceValidator.searchValid(tenantId,userId,request);
             SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
             List<ShopBO> shopBOS = shopBizService.searchByConditional(tenantId, userId, searchShopBizRequest);
+            int totalCount = shopBizService.searchTotalCount(tenantId,userId,searchShopBizRequest);
             response.setStatus(StatusHelper.success());
-            response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(request.getPageIndex(),request.getPageSize(),shopBOS));
+            response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(request.getPageIndex(),request.getPageSize(),totalCount,shopBOS));
         }catch (BizException e) {
             response.setStatus(StatusHelper.failure(e.getErrorCode()));
         }catch (NullPointerException e){

@@ -1,6 +1,7 @@
 package com.meituan.catering.management.common.api.http.config;
 
 import com.google.common.collect.ImmutableMap;
+import com.meituan.catering.management.common.exception.BizException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;

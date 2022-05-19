@@ -93,6 +93,20 @@ public class ShopBizServiceImpl implements ShopBizService {
     }
 
     @Override
+    public int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) {
+        return transactionTemplate.execute(status -> {
+            SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId,userId,searchShopBizRequest);
+            List<ShopDO> shopDOS = shopMapper.selectTotalCount(searchShopDataRequest);
+            int totalCount = shopDOS.size();
+            if (totalCount == 0){
+                status.setRollbackOnly();
+                throw new NullPointerException();
+            }
+            return totalCount;
+        });
+    }
+
+    @Override
     public ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest) throws BizException {
         return transactionTemplate.execute(status ->{
             OpenShopDataRequest openShopDataRequest = SwitchShopDateRequestConverter.toOpenShopDataRequest(tenantId,userId,businessNo, openShopBizRequest);

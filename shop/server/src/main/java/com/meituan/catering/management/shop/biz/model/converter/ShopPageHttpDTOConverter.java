@@ -18,12 +18,12 @@ import java.util.List;
  */
 public class ShopPageHttpDTOConverter {
 
-    public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize,List<ShopBO> shopBOS){
+    public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize,Integer totalCount,List<ShopBO> shopBOS){
         ShopPageHttpDTO shopPageHttpDTO = new ShopPageHttpDTO();
         shopPageHttpDTO.setPageIndex(pageIndex);
         shopPageHttpDTO.setPageSize(pageSize);
-        shopPageHttpDTO.setTotalCount(shopBOS.size());
-        Integer totalPageCount = shopBOS.size()%pageSize==0?shopBOS.size()/pageSize:shopBOS.size()/pageSize+1;
+        shopPageHttpDTO.setTotalCount(totalCount);
+        Integer totalPageCount = totalCount%pageSize==0?totalCount/pageSize:totalCount/pageSize+1;
         shopPageHttpDTO.setTotalPageCount(totalPageCount);
 
         List<ShopPageHttpDTO.Record> records = shopPageHttpDTO.getRecords();

@@ -50,6 +50,7 @@ public interface ShopBizService {
      */
     List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) throws BizException;
 
+    int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
     /**
      * 打开一个门店
      * @param tenantId
