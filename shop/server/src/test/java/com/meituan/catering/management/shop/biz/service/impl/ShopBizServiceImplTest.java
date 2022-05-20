@@ -5,6 +5,7 @@ import com.meituan.catering.management.shop.api.http.model.enumeration.Managemen
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.dao.mapper.ShopMapper;
 import com.meituan.catering.management.shop.dao.model.ShopDO;
+
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -34,6 +35,7 @@ public class ShopBizServiceImplTest {
         //验证
         Assert.assertTrue(Objects.nonNull(shopBO));
     }
+
 
     private ShopDO mockShopDO() {
         ShopDO shopDO = new ShopDO();

@@ -4,7 +4,6 @@ import com.meituan.catering.management.common.helper.StatusHelper;
 import com.meituan.catering.management.common.model.api.BaseResponse;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import org.springframework.core.annotation.Order;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 

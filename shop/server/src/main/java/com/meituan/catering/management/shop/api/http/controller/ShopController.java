@@ -49,7 +49,6 @@ public class ShopController {
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
-    @RepeatSubmit()
     public ShopPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
@@ -67,7 +66,6 @@ public class ShopController {
 
     @ApiOperation("查看单个门店详情")
     @GetMapping("/{businessNo}")
-    @RepeatSubmit()
     public ShopDetailHttpResponse findByBusinessNo(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
