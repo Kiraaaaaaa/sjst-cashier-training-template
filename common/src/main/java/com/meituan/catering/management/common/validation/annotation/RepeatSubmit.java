@@ -10,6 +10,7 @@ import java.lang.annotation.*;
  * @Author:zhangzhefeng 2022/5/19 17:31
  * @ClassName: RepeatSubmit
  */
+
 @Inherited
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
