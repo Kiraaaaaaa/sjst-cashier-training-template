@@ -78,7 +78,7 @@ public class NoRepeatSubmitAspect {
         for (Object arg : args) {
             sb.append(toString(arg));
         }
-        return DigestUtil.sha1Hex(sb.toString());
+        return sb.toString();
     }
 
     private String toString(Object arg) {

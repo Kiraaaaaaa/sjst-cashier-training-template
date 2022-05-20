@@ -23,6 +23,6 @@ public @interface RepeatSubmit {
     /**
      * 防重复操作过期时间（借助redis实现限时控制）
      */
-    long expireSeconds() default 10;
+    long expireSeconds() default 5;
 
 }
