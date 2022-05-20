@@ -1,0 +1,67 @@
+.header .ant-layout-header{
+    width: 100%;
+    display: -webkit-inline-box;
+    background-color: white;
+    padding: 0px;
+} 
+.header img{
+    width: 14%;
+    margin-left: -8%;
+}
+.sider-footer .ant-layout-sider-trigger{
+    background-color: white;
+    color: black;
+}
+.ant-menu {
+    width: 50%;
+}
+.ant-menu-item {
+    font-size: 140%;
+}
+.ant-layout-header .ant-menu {
+    margin-left: -6%;
+}
+.ant-menu-inline .ant-menu-item{
+    height: 10%;
+}
+.sider-li .ant-menu-inline .ant-menu-item {
+    height: 70px;
+}
+.sider-li .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    color: black;
+    font-size:x-large;
+    background-color: rgb(255, 189, 0);
+}
+.sider-li .ant-menu-inline {
+    width: 120%;
+}
+.sider-li .ant-menu-inline .ant-menu-item:after{
+    border-right: 3px solid rgb(255, 189, 0);
+}
+.header .ant-menu-horizontal:not(.ant-menu-dark) .ant-menu-item-selected{
+    color: rgb(255, 189, 0);
+}
+
+.header .ant-menu-horizontal:not(.ant-menu-dark) .ant-menu-item-active:hover{
+    color: rgb(255, 189, 0);
+}
+.header .ant-menu-horizontal:not(.ant-menu-dark)>.ant-menu-item-selected:after {
+    border-bottom: 4px solid rgb(255, 189, 0);
+    border-radius: 10px;
+}
+.header .ant-menu-horizontal:not(.ant-menu-dark)>.ant-menu-item-selected:hover:after {
+    border-bottom: 4px solid rgb(255, 189, 0);
+    border-radius: 10px;
+}
+.header .ant-menu-horizontal:not(.ant-menu-dark)>.ant-menu-item:hover:after {
+    border-bottom: 4px solid rgb(255, 189, 0);
+    border-radius: 10px;
+}
+.sider-li .ant-menu-item-active {
+    color: white !important;
+    background-color: rgb(255, 189, 0);
+}
+/*取消sider默认与伸缩组件的间隔*/
+.ant-layout-sider-has-trigger {
+    padding-bottom: 0px !important;
+}
