@@ -1,5 +1,7 @@
 package com.meituan.catering.management.product.api.http.controller;
 
+import com.meituan.catering.management.common.helper.StatusHelper;
+import com.meituan.catering.management.product.api.http.model.dto.ProductDetailHttpDTO;
 import com.meituan.catering.management.product.api.http.model.request.CreateProductHttpRequest;
 import com.meituan.catering.management.product.api.http.model.request.DisableProductHttpRequest;
 import com.meituan.catering.management.product.api.http.model.request.EnableProductHttpRequest;
@@ -7,6 +9,13 @@ import com.meituan.catering.management.product.api.http.model.request.SearchProd
 import com.meituan.catering.management.product.api.http.model.request.UpdateProductHttpRequest;
 import com.meituan.catering.management.product.api.http.model.response.ProductDetailHttpResponse;
 import com.meituan.catering.management.product.api.http.model.response.ProductPageHttpResponse;
+import com.meituan.catering.management.product.biz.model.ProductBO;
+import com.meituan.catering.management.product.biz.model.converter.CreateProductBizRequestConverter;
+import com.meituan.catering.management.product.biz.model.converter.ProductDetailHttpDTOConverter;
+import com.meituan.catering.management.product.biz.model.converter.UpdateProductBizRequestConverter;
+import com.meituan.catering.management.product.biz.model.request.CreateProductBizRequest;
+import com.meituan.catering.management.product.biz.model.request.UpdateProductBizRequest;
+import com.meituan.catering.management.product.biz.service.ProductBizService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -31,6 +41,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/product")
 public class ProductController {
+
+    @Resource
+    private ProductBizService productBizService;
 
     @ApiOperation("分页搜索商品的概要信息列表")
     @PostMapping("/search")
@@ -47,17 +60,29 @@ public class ProductController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id) {
-        return null;
+        ProductDetailHttpResponse productDetailHttpResponse = new ProductDetailHttpResponse();
+        ProductBO byId = productBizService.findById(tenantId, id);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        productDetailHttpResponse.setStatus(StatusHelper.success());
+        productDetailHttpResponse.setData(productDetailHttpDTO);
+        return productDetailHttpResponse;
     }
 
 
     @ApiOperation("创建新商品")
-    @PostMapping
+    @PostMapping("/create")
     public ProductDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("创建请求") @Valid @RequestBody CreateProductHttpRequest request) {
-        return null;
+        ProductDetailHttpResponse productDetailHttpResponse = new ProductDetailHttpResponse();
+        CreateProductBizRequest createProductBizRequest = CreateProductBizRequestConverter.toCreateProductBizRequest(request);
+        Long id = productBizService.insert(tenantId, userId, createProductBizRequest);
+        ProductBO byId = productBizService.findById(tenantId, id);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        productDetailHttpResponse.setStatus(StatusHelper.success());
+        productDetailHttpResponse.setData(productDetailHttpDTO);
+        return productDetailHttpResponse;
     }
 
     @ApiOperation("更新已有商品的信息")
@@ -67,7 +92,14 @@ public class ProductController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id,
             @ApiParam("商品信息") @Valid @RequestBody UpdateProductHttpRequest request) {
-        return null;
+        ProductDetailHttpResponse productDetailHttpResponse = new ProductDetailHttpResponse();
+        UpdateProductBizRequest updateProductBizRequest = UpdateProductBizRequestConverter.toUpdateProductBizRequest(request);
+        Long update = productBizService.update(tenantId, userId, id, updateProductBizRequest);
+        ProductBO byId = productBizService.findById(tenantId, update);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        productDetailHttpResponse.setStatus(StatusHelper.success());
+        productDetailHttpResponse.setData(productDetailHttpDTO);
+        return productDetailHttpResponse;
     }
 
 

@@ -2,4 +2,56 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meituan.catering.management.product.dao.mapper.ProductAccessoryMapper">
 
+    <resultMap id="BaseResultMap" type="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="product_id" jdbcType="BIGINT" property="productId"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <result column="unit_price" jdbcType="DECIMAL" property="unitPrice"/>
+        <result column="unit_of_measure" jdbcType="VARCHAR" property="unitOfMeasure"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,product_id
+        ,tenant_id
+        ,name
+        ,group_name
+        ,unit_price
+        ,unit_of_measure
+    </sql>
+
+    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
+        insert
+        into `product_accessory`(<include refid="Base_Column_List"/>)
+        values
+        <foreach collection="productAccessoryDOS"
+                 item="productAccessory" separator="," >
+            (
+            0
+            ,#{productAccessory.productId}
+            ,#{productAccessory.tenantId}
+            ,#{productAccessory.name}
+            ,#{productAccessory.groupName}
+            ,#{productAccessory.unitPrice}
+            ,#{productAccessory.unitOfMeasure}
+            )
+        </foreach>
+    </insert>
+    <delete id="deleteByProductId">
+        delete from `product_accessory`
+        where `product_id` = #{productId}
+        and `tenant_id` = #{tenantId}
+    </delete>
+    <select id="findAllByProductId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `product_accessory`
+        where `product_id` = #{productId}
+        and `tenant_id` = #{tenantId}
+    </select>
+    <select id="findAllByProductIds" resultMap="BaseResultMap"></select>
+
+
 </mapper>

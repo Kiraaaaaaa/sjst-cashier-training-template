@@ -15,18 +15,39 @@ import java.math.BigDecimal;
 @ToString(callSuper = true)
 public class ProductDO extends BaseDO {
 
+    /**
+     * 商品名
+     */
     private String name;
 
+    /**
+     * 单位金额
+     */
     private BigDecimal unitPrice;
 
+    /**
+     * 单位
+     */
     private String unitOfMeasure;
 
-    private BigDecimal minSaleQuantity;
+    /**
+     * 最小销售数量
+     */
+    private BigDecimal minSalesQuantity;
 
+    /**
+     * 每次增加数量
+     */
     private BigDecimal increaseSalesQuantity;
 
+    /**
+     * 商品介绍
+     */
     private String description;
 
+    /**
+     * 商品启停状态
+     */
     private Boolean enabled;
 
 

@@ -33,10 +33,10 @@ public interface ProductAccessoryMapper {
     /**
      * 插入新的商品加料DO实例
      *
-     * @param productAccessoryDO 新的商品加料DO实例
+     * @param productAccessoryDOS 新的商品加料DO实例的列表
      * @return 插入条数
      */
-    int insert(ProductAccessoryDO productAccessoryDO);
+    int insert(List<ProductAccessoryDO> productAccessoryDOS);
 
     /**
      * 根据产品ID删除商品加料
@@ -46,4 +46,6 @@ public interface ProductAccessoryMapper {
      * @return 删除的条数
      */
     int deleteByProductId(Long tenantId, Long productId);
+
+
 }

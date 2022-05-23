@@ -1,26 +1,21 @@
-package com.meituan.catering.management.product.biz.model;
+package com.meituan.catering.management.product.biz.model.request;
 
-import com.meituan.catering.management.common.model.biz.BaseBO;
-import com.meituan.catering.management.product.api.http.model.dto.ProductDetailHttpDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 商品BO定义
+ * <p>
+ *
+ * <p>
+ *
+ * @Author:zhangzhefeng 2022/5/22 13:08
+ * @ClassName: SaveProductBizRequest
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class ProductBO extends BaseBO {
-
-    private Boolean enabled;
+public class SaveProductBizRequest {
 
     private String name;
 
@@ -43,12 +38,10 @@ public class ProductBO extends BaseBO {
 
         private String name;
 
-        private final List<MethodGroup.Option> options = new LinkedList<>();
+        private final List<Option> options = new LinkedList<>();
 
         @Data
         public static class Option {
-
-            private Long id;
 
             private String name;
 
@@ -60,12 +53,11 @@ public class ProductBO extends BaseBO {
 
         private String name;
 
-        private final List<AccessoryGroup.Option> options = new LinkedList<>();
+        private final List<Option> options = new LinkedList<>();
+
 
         @Data
         public static class Option {
-
-            private Long id;
 
             private String name;
 
@@ -75,5 +67,4 @@ public class ProductBO extends BaseBO {
 
         }
     }
-
 }

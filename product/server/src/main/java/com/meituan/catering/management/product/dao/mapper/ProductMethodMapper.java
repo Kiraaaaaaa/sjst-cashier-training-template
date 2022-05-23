@@ -31,12 +31,12 @@ public interface ProductMethodMapper {
     List<ProductMethodDO> findAllByProductIds(Long tenantId, Set<Long> productIds);
 
     /**
-     * 插入新的商品做法DO实例
+     * 插入新的商品做法DO实例的列表
      *
-     * @param productMethodDO 新的商品做法DO实例
+     * @param productMethodDOS 新的商品做法DO实例的列表
      * @return 插入条数
      */
-    int insert(ProductMethodDO productMethodDO);
+    int insert(List<ProductMethodDO> productMethodDOS);
 
     /**
      * 根据产品ID删除商品做法
@@ -46,5 +46,6 @@ public interface ProductMethodMapper {
      * @return 删除的条数
      */
     int deleteByProductId(Long tenantId, Long productId);
+
 
 }
