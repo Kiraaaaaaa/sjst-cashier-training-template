@@ -1,7 +1,6 @@
 package com.meituan.catering.management.product.api.http.controller;
 
 import com.meituan.catering.management.common.helper.StatusHelper;
-import com.meituan.catering.management.common.validation.annotation.SqlCheck;
 import com.meituan.catering.management.product.api.http.model.dto.ProductDetailHttpDTO;
 import com.meituan.catering.management.product.api.http.model.dto.ProductPageHttpDTO;
 import com.meituan.catering.management.product.api.http.model.request.CreateProductHttpRequest;
@@ -49,13 +48,16 @@ public class ProductController {
     @Resource
     private ProductBizService productBizService;
 
+    @Resource
+    private ProductBizServiceValidator validator;
+
     @ApiOperation("分页搜索商品的概要信息列表")
     @PostMapping("/search")
     public ProductPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("搜索条件") @Valid @RequestBody SearchProductHttpRequest request) {
-        ProductBizServiceValidator.baseValid(tenantId,userId);
+        validator.baseValid(tenantId,userId);
         ProductPageHttpResponse response = new ProductPageHttpResponse();
         SearchProductBizRequest searchProductBizRequest = SearchProductBizRequestConverter.toSearchProductBizRequest(tenantId, userId, request);
         SearchProductBizResponse searchProductBizResponse = productBizService.searchForPage(searchProductBizRequest);
@@ -71,7 +73,7 @@ public class ProductController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id) {
-        ProductBizServiceValidator.baseValid(tenantId,userId);
+        validator.baseValid(tenantId,userId);
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         ProductBO byId = productBizService.findById(tenantId, id);
         ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
@@ -86,7 +88,7 @@ public class ProductController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("创建请求") @Valid @RequestBody CreateProductHttpRequest request) {
-        ProductBizServiceValidator.baseValid(tenantId,userId);
+        validator.baseValid(tenantId,userId);
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         CreateProductBizRequest createProductBizRequest = CreateProductBizRequestConverter.toCreateProductBizRequest(request);
         Long id = productBizService.insert(tenantId, userId, createProductBizRequest);
@@ -104,7 +106,7 @@ public class ProductController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id,
             @ApiParam("商品信息") @Valid @RequestBody UpdateProductHttpRequest request) {
-        ProductBizServiceValidator.versionValid(tenantId,userId,id,request.getVersion());
+        validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         UpdateProductBizRequest updateProductBizRequest = UpdateProductBizRequestConverter.toUpdateProductBizRequest(request);
         Long update = productBizService.update(tenantId, userId, id, updateProductBizRequest);
@@ -122,7 +124,7 @@ public class ProductController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id,
             @ApiParam("上架信息") @Valid @RequestBody EnableProductHttpRequest request) {
-        ProductBizServiceValidator.versionValid(tenantId,userId,id,request.getVersion());
+        validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         SwitchProductBizRequest switchProductBizRequest = SwitchProductBizRequestConverter.toSwitchProductBizRequest(request);
         Long enabled = productBizService.enabled(tenantId, userId, id, switchProductBizRequest);
@@ -140,7 +142,7 @@ public class ProductController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("商品ID") @PathVariable Long id,
             @ApiParam("下架信息") @Valid @RequestBody DisableProductHttpRequest request) {
-        ProductBizServiceValidator.versionValid(tenantId,userId,id,request.getVersion());
+        validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         SwitchProductBizRequest switchProductBizRequest = SwitchProductBizRequestConverter.toSwitchProductBizRequest(request);
         Long disabled = productBizService.disabled(tenantId, userId, id, switchProductBizRequest);

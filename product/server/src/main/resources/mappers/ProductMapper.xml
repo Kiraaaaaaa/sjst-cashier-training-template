@@ -59,11 +59,14 @@
         )
     </insert>
 
-    <update id="updateSelective">
+    <update id="updateSelective" parameterType="com.meituan.catering.management.product.dao.model.ProductDO">
         update `product`
             <set>
                 `last_modified_by` = #{lastModifiedBy}
                 ,`last_modified_at` = #{lastModifiedAt}
+                <if test="name!=null">
+                    ,`name` = #{name}
+                </if>
                 <if test="unitPrice!=null">
                     ,`unit_price` = #{unitPrice}
                 </if>
@@ -143,10 +146,6 @@
             limit #{limit}
         </if>
     </select>
-
-    <select id="findAll" resultType="com.meituan.catering.management.product.dao.model.ProductDO"></select>
-
-    <select id="findByIds" resultType="com.meituan.catering.management.product.dao.model.ProductDO"></select>
 
     <select id="findById" resultMap="BaseResultMap">
         select

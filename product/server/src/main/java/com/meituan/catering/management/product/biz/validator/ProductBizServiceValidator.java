@@ -7,7 +7,6 @@ import com.meituan.catering.management.product.dao.model.ProductDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 
 /**
  * <p>
@@ -20,20 +19,22 @@ import javax.annotation.Resource;
 @Component
 public class ProductBizServiceValidator {
     @Autowired
-    private static ProductMapper productMapper;
+    private ProductMapper productMapper;
 
-    public static void baseValid(Long tenantId, Long userId) throws BizException {
+    public void baseValid(Long tenantId, Long userId) throws BizException {
         if (userId < 0 || tenantId < 0) {
             throw new BizException(ErrorCode.PARAM_ERROR);
         }
     }
 
-    public static void versionValid(Long tenantId, Long userId, Long id, Integer version){
+    public void versionValid(Long tenantId, Long userId, Long id, Integer version){
         if (userId < 0 || tenantId < 0) {
             throw new BizException(ErrorCode.PARAM_ERROR);
         }
-
         ProductDO productDO = productMapper.findById(tenantId, id);
+        if (productDO == null){
+            throw new BizException(ErrorCode.UPDATE_ERROR);
+        }
         Integer versionDO = productDO.getVersion();
         if (!versionDO.equals(version)){
             throw new BizException(ErrorCode.SYSTEM_ERROR);

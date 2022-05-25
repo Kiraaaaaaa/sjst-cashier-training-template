@@ -94,7 +94,7 @@ public class ProductBizServiceImpl implements ProductBizService {
             }
             List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantid, id, request);
             methodMapper.deleteByProductId(tenantid,id);
-            if (accessoryDOS.size()!=0){
+            if (methodDOS.size()!=0){
                 methodMapper.insert(methodDOS);
             }
             return id;

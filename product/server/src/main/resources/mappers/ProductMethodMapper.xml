@@ -26,7 +26,7 @@
             values
             <foreach collection="productMethodDOS" item="productMethod"  separator=",">
                 (
-                 0
+                 null
                 ,#{productMethod.productId}
                 ,#{productMethod.tenantId}
                 ,#{productMethod.name}
