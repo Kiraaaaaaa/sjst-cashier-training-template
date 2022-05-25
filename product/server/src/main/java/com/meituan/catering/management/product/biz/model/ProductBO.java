@@ -43,7 +43,7 @@ public class ProductBO extends BaseBO {
 
         private String name;
 
-        private final List<MethodGroup.Option> options = new LinkedList<>();
+        private final List<Option> options = new LinkedList<>();
 
         @Data
         public static class Option {
@@ -60,7 +60,7 @@ public class ProductBO extends BaseBO {
 
         private String name;
 
-        private final List<AccessoryGroup.Option> options = new LinkedList<>();
+        private final List<Option> options = new LinkedList<>();
 
         @Data
         public static class Option {

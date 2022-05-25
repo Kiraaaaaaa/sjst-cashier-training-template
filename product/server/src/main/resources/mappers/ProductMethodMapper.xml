@@ -42,7 +42,17 @@
         and `tenant_id` = #{tenantId}
     </delete>
 
-    <select id="findAllByProductIds" resultMap="BaseResultMap"></select>
+    <select id="findAllByProductIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `product_method`
+        where `product_id` in (
+        <foreach collection="productIds" item="productId" separator=",">
+            #{productId}
+        </foreach>
+        )
+        and `tenant_id` = #{tenantId}
+    </select>
 
     <select id="findAllByProductId" resultMap="BaseResultMap">
         select

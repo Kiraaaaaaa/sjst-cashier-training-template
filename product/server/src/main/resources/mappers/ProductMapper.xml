@@ -58,16 +58,30 @@
         ,1
         )
     </insert>
+
     <update id="updateSelective">
         update `product`
             <set>
                 `last_modified_by` = #{lastModifiedBy}
                 ,`last_modified_at` = #{lastModifiedAt}
-                ,`unit_price` = #{unitPrice}
-                ,`unit_of_measure` = #{unitOfMeasure}
-                ,`min_sales_quantity` = #{minSalesQuantity}
-                ,`increase_sales_quantity` = #{increaseSalesQuantity}
-                ,`description` = #{description}
+                <if test="unitPrice!=null">
+                    ,`unit_price` = #{unitPrice}
+                </if>
+                <if test="unitOfMeasure!=null">
+                    ,`unit_of_measure` = #{unitOfMeasure}
+                </if>
+                <if test="minSalesQuantity!=null">
+                    ,`min_sales_quantity` = #{minSalesQuantity}
+                </if>
+                <if test="increaseSalesQuantity!=null">
+                    ,`increase_sales_quantity` = #{increaseSalesQuantity}
+                </if>
+                <if test="description!=null">
+                    ,`description` = #{description}
+                </if>
+                <if test="enabled!=null">
+                    ,`enabled` = #{enabled}
+                </if>
                 ,`version` = #{version}+1
             </set>
             <where>
@@ -76,10 +90,64 @@
                 and `version` = #{version}
             </where>
     </update>
-    <update id="changeEnabledById"></update>
-    <select id="searchForPage" resultType="com.meituan.catering.management.product.dao.model.ProductDO"></select>
+
+    <select id="searchForPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `product`
+        <where>
+            <if test="userId != null">
+                `created_by` = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                and `name` like #{condition.nameLike}
+            </if>
+            <if test="condition.enabled != null">
+                and `enabled` = #{condition.enabled}
+            </if>
+            <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
+                and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+            </if>
+            and `id`>=(select `id` from `product`
+            <where>
+                <if test="userId != null">
+                    `created_by` = #{userId}
+                </if>
+                <if test="tenantId != null">
+                    and `tenant_id` = #{tenantId}
+                </if>
+                <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                    and `name` like #{condition.nameLike}
+                </if>
+                <if test="condition.enabled != null">
+                    and `enabled` = #{condition.enabled}
+                </if>
+                <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
+                    and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+                </if>
+            </where>
+            <if test="pageIndex!=null and pageSize!=null">
+                limit #{skip},1
+            </if>)
+        </where>
+        <if test="sortFields.size != 0">
+            order by
+            <foreach collection="sortFields" item="sortField" separator="," >
+                ${sortField.field} ${sortField.asc}
+            </foreach>
+        </if>
+        <if test="pageIndex != null and pageSize!=null">
+            limit #{limit}
+        </if>
+    </select>
+
     <select id="findAll" resultType="com.meituan.catering.management.product.dao.model.ProductDO"></select>
+
     <select id="findByIds" resultType="com.meituan.catering.management.product.dao.model.ProductDO"></select>
+
     <select id="findById" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -87,7 +155,50 @@
         where id = #{id}
         and `tenant_id` = #{tenantId}
     </select>
-    <select id="countForPage" resultType="java.lang.Integer"></select>
+
+    <select id="countForPage" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `product`
+        <where>
+            <if test="userId != null">
+                `created_by` = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                and `name` like #{condition.nameLike}
+            </if>
+            <if test="condition.enabled != null">
+                and `enabled` = #{condition.enabled}
+            </if>
+            <if test="condition.unitPrice.from and condition.unitPrice.to != null">
+                and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+            </if>
+            and `id`>=(select `id` from `product`
+            <where>
+                <if test="userId != null">
+                    `created_by` = #{userId}
+                </if>
+                <if test="tenantId != null">
+                    and `tenant_id` = #{tenantId}
+                </if>
+                <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                    and `name` like #{condition.nameLike}
+                </if>
+                <if test="condition.enabled != null">
+                    and `enabled` = #{condition.enabled}
+                </if>
+                <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
+                    and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+                </if>
+            </where>
+            <if test="pageIndex!=null and pageSize!=null">
+                limit #{skip},1
+            </if>)
+        </where>
+    </select>
 
 
 </mapper>

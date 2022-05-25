@@ -1,6 +1,7 @@
 package com.meituan.catering.management.product.dao.converter;
 
 import com.meituan.catering.management.product.biz.model.request.CreateProductBizRequest;
+import com.meituan.catering.management.product.biz.model.request.SwitchProductBizRequest;
 import com.meituan.catering.management.product.biz.model.request.UpdateProductBizRequest;
 import com.meituan.catering.management.product.dao.model.ProductDO;
 
@@ -38,7 +39,6 @@ public class ProductDOConverter {
 
     public static ProductDO toProductDO(Long userId, Long tenantId, CreateProductBizRequest request){
 
-
         if (request == null){
             return null;
         }
@@ -60,4 +60,17 @@ public class ProductDOConverter {
         return productDO;
     }
 
+    public static ProductDO toProductDO(Long userId, Long tenantId, Long id,SwitchProductBizRequest request){
+        if (request == null) {
+            return null;
+        }
+        ProductDO productDO = new ProductDO();
+        productDO.setId(id);
+        productDO.setEnabled(request.getEnabled());
+        productDO.setVersion(request.getVersion());
+        productDO.setLastModifiedAt(new Date());
+        productDO.setLastModifiedBy(userId);
+        productDO.setTenantId(tenantId);
+        return productDO;
+    }
 }

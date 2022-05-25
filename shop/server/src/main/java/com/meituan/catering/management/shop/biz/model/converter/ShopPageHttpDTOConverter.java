@@ -18,6 +18,9 @@ import java.util.List;
 public class ShopPageHttpDTOConverter {
 
     public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize, Integer totalCount, List<ShopBO> shopBOS) {
+        if (shopBOS == null || shopBOS.size()==0){
+            return null;
+        }
         ShopPageHttpDTO shopPageHttpDTO = new ShopPageHttpDTO();
         shopPageHttpDTO.setPageIndex(pageIndex);
         shopPageHttpDTO.setPageSize(pageSize);

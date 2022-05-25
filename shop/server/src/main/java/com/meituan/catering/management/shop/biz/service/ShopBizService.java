@@ -32,7 +32,7 @@ public interface ShopBizService {
      * @param saveShopBizRequest
      * @return
      */
-    ShopBO create(Long tenantId, Long userId, SaveShopBizRequest saveShopBizRequest) throws BizException;
+    ShopBO create(Long tenantId, Long userId, SaveShopBizRequest saveShopBizRequest);
 
     /**
      * 跟新门店信息
@@ -43,7 +43,7 @@ public interface ShopBizService {
      * @param updateShopBizRequest
      * @return
      */
-    ShopBO update(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) throws BizException;
+    ShopBO update(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest);
 
     /**
      * 分页查找
@@ -53,7 +53,7 @@ public interface ShopBizService {
      * @param searchShopBizRequest
      * @return
      */
-    List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) throws BizException;
+    List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
 
     int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
 
@@ -66,7 +66,7 @@ public interface ShopBizService {
      * @param openShopBizRequest
      * @return
      */
-    ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest) throws BizException;
+    ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest);
 
     /**
      * 关闭一个门店
@@ -77,5 +77,5 @@ public interface ShopBizService {
      * @param closeShopBizRequest
      * @return
      */
-    ShopBO close(Long tenantId, Long userId, String businessNo, CloseShopBizRequest closeShopBizRequest) throws BizException;
+    ShopBO close(Long tenantId, Long userId, String businessNo, CloseShopBizRequest closeShopBizRequest);
 }

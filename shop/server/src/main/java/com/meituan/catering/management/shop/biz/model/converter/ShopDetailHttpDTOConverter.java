@@ -11,6 +11,9 @@ import com.meituan.catering.management.shop.biz.model.ShopBO;
 public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter {
 
     public static ShopDetailHttpDTO toShopDetailHttpResponse(ShopBO shopBO) {
+        if (shopBO == null){
+            return null;
+        }
         ShopDetailHttpDTO shopDetailHttpResponse = new ShopDetailHttpDTO();
         shopDetailHttpResponse.setId(shopBO.getId());
         shopDetailHttpResponse.setTenantId(shopBO.getTenantId());
@@ -26,7 +29,6 @@ public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter {
         shopDetailHttpResponse.setEnabled(shopBO.getEnabled());
         shopDetailHttpResponse.setVersion(shopBO.getVersion());
         return shopDetailHttpResponse;
-
 
     }
 

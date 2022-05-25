@@ -1,17 +1,34 @@
-package com.meituan.catering.management.product.dao.model.request;
-import com.meituan.catering.management.common.utils.SearchLikeKeyWord;
-import lombok.Data;
+package com.meituan.catering.management.product.biz.model.request;
 
+import com.meituan.catering.management.product.api.http.model.request.SearchProductHttpRequest;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Boolean.FALSE;
 
 /**
- * 搜索商品的查询条件
+ * <p>
+ *
+ * <p>
+ *
+ * @Author:zhangzhefeng 2022/5/24 11:40
+ * @ClassName: SearchProductBizRequest
  */
 @Data
-public class SearchProductDataRequest {
+public class SearchProductBizRequest {
 
     private Long tenantId;
 
@@ -22,17 +39,6 @@ public class SearchProductDataRequest {
     private Integer pageSize;
 
     private final Condition condition = new Condition();
-
-    public Integer getSkip(){
-        if (pageIndex==null || pageSize==null){
-            return null;
-        }
-        return (pageIndex-1)*pageSize;
-    }
-    public Integer getLimit() {
-        return pageSize;
-    }
-
 
     @Data
     public static class Condition {
@@ -45,14 +51,6 @@ public class SearchProductDataRequest {
 
         private Boolean enabled;
 
-        public String getNameLike() {
-            if (name == null) {
-                return null;
-            }
-            String newName = SearchLikeKeyWord.keyUtil(name);
-            return "%" + newName + "%";
-        }
-
     }
 
     private final List<SortField> sortFields = new LinkedList<>();
@@ -62,7 +60,7 @@ public class SearchProductDataRequest {
 
         private String field;
 
-        private String asc;
+        private Boolean asc;
 
     }
 
@@ -74,5 +72,4 @@ public class SearchProductDataRequest {
         private BigDecimal to;
 
     }
-
 }

@@ -2,6 +2,7 @@ package com.meituan.catering.management.shop.api.http.controller;
 
 import com.meituan.catering.management.common.helper.StatusHelper;
 import com.meituan.catering.management.common.validation.annotation.RepeatSubmit;
+import com.meituan.catering.management.common.validation.annotation.SqlCheck;
 import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
 import com.meituan.catering.management.shop.api.http.model.request.CloseShopHttpRequest;
 import com.meituan.catering.management.shop.api.http.model.request.CreateShopHttpRequest;
@@ -49,10 +50,11 @@ public class ShopController {
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
+    @SqlCheck
     public ShopPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) throws Exception {
+            @ApiParam("搜索条件") @Valid @RequestBody  SearchShopHttpRequest request) throws Exception {
         shopBizServiceValidator.searchByValid(tenantId, userId, request);
         ShopPageHttpResponse response = new ShopPageHttpResponse();
         SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
@@ -120,6 +122,7 @@ public class ShopController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo,
             @ApiParam("开放信息") @Valid @RequestBody OpenShopHttpRequest request) throws Exception {
+        //todo:verson
         shopBizServiceValidator.openValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         OpenShopBizRequest openShopBizRequest = SwitchShopBizRequestConverter.toOpenShopBizRequest(request);

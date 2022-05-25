@@ -3,6 +3,7 @@ package com.meituan.catering.management.common.api.http.aspect;
 import cn.hutool.crypto.digest.DigestUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.ImmutableMap;
+import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.common.validation.annotation.RepeatSubmit;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class NoRepeatSubmitAspect {
     }
 
     @Around("preventDuplication()")
-    public Object around(ProceedingJoinPoint joinPoint) throws Exception {
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
@@ -60,14 +61,9 @@ public class NoRepeatSubmitAspect {
         if (!redisTemplate.hasKey(redisKey)) {
             redisTemplate.opsForValue()
                     .set(redisKey, redisValue, annotation.expireSeconds(), TimeUnit.SECONDS);
-            try {
                 return joinPoint.proceed();
-            } catch (Throwable throwable) {
-                redisTemplate.delete(redisKey);
-                throw new RuntimeException(throwable);
-            }
         } else {
-            throw new RuntimeException();
+            throw new BizException(ErrorCode.REPEAT_ERROR);
         }
 
 

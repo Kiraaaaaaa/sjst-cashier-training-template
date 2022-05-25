@@ -1,5 +1,6 @@
 package com.meituan.catering.management.product.biz.model.converter;
 
+import com.meituan.catering.management.product.api.http.model.request.EnableProductHttpRequest;
 import com.meituan.catering.management.product.api.http.model.request.UpdateProductHttpRequest;
 import com.meituan.catering.management.product.biz.model.request.UpdateProductBizRequest;
 
@@ -35,6 +36,11 @@ public class UpdateProductBizRequestConverter {
             updateProductBizRequest.getMethodGroups().add(toMethodGroupBiz(methodGroup));
         }
 
+        return updateProductBizRequest;
+    }
+    public UpdateProductBizRequest toUpdateProductBizRequest(EnableProductHttpRequest request){
+        UpdateProductBizRequest updateProductBizRequest = new UpdateProductBizRequest();
+        updateProductBizRequest.setVersion(request.getVersion());
         return updateProductBizRequest;
     }
 

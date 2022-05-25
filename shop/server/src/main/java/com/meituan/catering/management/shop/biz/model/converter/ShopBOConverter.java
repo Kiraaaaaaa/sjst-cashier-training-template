@@ -9,6 +9,9 @@ import com.meituan.catering.management.shop.dao.model.ShopDO;
  */
 public class ShopBOConverter {
     public static ShopBO toShopBO(ShopDO shopDO) {
+        if (shopDO == null){
+            return null;
+        }
         ShopBO shopBO = new ShopBO();
         shopBO.setBusinessNo(shopDO.getBusinessNo());
         shopBO.setName(shopDO.getName());

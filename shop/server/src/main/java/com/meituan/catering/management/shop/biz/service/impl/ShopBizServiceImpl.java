@@ -16,7 +16,6 @@ import com.meituan.catering.management.shop.dao.model.request.OpenShopDataReques
 import com.meituan.catering.management.shop.dao.model.request.SearchShopDataRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -38,10 +37,6 @@ public class ShopBizServiceImpl implements ShopBizService {
     public ShopBO findByBusinessNo(Long tenantId, Long userId, String businessNo) {
         return transactionTemplate.execute(status -> {
             ShopDO shopDO = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
-            if (shopDO == null) {
-                status.setRollbackOnly();
-                throw new NullPointerException();
-            }
             return ShopBOConverter.toShopBO(shopDO);
         });
     }
@@ -53,7 +48,7 @@ public class ShopBizServiceImpl implements ShopBizService {
             int id = shopMapper.insert(shopDO);
             if (id == 0) {
                 status.setRollbackOnly();
-                throw new NullPointerException();
+                throw new BizException(ErrorCode.PARAM_ERROR);
             }
             ShopDO shopDOLater = shopMapper.selectById(shopDO.getId());
             return ShopBOConverter.toShopBO(shopDOLater);
@@ -61,13 +56,13 @@ public class ShopBizServiceImpl implements ShopBizService {
     }
 
     @Override
-    public ShopBO update(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) throws BizException {
+    public ShopBO update(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) {
         return transactionTemplate.execute(status -> {
             ShopDO shopDO = ShopDOConverter.toShopDO(tenantId, userId, businessNo, updateShopBizRequest);
             int id = shopMapper.update(shopDO);
             if (id == 0) {
                 status.setRollbackOnly();
-                throw new NullPointerException();
+                throw new BizException(ErrorCode.UPDATE_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);
@@ -80,10 +75,6 @@ public class ShopBizServiceImpl implements ShopBizService {
             List<ShopBO> shopBOS = new ArrayList<>();
             SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId, userId, searchShopBizRequest);
             List<ShopDO> shopDOS = shopMapper.selectByConditional(searchShopDataRequest);
-            if (shopDOS == null) {
-                status.setRollbackOnly();
-                throw new NullPointerException();
-            }
             for (ShopDO shopDO : shopDOS) {
                 ShopBO shopBO = ShopBOConverter.toShopBO(shopDO);
                 shopBOS.add(shopBO);
@@ -98,10 +89,6 @@ public class ShopBizServiceImpl implements ShopBizService {
             SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId, userId, searchShopBizRequest);
             List<ShopDO> shopDOS = shopMapper.selectTotalCount(searchShopDataRequest);
             int totalCount = shopDOS.size();
-            if (totalCount == 0) {
-                status.setRollbackOnly();
-                throw new NullPointerException();
-            }
             return totalCount;
         });
     }
@@ -110,10 +97,11 @@ public class ShopBizServiceImpl implements ShopBizService {
     public ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest) throws BizException {
         return transactionTemplate.execute(status -> {
             OpenShopDataRequest openShopDataRequest = SwitchShopDateRequestConverter.toOpenShopDataRequest(tenantId, userId, businessNo, openShopBizRequest);
+            //todo:合并
             int id = shopMapper.open(openShopDataRequest);
             if (id == 0) {
                 status.setRollbackOnly();
-                throw new NullPointerException();
+                throw new BizException(ErrorCode.OPEN_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);
@@ -127,7 +115,7 @@ public class ShopBizServiceImpl implements ShopBizService {
             int id = shopMapper.close(closeShopDataRequest);
             if (id == 0) {
                 status.setRollbackOnly();
-                throw new NullPointerException();
+                throw new BizException(ErrorCode.CLOSE_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);

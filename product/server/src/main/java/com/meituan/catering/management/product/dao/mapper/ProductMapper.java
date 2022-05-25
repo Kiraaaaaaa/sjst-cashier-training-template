@@ -71,14 +71,4 @@ public interface ProductMapper {
      */
     int updateSelective(ProductDO productDO);
 
-    /**
-     * 根据物理ID修改商品上架状态
-     *
-     * @param tenantId 租户ID
-     * @param id       物理ID
-     * @param enabled  上架-1，下架-2
-     * @param version  乐观锁版本号
-     * @return 更新条数
-     */
-    int changeEnabledById(Long tenantId, Long id, Integer enabled, Integer version);
 }

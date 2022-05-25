@@ -3,7 +3,6 @@ package com.meituan.catering.management.shop.biz.validator;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.shop.api.http.model.request.*;
-import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
 import com.meituan.catering.management.shop.dao.mapper.ShopMapper;
 import org.springframework.stereotype.Component;
 

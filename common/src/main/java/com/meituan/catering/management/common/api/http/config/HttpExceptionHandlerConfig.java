@@ -3,6 +3,8 @@ package com.meituan.catering.management.common.api.http.config;
 import com.google.common.collect.ImmutableMap;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ import java.util.Map;
 @ControllerAdvice
 public class HttpExceptionHandlerConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HttpExceptionHandlerConfig.class);
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return buildGlobalModelAndView(ex, HttpStatus.BAD_REQUEST);
@@ -38,6 +42,7 @@ public class HttpExceptionHandlerConfig {
     }
 
     private ResponseEntity<String> buildGlobalModelAndView(Exception ex, HttpStatus httpStatus) {
+        LogConfig.writeLog(ex,HttpExceptionHandlerConfig.class);
         return ResponseEntity
                 .status(httpStatus)
                 .body(ex.getMessage());
@@ -52,4 +57,6 @@ public class HttpExceptionHandlerConfig {
                         "errors", ex.getAllErrors()
                 ));
     }
+
+
 }
