@@ -48,6 +48,7 @@ public class ShopController {
     @Resource
     private ShopBizServiceValidator shopBizServiceValidator;
 
+
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
     public ShopPageHttpResponse searchForPage(
@@ -147,4 +148,7 @@ public class ShopController {
         response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
+
+
+
 }

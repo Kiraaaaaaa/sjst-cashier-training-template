@@ -137,6 +137,7 @@ export default function UpdateShop(){
         style={{margin: 20}}
         form={form}
         onFinish={onFinish}
+        colon={false}
         >
           <Row className="create-shop-info">
             <Col>通用信息</Col>
@@ -363,7 +364,7 @@ export default function UpdateShop(){
             <Button onClick={()=>{setModalVisible(false)}}>回到当前页面</Button>
             </Col>
             <Col span={11} offset={1}>
-            <Button onClick={()=>{navigate('/shop')}}>返回主页面</Button>
+            <Button onClick={()=>{navigate('/shop')}} style={{background: 'white'}}>返回主页面</Button>
             </Col>
           </Row>
           </div>

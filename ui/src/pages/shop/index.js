@@ -1,10 +1,9 @@
-import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm } from "antd"
-import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined, ExclamationCircleOutlined } from "@ant-design/icons"
+import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, notification } from "antd";
+import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined} from "@ant-design/icons";
 import "../../css/shop.css";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
 
 const { Option } = Select
 
@@ -26,6 +25,7 @@ export default function Shop(){
     const [form] = Form.useForm();
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [shopList, setShopList] = useState([]);
+    const [isSearchBtn, setIsSearchBtn] = useState(false);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
@@ -43,7 +43,6 @@ export default function Shop(){
             dataIndex: 'name',
             key: 'name',
             sorter: (a, b) => a.name.localeCompare(b.name),
-            // sorter: (a, b) => a.name.slice(0,1).charCodeAt(0)-b.name.slice(0,1).charCodeAt(0),
         },
         {
             title: '主营业态',
@@ -133,6 +132,7 @@ export default function Shop(){
 
     useEffect(() => {
         resetSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     /** 别处触发表单提交 */
@@ -147,6 +147,7 @@ export default function Shop(){
 
     /** 手动搜索结果 */
     const onSearch = () => {
+        setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         submitForm();
     }
@@ -186,26 +187,40 @@ export default function Shop(){
         return requestBody;
     }
 
+    /** 搜索结果提示 */
+    const openNotification = (placement, totalpageCount) => {
+        notification.info({
+          message: `一共${totalpageCount}条结果`,
+          placement,
+          duration: 2,
+        });
+    };
+    
     /** 创建搜索request请求 */
     const createPageRequest = searchValues => { 
         const request = createRequestBody(searchValues, pageIndex, pageSize);
         const instance = axios.create({
             headers: {tenantId: USER_INFO.tenantId, userId: USER_INFO.userId}
         });
+        console.log(request);
         instance
-            .post('/shop/search', request)
+            .post('/shop/search/', request)
             .then(res => {
-                const code = res.data.status.code;
-                if(code === 0){
-                    const data = res.data.data.records;
-                    const totalPageCount = res.data.data.totalPageCount;
-                    setTotalPageCount(totalPageCount);
-                    setTotalCountBtn(totalPageCount);
-                    setShopList(data);
-                }else{
-                    message.error(`未找到符合条件的门店`);
-                    setShopList([]);
+                console.log(res);
+                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
+                [
+                    res.data.data.records, 
+                    res.data.data.totalPageCount, 
+                    res.data.data.totalCount,
+                ];
+                if(isSearchBtn){
+                    openNotification('bottomRight', totalCount);
                 }
+                setTotalPageCount(totalPageCount);
+                setTotalCountBtn(totalPageCount);   
+                setIsSearchBtn(false);
+                setShopList(data);
+                
             }, error => {
                 console.log(error);
             })
@@ -223,6 +238,7 @@ export default function Shop(){
 
     /** 重置搜索 */
     const resetSearch = () => {
+        setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         initialSearchForm();
         submitForm();
@@ -291,11 +307,14 @@ export default function Shop(){
     /** 分页函数组 */
     const setTotalCountBtn = totalPageCount => {
         let pageBtn = [];
+        
+        /* 前4页不进行轮播 */
         if(pageIndex < 4 && totalPageCount >=5){
             for(let i=1; i<=5; ++i){
                 pageBtn.push(i);
             }
         }
+        /* 第5页开始动态暂展示轮播效果 */
         else if(totalPageCount>=5){
             let [pageStart, pageEnd, ] = [pageIndex-2, pageIndex+2];
             if(pageEnd > totalPageCount){
@@ -305,6 +324,7 @@ export default function Shop(){
                 pageBtn.push(i);
             }
         }
+        /* 倒数页数不足时展示仅剩余页码 */
         else{
             for(let i=1; i<=totalPageCount; ++i){
                 pageBtn.push(i);
@@ -317,8 +337,21 @@ export default function Shop(){
         setPageIndex(pageIndex);
         submitForm();
     }
-    const optionChange = pageSize => {
-        setPageSize(pageSize);
+    const optionChange = btnSize => {
+        const totalCountForNow = (pageIndex - 1) * pageSize;
+        /** 
+         * 如果当前页数之前的数据总和小于分页条数，当前页码则为1
+         * 如果当前页数之前的数据总和等于或者大于分页条数，当前页码则为此页码第一条数据按照分页计算后所在的页码
+         */
+        if(totalCountForNow < btnSize || pageIndex === 1){
+            setPageIndex(DEFUALT_PAGE_INDEX);
+        }
+        else if(totalCountForNow === btnSize){
+            setPageIndex(totalCountForNow / btnSize);
+        }else{
+            setPageIndex(totalCountForNow / btnSize + 1);
+        }
+        setPageSize(btnSize);
         submitForm();
     }
     const lastPageBtn= () =>{
@@ -347,7 +380,6 @@ export default function Shop(){
     }
     /** */
 
-    
     return (
         <div>
             <div className="shop-head">
@@ -391,7 +423,7 @@ export default function Shop(){
                             </Select>
                         </Form.Item> 
                     </Col>
-                    <Col span={7} offset={1}>
+                    <Col span={8} offset={1}>
                         <Form.Item label="管理类型" name="managementType">
                             <Select>
                             <Option value={null}>所有</Option>
@@ -434,7 +466,7 @@ export default function Shop(){
                     <Select
                     className="select_footer"
                     defaultValue={DEFAULT_PAGE_SIZE}
-                    style={{width: '30%'}}
+                    style={{width: '30%', margin: '0px 10px'}}
                     onChange={optionChange}
                     >
                         <Option value={3} >3</Option>
