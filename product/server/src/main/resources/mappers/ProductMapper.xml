@@ -139,7 +139,7 @@
                 </if>
             </where>
             <if test="pageIndex!=null and pageSize!=null">
-                limit #{skip},1
+                limit 1
             </if>)
         </where>
         <if test="sortFields.size != 0">
@@ -149,7 +149,7 @@
             </foreach>
         </if>
         <if test="pageIndex != null and pageSize!=null">
-            limit #{limit}
+            limit #{skip},#{limit}
         </if>
     </select>
 
