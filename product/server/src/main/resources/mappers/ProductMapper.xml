@@ -114,6 +114,9 @@
             <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
                 and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
             </if>
+            <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
+                and `unit_of_measure` = #{condition.unitOfMeasure}
+            </if>
             and `id`>=(select `id` from `product`
             <where>
                 <if test="userId != null">
@@ -130,6 +133,9 @@
                 </if>
                 <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
                     and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+                </if>
+                <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
+                    and `unit_of_measure` = #{condition.unitOfMeasure}
                 </if>
             </where>
             <if test="pageIndex!=null and pageSize!=null">
@@ -175,27 +181,9 @@
             <if test="condition.unitPrice.from and condition.unitPrice.to != null">
                 and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
             </if>
-            and `id`>=(select `id` from `product`
-            <where>
-                <if test="userId != null">
-                    `created_by` = #{userId}
-                </if>
-                <if test="tenantId != null">
-                    and `tenant_id` = #{tenantId}
-                </if>
-                <if test="condition.getNameLike != null and condition.getNameLike != ''">
-                    and `name` like #{condition.nameLike}
-                </if>
-                <if test="condition.enabled != null">
-                    and `enabled` = #{condition.enabled}
-                </if>
-                <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
-                    and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
-                </if>
-            </where>
-            <if test="pageIndex!=null and pageSize!=null">
-                limit #{skip},1
-            </if>)
+            <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
+                and `unit_of_measure` = #{condition.unitOfMeasure}
+            </if>
         </where>
     </select>
 

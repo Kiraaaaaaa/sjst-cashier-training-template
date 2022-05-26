@@ -1,6 +1,8 @@
 package com.meituan.catering.management.product.api.http.controller;
 
 import com.meituan.catering.management.common.helper.StatusHelper;
+import com.meituan.catering.management.common.validation.annotation.RepeatSubmit;
+import com.meituan.catering.management.common.validation.annotation.SqlCheck;
 import com.meituan.catering.management.product.api.http.model.dto.ProductDetailHttpDTO;
 import com.meituan.catering.management.product.api.http.model.dto.ProductPageHttpDTO;
 import com.meituan.catering.management.product.api.http.model.request.CreateProductHttpRequest;
@@ -53,6 +55,7 @@ public class ProductController {
 
     @ApiOperation("分页搜索商品的概要信息列表")
     @PostMapping("/search")
+    @SqlCheck
     public ProductPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
@@ -82,6 +85,7 @@ public class ProductController {
         return response;
     }
 
+    @RepeatSubmit
     @ApiOperation("创建新商品")
     @PostMapping("/create")
     public ProductDetailHttpResponse create(
@@ -99,6 +103,7 @@ public class ProductController {
         return response;
     }
 
+    @RepeatSubmit
     @ApiOperation("更新已有商品的信息")
     @PutMapping("/{id}")
     public ProductDetailHttpResponse update(

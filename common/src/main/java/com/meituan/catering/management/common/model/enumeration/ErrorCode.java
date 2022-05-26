@@ -10,7 +10,8 @@ public enum ErrorCode implements IError {
     UPDATE_ERROR(630003,"更新数据失败"),
     REPEAT_ERROR(630004, "请勿多次提交"),
     OPEN_ERROR(630005,"打开失败"),
-    CLOSE_ERROR(630006,"关闭失败");
+    CLOSE_ERROR(630006,"关闭失败"),
+    ILLEGAL_CODE_ERROR(630007,"非法字符");
 
     private final int code;
     private final String message;

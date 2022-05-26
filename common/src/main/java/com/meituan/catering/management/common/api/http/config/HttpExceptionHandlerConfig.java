@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import sun.rmi.runtime.Log;
 
 import javax.annotation.Resource;
@@ -23,7 +24,7 @@ import java.util.Map;
  *
  * @author dulinfeng
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class HttpExceptionHandlerConfig {
 
 

@@ -50,7 +50,6 @@ public class ShopController {
 
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
-    @SqlCheck
     public ShopPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,

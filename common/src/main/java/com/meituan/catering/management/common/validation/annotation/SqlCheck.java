@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * @ClassName: SqlCheck
  */
 @Inherited
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD,ElementType.METHOD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SqlCheck {}

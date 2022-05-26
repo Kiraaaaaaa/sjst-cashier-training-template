@@ -35,10 +35,8 @@ public class ShopBizServiceImpl implements ShopBizService {
 
     @Override
     public ShopBO findByBusinessNo(Long tenantId, Long userId, String businessNo) {
-        return transactionTemplate.execute(status -> {
-            ShopDO shopDO = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
-            return ShopBOConverter.toShopBO(shopDO);
-        });
+        ShopDO shopDO = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
+        return ShopBOConverter.toShopBO(shopDO);
     }
 
     @Override

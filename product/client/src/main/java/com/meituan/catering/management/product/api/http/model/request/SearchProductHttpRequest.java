@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
@@ -23,6 +24,7 @@ import static java.lang.Boolean.FALSE;
  */
 @Data
 @ApiModel("搜索商品的Http请求体")
+@ToString
 public class SearchProductHttpRequest {
 
     @NotNull
@@ -42,6 +44,7 @@ public class SearchProductHttpRequest {
     private final Condition condition = new Condition();
 
     @Data
+    @ToString
     @ApiModel("搜索商品的搜索条件")
     public static class Condition {
 
@@ -65,6 +68,7 @@ public class SearchProductHttpRequest {
     private final List<SortField> sortFields = new LinkedList<>();
 
     @Data
+    @ToString
     @NoArgsConstructor
     @AllArgsConstructor
     @ApiModel("排序字段请求")
@@ -82,6 +86,7 @@ public class SearchProductHttpRequest {
     }
 
     @Data
+    @ToString
     @ApiModel("商品单价区间")
     public static class UnitPriceRange {
 
