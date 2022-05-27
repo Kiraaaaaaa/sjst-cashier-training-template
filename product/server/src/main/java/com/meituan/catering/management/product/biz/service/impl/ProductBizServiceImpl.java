@@ -33,6 +33,8 @@ import org.springframework.web.context.support.GroovyWebApplicationContext;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * {@link ProductBizService}的核心实现
@@ -93,14 +95,15 @@ public class ProductBizServiceImpl implements ProductBizService {
                 throw new BizException(ErrorCode.UPDATE_ERROR);
             }
             List<ProductAccessoryDO> accessoryDOS = ProductAccessoryDOConverter.toProductAccessoryDO(tenantId, id, request);
-            List<ProductAccessoryDO> accessoryDOSAfter = Lists.newArrayList(accessoryDOS);
+            //记录request与数据库中  id 匹配的的数据
+            List<ProductAccessoryDO> accessoryDOSAfter = Lists.newArrayList();
             List<ProductAccessoryDO> accessoryDOList = accessoryMapper.findAllByProductId(tenantId,id);
             for (ProductAccessoryDO accessoryDO : accessoryDOList) {
                 Long accessoryDOId = accessoryDO.getId();
                 for (int i = 0; i < accessoryDOS.size(); i++) {
                     if (accessoryDOId!=null && accessoryDOId.equals(accessoryDOS.get(i).getId())){
                         accessoryMapper.updateById(accessoryDOS.get(i));
-                        accessoryDOSAfter.remove(i);
+                        accessoryDOSAfter.add(accessoryDOS.get(i));
                         flag = true;
                         break;
                     }
@@ -109,19 +112,21 @@ public class ProductBizServiceImpl implements ProductBizService {
                     accessoryMapper.deleteById(tenantId,accessoryDOId);
                 }
             }
-            if (!accessoryDOSAfter.isEmpty()){
-                accessoryMapper.batchInsert(accessoryDOSAfter);
+            //取accessoryDOS与accessoryDOSAfter的差集
+            List<ProductAccessoryDO> collectAccessory = accessoryDOS.stream().filter(item -> !accessoryDOSAfter.contains(item)).collect(Collectors.toList());
+            if (!collectAccessory.isEmpty()){
+                accessoryMapper.batchInsert(collectAccessory);
             }
             flag = false;
             List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantId, id, request);
-            List<ProductMethodDO> methodDOSAfter = Lists.newArrayList(methodDOS);
+            List<ProductMethodDO> methodDOSAfter = Lists.newArrayList();
             List<ProductMethodDO> methodDOList = methodMapper.findAllByProductId(tenantId, id);
             for (ProductMethodDO methodDO : methodDOList) {
                 Long methodDOId = methodDO.getId();
                 for (int i = 0; i < methodDOS.size(); i++) {
                     if (methodDOId!=null && methodDOId.equals(methodDOS.get(i).getId())){
                         methodMapper.updateById(methodDOS.get(i));
-                        methodDOSAfter.remove(i);
+                        methodDOSAfter.add(methodDOS.get(i));
                         flag = true;
                         break;
                     }
@@ -130,10 +135,10 @@ public class ProductBizServiceImpl implements ProductBizService {
                     methodMapper.deleteById(tenantId,methodDOId);
                 }
             }
-            if (!methodDOSAfter.isEmpty()){
-                methodMapper.batchInsert(methodDOSAfter);
+            List<ProductMethodDO> collectMethod = methodDOS.stream().filter(item -> !methodDOSAfter.contains(item)).collect(Collectors.toList());
+            if (!collectMethod.isEmpty()){
+                methodMapper.batchInsert(collectMethod);
             }
-
             ProductDO productDOLater = productMapper.findById(tenantId, id);
             List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, id);
             List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, id);
