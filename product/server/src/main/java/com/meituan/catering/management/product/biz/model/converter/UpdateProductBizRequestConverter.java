@@ -38,7 +38,8 @@ public class UpdateProductBizRequestConverter {
 
         return updateProductBizRequest;
     }
-    public UpdateProductBizRequest toUpdateProductBizRequest(EnableProductHttpRequest request){
+
+    public static UpdateProductBizRequest toUpdateProductBizRequest(EnableProductHttpRequest request){
         UpdateProductBizRequest updateProductBizRequest = new UpdateProductBizRequest();
         updateProductBizRequest.setVersion(request.getVersion());
         return updateProductBizRequest;
@@ -54,6 +55,7 @@ public class UpdateProductBizRequestConverter {
         List<UpdateProductHttpRequest.AccessoryGroup.Option> options = accessoryGroup.getOptions();
         for (UpdateProductHttpRequest.AccessoryGroup.Option option : options) {
             UpdateProductBizRequest.AccessoryGroup.Option optionBiz = new UpdateProductBizRequest.AccessoryGroup.Option();
+            optionBiz.setId(option.getId());
             optionBiz.setName(option.getName());
             optionBiz.setUnitPrice(option.getUnitPrice());
             optionBiz.setUnitOfMeasure(option.getUnitOfMeasure());
@@ -73,6 +75,7 @@ public class UpdateProductBizRequestConverter {
         List<UpdateProductHttpRequest.MethodGroup.Option> options = methodGroup.getOptions();
         for (UpdateProductHttpRequest.MethodGroup.Option option : options) {
             UpdateProductBizRequest.MethodGroup.Option optionBiz= new UpdateProductBizRequest.MethodGroup.Option();
+            optionBiz.setId(option.getId());
             optionBiz.setName(option.getName());
             methodGroupBiz.getOptions().add(optionBiz);
             optionBiz = null;

@@ -31,13 +31,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
-import static org.springframework.http.HttpStatus.CREATED;
 
 /**
  * 商品管理Http API
@@ -55,12 +53,11 @@ public class ProductController {
 
     @ApiOperation("分页搜索商品的概要信息列表")
     @PostMapping("/search")
-    @SqlCheck
     public ProductPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("搜索条件") @Valid @RequestBody SearchProductHttpRequest request) {
-        validator.baseValid(tenantId,userId);
+        validator.sqlValid(tenantId,userId,request);
         ProductPageHttpResponse response = new ProductPageHttpResponse();
         SearchProductBizRequest searchProductBizRequest = SearchProductBizRequestConverter.toSearchProductBizRequest(tenantId, userId, request);
         SearchProductBizResponse searchProductBizResponse = productBizService.searchForPage(searchProductBizRequest);
@@ -95,9 +92,8 @@ public class ProductController {
         validator.baseValid(tenantId,userId);
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         CreateProductBizRequest createProductBizRequest = CreateProductBizRequestConverter.toCreateProductBizRequest(request);
-        Long id = productBizService.insert(tenantId, userId, createProductBizRequest);
-        ProductBO byId = productBizService.findById(tenantId, id);
-        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        ProductBO productBO = productBizService.insert(tenantId, userId, createProductBizRequest);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(productBO);
         response.setStatus(StatusHelper.success());
         response.setData(productDetailHttpDTO);
         return response;
@@ -114,9 +110,8 @@ public class ProductController {
         validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         UpdateProductBizRequest updateProductBizRequest = UpdateProductBizRequestConverter.toUpdateProductBizRequest(request);
-        Long update = productBizService.update(tenantId, userId, id, updateProductBizRequest);
-        ProductBO byId = productBizService.findById(tenantId, update);
-        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        ProductBO productBO = productBizService.update(tenantId, userId, id, updateProductBizRequest);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(productBO);
         response.setStatus(StatusHelper.success());
         response.setData(productDetailHttpDTO);
         return response;
@@ -132,9 +127,8 @@ public class ProductController {
         validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         SwitchProductBizRequest switchProductBizRequest = SwitchProductBizRequestConverter.toSwitchProductBizRequest(request);
-        Long enabled = productBizService.enabled(tenantId, userId, id, switchProductBizRequest);
-        ProductBO byId = productBizService.findById(tenantId, enabled);
-        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        ProductBO productBO = productBizService.enabled(tenantId, userId, id, switchProductBizRequest);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(productBO);
         response.setStatus(StatusHelper.success());
         response.setData(productDetailHttpDTO);
         return response;
@@ -150,9 +144,8 @@ public class ProductController {
         validator.versionValid(tenantId,userId,id,request.getVersion());
         ProductDetailHttpResponse response = new ProductDetailHttpResponse();
         SwitchProductBizRequest switchProductBizRequest = SwitchProductBizRequestConverter.toSwitchProductBizRequest(request);
-        Long disabled = productBizService.disabled(tenantId, userId, id, switchProductBizRequest);
-        ProductBO byId = productBizService.findById(tenantId, disabled);
-        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(byId);
+        ProductBO productBO = productBizService.disabled(tenantId, userId, id, switchProductBizRequest);
+        ProductDetailHttpDTO productDetailHttpDTO = ProductDetailHttpDTOConverter.toProductDetailHttpDTO(productBO);
         response.setStatus(StatusHelper.success());
         response.setData(productDetailHttpDTO);
         return response;

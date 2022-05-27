@@ -29,7 +29,7 @@ public interface ProductBizService {
      * @param request
      * @return 插入那条记录的id值
      */
-    Long insert(Long tenantId, Long userId, CreateProductBizRequest request);
+    ProductBO insert(Long tenantId, Long userId, CreateProductBizRequest request);
 
     /**
      *
@@ -39,7 +39,7 @@ public interface ProductBizService {
      * @param request
      * @return
      */
-    Long update(Long tenantId, Long userId, Long id, UpdateProductBizRequest request);
+    ProductBO update(Long tenantId, Long userId, Long id, UpdateProductBizRequest request);
 
     /**
      *
@@ -49,7 +49,7 @@ public interface ProductBizService {
      * @param request
      * @return
      */
-    Long enabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request);
+    ProductBO enabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request);
 
     /**
      *
@@ -59,7 +59,7 @@ public interface ProductBizService {
      * @param request
      * @return
      */
-    Long disabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request);
+    ProductBO disabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request);
 
     /**
      *

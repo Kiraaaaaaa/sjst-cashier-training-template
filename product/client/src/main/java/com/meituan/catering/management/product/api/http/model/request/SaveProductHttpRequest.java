@@ -80,6 +80,7 @@ public class SaveProductHttpRequest {
         @ApiModel("做法项")
         public static class Option {
 
+            private Long id;
             @NotBlank
             @Length(min = 1, max = 50)
             @ApiModelProperty("名称")
@@ -91,6 +92,8 @@ public class SaveProductHttpRequest {
     @Data
     @ApiModel("商品加料组")
     public static class AccessoryGroup {
+
+        Long id;
 
         @NotBlank
         @Length(min = 1, max = 50)
@@ -106,6 +109,8 @@ public class SaveProductHttpRequest {
         @Data
         @ApiModel("加料项")
         public static class Option {
+
+            private Long id;
 
             @NotBlank
             @Length(min = 1, max = 50)

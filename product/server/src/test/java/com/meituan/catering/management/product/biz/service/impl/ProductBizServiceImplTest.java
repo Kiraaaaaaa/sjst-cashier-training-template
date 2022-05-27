@@ -50,9 +50,9 @@ public class ProductBizServiceImplTest {
             productMapper.findById(anyLong,anyLong);
             result = mockProductDO();
             accessoryMapper.findAllByProductId(anyLong,anyLong);
-            result = mockAccessoryDO();
+            result = mockAccessoryDOS();
             methodMapper.findAllByProductId(anyLong,anyLong);
-            result = mockMethodDO();
+            result = mockMethodDOS();
         }};
         ProductBO productBO = productBizService.findById(1L, 1L);
         Assert.assertNotNull("查询失败",productBO);
@@ -65,17 +65,12 @@ public class ProductBizServiceImplTest {
                                   @Injectable ProductMethodMapper methodMapper,
                                   @Injectable TransactionTemplate template,
                                   @Injectable SearchProductDataRequest request,
-                                  @Injectable SearchProductBizRequest requestBiz)
-    {
+                                  @Injectable SearchProductBizRequest requestBiz) {
         new Expectations(){{
             productMapper.countForPage(request);
             result = 5;
             productMapper.searchForPage(request);
             result = mockProductDOS();
-            accessoryMapper.findAllByProductId(anyLong,anyLong);
-            result = mockAccessoryDOS();
-            methodMapper.findAllByProductId(anyLong,anyLong);
-            result = mockMethodDOS();
         }};
 
         SearchProductBizResponse searchProductBizResponse = productBizService.searchForPage(requestBiz);
@@ -90,25 +85,25 @@ public class ProductBizServiceImplTest {
                            @Injectable ProductMethodMapper methodMapper,
                            @Injectable TransactionTemplate template,
                            @Injectable ProductDO productDO,
-                           @Injectable List<ProductMethodDO> methodDOS,
-                           @Injectable List<ProductAccessoryDO> accessoryDOS,
+                           @Injectable ProductMethodDO methodDO,
+                           @Injectable ProductAccessoryDO accessoryDO,
                            @Injectable CreateProductBizRequest request){
-        Long in = template.execute(status->{
+        template.execute(status->{
             Long tenantId = 1L;
             Long userId = 1L;
             new Expectations(){{
                 productMapper.insert(productDO);
                 result = 1;
-                accessoryMapper.insert(accessoryDOS);
+                accessoryMapper.insert(accessoryDO);
                 result = 1;
-                methodMapper.insert(methodDOS);
+                methodMapper.insert(methodDO);
                 result = 1;
             }};
 
-            Long insert = productBizService.insert(tenantId, userId, request);
-            return insert;
+            ProductBO productBO = productBizService.insert(tenantId, userId, request);
+            System.out.println(productDO);
+            return productBO;
         });
-        System.out.println(in);
     }
 
     @Test
@@ -120,7 +115,7 @@ public class ProductBizServiceImplTest {
                            @Injectable List<ProductMethodDO> methodDOS,
                            @Injectable List<ProductAccessoryDO> accessoryDOS,
                            @Injectable UpdateProductBizRequest request){
-        Long in = template.execute(status->{
+        template.execute(status->{
             Long tenantId = 1L;
             Long userId = 1L;
             Long productId = 1L;
@@ -129,18 +124,19 @@ public class ProductBizServiceImplTest {
                 result = 1;
                 accessoryMapper.deleteByProductId(tenantId,productId);
                 result = 1;
-                accessoryMapper.insert(accessoryDOS);
+                accessoryMapper.batchInsert(accessoryDOS);
                 result = 1;
                 methodMapper.deleteByProductId(tenantId,productId);
                 result = 1;
-                methodMapper.insert(methodDOS);
+                methodMapper.batchInsert(methodDOS);
                 result = 1;
 
             }};
-            Long update = productBizService.update(tenantId, userId, productId,request);
-            return update;
+            ProductBO productBO = productBizService.update(tenantId, userId, productId,request);
+            System.out.println(productBO);
+            return productBO;
         });
-        System.out.println(in);
+
     }
 
     @Test
@@ -156,8 +152,8 @@ public class ProductBizServiceImplTest {
            result = 1;
         }};
 
-        Long enabled = productBizService.enabled(1L, 1L, 1L, request);
-        System.out.println(enabled);
+        ProductBO productBO= productBizService.enabled(1L, 1L, 1L, request);
+        System.out.println(productBO);
     }
 
     private ProductDO mockProductDO(){

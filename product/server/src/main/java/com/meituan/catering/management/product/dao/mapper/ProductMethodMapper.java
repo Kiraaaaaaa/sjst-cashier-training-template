@@ -36,7 +36,14 @@ public interface ProductMethodMapper {
      * @param productMethodDOS 新的商品做法DO实例的列表
      * @return 插入条数
      */
-    int insert(List<ProductMethodDO> productMethodDOS);
+    int batchInsert(List<ProductMethodDO> productMethodDOS);
+
+    /**
+     *
+     * @param productMethodDO
+     * @return
+     */
+    int insert(ProductMethodDO productMethodDO);
 
     /**
      * 根据产品ID删除商品做法
@@ -47,5 +54,10 @@ public interface ProductMethodMapper {
      */
     int deleteByProductId(Long tenantId, Long productId);
 
-
+    /**
+     * 根据ID更新商品做法
+     * @param productMethodDO
+     * @return
+     */
+    int updateById(ProductMethodDO productMethodDO);
 }

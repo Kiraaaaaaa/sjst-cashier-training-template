@@ -1,5 +1,6 @@
 package com.meituan.catering.management.product.biz.service.impl;
 
+import com.google.common.collect.Lists;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.helper.StatusHelper;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
@@ -60,7 +61,7 @@ public class ProductBizServiceImpl implements ProductBizService {
     }
 
     @Override
-    public Long insert(Long tenantId, Long userId, CreateProductBizRequest request){
+    public ProductBO insert(Long tenantId, Long userId, CreateProductBizRequest request){
         return transactionTemplate.execute(status ->{
             ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantId, request);
             int insert = productMapper.insert(productDO);
@@ -68,70 +69,111 @@ public class ProductBizServiceImpl implements ProductBizService {
                 throw new BizException(ErrorCode.PARAM_ERROR);
             }
             List<ProductAccessoryDO> accessoryDOS = ProductAccessoryDOConverter.toProductAccessoryDO(tenantId, productDO.getId(), request);
-            if (accessoryDOS.size()!=0){
-                accessoryMapper.insert(accessoryDOS);
+            if (!accessoryDOS.isEmpty()){
+                accessoryMapper.batchInsert(accessoryDOS);
             }
             List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantId, productDO.getId(), request);
-            if (methodDOS.size()!=0){
-                methodMapper.insert(methodDOS);
+            if (!methodDOS.isEmpty()){
+                methodMapper.batchInsert(methodDOS);
             }
-            return productDO.getId();
+            ProductDO productDOLater = productMapper.findById(tenantId, productDO.getId());
+            List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, productDO.getId());
+            List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, productDO.getId());
+            return ProductBOConverter.toProductBO(productDOLater,methodDOLater,accessoryDOLater);
         });
     }
 
     @Override
-    public Long update(Long tenantid, Long userId, Long id, UpdateProductBizRequest request) {
+    public ProductBO update(Long tenantId, Long userId, Long id, UpdateProductBizRequest request) {
         return transactionTemplate.execute(status ->{
-            ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantid, id, request);
+            Boolean flag = false;
+            ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantId, id, request);
             int row = productMapper.updateSelective(productDO);
             if (row<=0){
                 throw new BizException(ErrorCode.UPDATE_ERROR);
             }
-            List<ProductAccessoryDO> accessoryDOS = ProductAccessoryDOConverter.toProductAccessoryDO(tenantid, id, request);
-            accessoryMapper.deleteByProductId(tenantid,id);
-            if (accessoryDOS.size()!=0){
-                accessoryMapper.insert(accessoryDOS);
+            List<ProductAccessoryDO> accessoryDOS = ProductAccessoryDOConverter.toProductAccessoryDO(tenantId, id, request);
+            List<ProductAccessoryDO> accessoryDOList = accessoryMapper.findAllByProductId(tenantId,id);
+            accessoryMapper.deleteByProductId(tenantId,id);
+            if (!accessoryDOS.isEmpty()){
+                for (ProductAccessoryDO requestDO : accessoryDOS) {
+                    Long requestId = requestDO.getId();
+                    for (ProductAccessoryDO accessoryDO : accessoryDOList) {
+                        if (requestId != null && requestId.equals(accessoryDO.getId())){
+                            accessoryMapper.updateById(requestDO);
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag){
+                        accessoryMapper.insert(requestDO);
+                        break;
+                    }
+                }
             }
-            List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantid, id, request);
-            methodMapper.deleteByProductId(tenantid,id);
-            if (methodDOS.size()!=0){
-                methodMapper.insert(methodDOS);
+            flag = false;
+            List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantId, id, request);
+            List<ProductMethodDO> methodDOList = methodMapper.findAllByProductId(tenantId, id);
+            methodMapper.deleteByProductId(tenantId,id);
+            if (!methodDOS.isEmpty()){
+                for (ProductMethodDO requestDO : methodDOS) {
+                    Long requestId = requestDO.getId();
+                    for (ProductMethodDO  methodDO: methodDOList) {
+                        if (requestId != null && requestId.equals(methodDO.getId())){
+                            methodMapper.updateById(requestDO);
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag){
+                        methodMapper.insert(requestDO);
+                        break;
+                    }
+                }
             }
-            return id;
+            ProductDO productDOLater = productMapper.findById(tenantId, id);
+            List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, id);
+            List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, id);
+            return ProductBOConverter.toProductBO(productDOLater,methodDOLater,accessoryDOLater);
         });
     }
 
     @Override
-    public Long enabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request) {
+    public ProductBO enabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request) {
         ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantId, id, request);
         int row = productMapper.updateSelective(productDO);
         if (row == 0){
             throw new BizException(ErrorCode.UPDATE_ERROR);
         }
-        return id;
+        ProductDO productDOLater = productMapper.findById(tenantId, id);
+        List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, id);
+        List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, id);
+        return ProductBOConverter.toProductBO(productDOLater,methodDOLater,accessoryDOLater);
     }
 
     @Override
-    public Long disabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request) {
+    public ProductBO disabled(Long tenantId, Long userId, Long id, SwitchProductBizRequest request) {
         ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantId, id, request);
         int row = productMapper.updateSelective(productDO);
         if (row == 0){
             throw new BizException(ErrorCode.UPDATE_ERROR);
         }
-        return id;
+        ProductDO productDOLater = productMapper.findById(tenantId, id);
+        List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, id);
+        List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, id);
+        return ProductBOConverter.toProductBO(productDOLater,methodDOLater,accessoryDOLater);
     }
 
     @Override
     public SearchProductBizResponse searchForPage(SearchProductBizRequest request) {
         SearchProductDataRequest searchProductDataRequest = SearchProductDataRequestConverter.toSearchProductDataRequest(request);
         int totalCount = productMapper.countForPage(searchProductDataRequest);
+        if (totalCount == 0){
+            return SearchProductBizResponseConverter.toSearchProductBizResponse(request.getPageIndex(),request.getPageSize(),totalCount,null);
+        }
         List<ProductDO> productDOS = productMapper.searchForPage(searchProductDataRequest);
 
-        List<ProductBO> productBOS = new ArrayList<>();
-        for (ProductDO productDO : productDOS) {
-            ProductBO productBO = ProductBOConverter.toProductBO(productDO, null, null);
-            productBOS.add(productBO);
-        }
+        List<ProductBO> productBOS = ProductBOConverter.toProductBOS(productDOS);
 
         return SearchProductBizResponseConverter.toSearchProductBizResponse(request.getPageIndex(), request.getPageSize(), totalCount, productBOS);
     }

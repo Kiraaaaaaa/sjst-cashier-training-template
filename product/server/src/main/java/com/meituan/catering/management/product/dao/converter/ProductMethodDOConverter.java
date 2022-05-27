@@ -24,6 +24,7 @@ public class ProductMethodDOConverter {
             List<SaveProductBizRequest.MethodGroup.Option> options = methodGroup.getOptions();
             for (SaveProductBizRequest.MethodGroup.Option option : options) {
                 ProductMethodDO productMethodDO = new ProductMethodDO();
+                productMethodDO.setId(option.getId());
                 productMethodDO.setProductId(productId);
                 productMethodDO.setTenantId(tenantId);
                 productMethodDO.setName(option.getName());

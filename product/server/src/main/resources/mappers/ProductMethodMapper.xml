@@ -18,7 +18,7 @@
         ,name
         ,group_name
     </sql>
-    <insert id="insert"   parameterType="com.meituan.catering.management.product.dao.model.ProductMethodDO"
+    <insert id="batchInsert"   parameterType="com.meituan.catering.management.product.dao.model.ProductMethodDO"
             keyProperty="id"
             useGeneratedKeys="true">
             insert
@@ -36,11 +36,24 @@
 
     </insert>
 
-    <delete id="deleteByProductId">
-        delete from `product_method`
+    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductMethodDO">
+        insert
+        into `product_method`(<include refid="Base_Column_List"/>)
+        values(
+        null
+        ,#{productId}
+        ,#{tenantId}
+        ,#{name}
+        ,#{groupName}
+        )
+    </insert>
+
+    <update id="deleteByProductId">
+        update `product_method`
+        set `deleted` = 0
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
-    </delete>
+    </update>
 
     <select id="findAllByProductIds" resultMap="BaseResultMap">
         select
@@ -52,6 +65,7 @@
         </foreach>
         )
         and `tenant_id` = #{tenantId}
+
     </select>
 
     <select id="findAllByProductId" resultMap="BaseResultMap">
@@ -60,6 +74,20 @@
         from `product_method`
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
+        and `deleted` = 1
     </select>
 
+    <update id="updateById" parameterType="com.meituan.catering.management.product.dao.model.ProductMethodDO">
+        update  `product_method`
+        <set>
+            `name` = #{name}
+            ,`group_name` = #{groupName}
+            ,`deleted` = 1
+        </set>
+        <where>
+            `id` = #{id}
+            and `product_id` = #{productId}
+            and `tenant_id` = #{tenantId}
+        </where>
+    </update>
 </mapper>

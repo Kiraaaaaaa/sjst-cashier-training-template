@@ -22,7 +22,7 @@
         ,unit_of_measure
     </sql>
 
-    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
+    <insert id="batchInsert" parameterType="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
         insert
         into `product_accessory`(<include refid="Base_Column_List"/>)
         values
@@ -39,17 +39,38 @@
             )
         </foreach>
     </insert>
-    <delete id="deleteByProductId">
-        delete from `product_accessory`
+    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
+        insert
+        into `product_accessory`(<include refid="Base_Column_List"/>)
+        values (
+        0
+        ,#{productId}
+        ,#{tenantId}
+        ,#{name}
+        ,#{groupName}
+        ,#{unitPrice}
+        ,#{unitOfMeasure}
+        )
+    </insert>
+    <update id="deleteByProductId">
+        update  `product_accessory`
+        set `deleted` = 0
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
-    </delete>
+    </update>
+    <update id="deleteById">
+        update `product_accessroy`
+        set `deleted` = 0
+        where `id` = #{id}
+        and `tenant_id` = #{tenantId}
+    </update>
     <select id="findAllByProductId" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `product_accessory`
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
+        and `deleted` = 1
     </select>
     <select id="findAllByProductIds" resultMap="BaseResultMap">
         select
@@ -61,7 +82,24 @@
             </foreach>
         )
         and `tenant_id` = #{tenantId}
+        and `deleted` = 1
     </select>
+    <update id="updateById" parameterType="com.meituan.catering.management.product.dao.model.ProductAccessoryDO">
+        update  `product_accessory`
+        <set>
+            `name` = #{name}
+            ,`group_name` = #{groupName}
+            ,`unit_price` = #{unitPrice}
+            ,`unit_of_measure` = #{unitOfMeasure}
+            ,`deleted` = 1
+        </set>
+        <where>
+            `id` = #{id}
+            and `product_id` = #{productId}
+            and `tenant_id` = #{tenantId}
+        </where>
+
+    </update>
 
 
 </mapper>

@@ -1,5 +1,6 @@
 package com.meituan.catering.management.product.biz.model.request;
 
+import io.micrometer.core.instrument.Meter;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -42,6 +43,7 @@ public class SaveProductBizRequest {
 
         @Data
         public static class Option {
+            private Long id;
 
             private String name;
 
@@ -58,6 +60,8 @@ public class SaveProductBizRequest {
 
         @Data
         public static class Option {
+
+            private Long id;
 
             private String name;
 

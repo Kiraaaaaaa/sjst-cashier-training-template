@@ -36,7 +36,7 @@
         ,version
     </sql>
 
-    <insert id="insert"   parameterType="com.meituan.catering.management.product.dao.model.ProductDO"
+    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductDO"
             keyProperty="id"
             useGeneratedKeys="true">
         insert
@@ -61,37 +61,37 @@
 
     <update id="updateSelective" parameterType="com.meituan.catering.management.product.dao.model.ProductDO">
         update `product`
-            <set>
-                `last_modified_by` = #{lastModifiedBy}
-                ,`last_modified_at` = #{lastModifiedAt}
-                <if test="name!=null">
-                    ,`name` = #{name}
-                </if>
-                <if test="unitPrice!=null">
-                    ,`unit_price` = #{unitPrice}
-                </if>
-                <if test="unitOfMeasure!=null">
-                    ,`unit_of_measure` = #{unitOfMeasure}
-                </if>
-                <if test="minSalesQuantity!=null">
-                    ,`min_sales_quantity` = #{minSalesQuantity}
-                </if>
-                <if test="increaseSalesQuantity!=null">
-                    ,`increase_sales_quantity` = #{increaseSalesQuantity}
-                </if>
-                <if test="description!=null">
-                    ,`description` = #{description}
-                </if>
-                <if test="enabled!=null">
-                    ,`enabled` = #{enabled}
-                </if>
-                ,`version` = #{version}+1
-            </set>
-            <where>
-                `id` = #{id}
-                and `tenant_id` = #{tenantId}
-                and `version` = #{version}
-            </where>
+        <set>
+            `last_modified_by` = #{lastModifiedBy}
+            ,`last_modified_at` = #{lastModifiedAt}
+            <if test="name!=null">
+                ,`name` = #{name}
+            </if>
+            <if test="unitPrice!=null">
+                ,`unit_price` = #{unitPrice}
+            </if>
+            <if test="unitOfMeasure!=null">
+                ,`unit_of_measure` = #{unitOfMeasure}
+            </if>
+            <if test="minSalesQuantity!=null">
+                ,`min_sales_quantity` = #{minSalesQuantity}
+            </if>
+            <if test="increaseSalesQuantity!=null">
+                ,`increase_sales_quantity` = #{increaseSalesQuantity}
+            </if>
+            <if test="description!=null">
+                ,`description` = #{description}
+            </if>
+            <if test="enabled!=null">
+                ,`enabled` = #{enabled}
+            </if>
+            ,`version` = #{version} + 1
+        </set>
+        <where>
+            `id` = #{id}
+            and `tenant_id` = #{tenantId}
+            and `version` = #{version}
+        </where>
     </update>
 
     <select id="searchForPage" resultMap="BaseResultMap">
@@ -117,34 +117,10 @@
             <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
                 and `unit_of_measure` = #{condition.unitOfMeasure}
             </if>
-            and `id`>=(select `id` from `product`
-            <where>
-                <if test="userId != null">
-                    `created_by` = #{userId}
-                </if>
-                <if test="tenantId != null">
-                    and `tenant_id` = #{tenantId}
-                </if>
-                <if test="condition.getNameLike != null and condition.getNameLike != ''">
-                    and `name` like #{condition.nameLike}
-                </if>
-                <if test="condition.enabled != null">
-                    and `enabled` = #{condition.enabled}
-                </if>
-                <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
-                    and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
-                </if>
-                <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
-                    and `unit_of_measure` = #{condition.unitOfMeasure}
-                </if>
-            </where>
-            <if test="pageIndex!=null and pageSize!=null">
-                limit 1
-            </if>)
         </where>
         <if test="sortFields.size != 0">
             order by
-            <foreach collection="sortFields" item="sortField" separator="," >
+            <foreach collection="sortFields" item="sortField" separator=",">
                 ${sortField.field} ${sortField.asc}
             </foreach>
         </if>

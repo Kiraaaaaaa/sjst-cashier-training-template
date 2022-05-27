@@ -1,11 +1,13 @@
 package com.meituan.catering.management.product.biz.model.converter;
 
+import com.google.common.collect.Lists;
 import com.meituan.catering.management.common.model.biz.AuditingBO;
 import com.meituan.catering.management.product.biz.model.ProductBO;
 import com.meituan.catering.management.product.dao.model.ProductAccessoryDO;
 import com.meituan.catering.management.product.dao.model.ProductDO;
 import com.meituan.catering.management.product.dao.model.ProductMethodDO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,6 +82,30 @@ public abstract class ProductBOConverter {
         return productBO;
     }
 
+
+    public static List<ProductBO> toProductBOS(List<ProductDO> productDOS){
+        if (productDOS.isEmpty()){
+            return null;
+        }
+        ArrayList<ProductBO> productBOS = Lists.newArrayList();
+        for (ProductDO productDO : productDOS) {
+            ProductBO productBO = new ProductBO();
+            productBO.setEnabled(productDO.getEnabled());
+            productBO.setName(productDO.getName());
+            productBO.setUnitPrice(productDO.getUnitPrice());
+            productBO.setMinSalesQuantity(productDO.getMinSalesQuantity());
+            productBO.setIncreaseSalesQuantity(productDO.getIncreaseSalesQuantity());
+            productBO.setUnitOfMeasure(productDO.getUnitOfMeasure());
+            productBO.setDescription(productDO.getDescription());
+            productBO.setId(productDO.getId());
+            productBO.setTenantId(productDO.getTenantId());
+            productBO.setVersion(productDO.getVersion());
+            productBO.setAuditing(toAuditingBO(productDO));
+            productBOS.add(productBO);
+            productBO = null;
+        }
+        return productBOS;
+    }
 
     private static AuditingBO toAuditingBO(ProductDO productDO){
         AuditingBO auditingBO = new AuditingBO();

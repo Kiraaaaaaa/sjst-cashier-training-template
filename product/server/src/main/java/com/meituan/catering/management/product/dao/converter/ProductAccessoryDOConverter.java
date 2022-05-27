@@ -25,6 +25,7 @@ public class ProductAccessoryDOConverter {
             List<SaveProductBizRequest.AccessoryGroup.Option> options = accessoryGroup.getOptions();
             for (SaveProductBizRequest.AccessoryGroup.Option option : options) {
                 ProductAccessoryDO productAccessoryDO = new ProductAccessoryDO();
+                productAccessoryDO.setId(option.getId());
                 productAccessoryDO.setProductId(productId);
                 productAccessoryDO.setTenantId(tenantId);
                 productAccessoryDO.setName(option.getName());
