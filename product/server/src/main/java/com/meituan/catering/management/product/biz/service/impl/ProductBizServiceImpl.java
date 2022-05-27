@@ -129,9 +129,7 @@ public class ProductBizServiceImpl implements ProductBizService {
 
         List<ProductBO> productBOS = new ArrayList<>();
         for (ProductDO productDO : productDOS) {
-            List<ProductAccessoryDO> accessoryDOS = accessoryMapper.findAllByProductId(productDO.getTenantId(), productDO.getId());
-            List<ProductMethodDO> methodDOS = methodMapper.findAllByProductId(productDO.getTenantId(), productDO.getId());
-            ProductBO productBO = ProductBOConverter.toProductBO(productDO, methodDOS, accessoryDOS);
+            ProductBO productBO = ProductBOConverter.toProductBO(productDO, null, null);
             productBOS.add(productBO);
         }
 

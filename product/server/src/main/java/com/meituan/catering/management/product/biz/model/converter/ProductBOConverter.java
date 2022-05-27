@@ -32,46 +32,50 @@ public abstract class ProductBOConverter {
         productBO.setTenantId(productDO.getTenantId());
         productBO.setVersion(productDO.getVersion());
         productBO.setAuditing(toAuditingBO(productDO));
-
-        List<ProductBO.AccessoryGroup> accessoryGroups = productBO.getAccessoryGroups();
-        for (ProductAccessoryDO productAccessoryDO : productAccessoryDOList) {
-            ProductBO.AccessoryGroup accessoryGroup = new ProductBO.AccessoryGroup();
-            if (accessoryGroups.size() >= 1) {
-                ProductBO.AccessoryGroup accessoryGroupEnd = accessoryGroups.get(accessoryGroups.size() - 1);
-                if (accessoryGroupEnd.getName().equals(productAccessoryDO.getGroupName())) {
-                    ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
-                    accessoryGroupEnd.getOptions().add(option);
-                    option = null;
-                    continue;
+        if (productAccessoryDOList != null){
+            List<ProductBO.AccessoryGroup> accessoryGroups = productBO.getAccessoryGroups();
+            for (ProductAccessoryDO productAccessoryDO : productAccessoryDOList) {
+                ProductBO.AccessoryGroup accessoryGroup = new ProductBO.AccessoryGroup();
+                if (accessoryGroups.size() >= 1) {
+                    ProductBO.AccessoryGroup accessoryGroupEnd = accessoryGroups.get(accessoryGroups.size() - 1);
+                    if (accessoryGroupEnd.getName().equals(productAccessoryDO.getGroupName())) {
+                        ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
+                        accessoryGroupEnd.getOptions().add(option);
+                        option = null;
+                        continue;
+                    }
                 }
+                accessoryGroup.setName(productAccessoryDO.getGroupName());
+                ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
+                accessoryGroup.getOptions().add(option);
+                option = null;
+                accessoryGroups.add(accessoryGroup);
+                accessoryGroup = null;
             }
-            accessoryGroup.setName(productAccessoryDO.getGroupName());
-            ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
-            accessoryGroup.getOptions().add(option);
-            option = null;
-            accessoryGroups.add(accessoryGroup);
-            accessoryGroup = null;
         }
 
-        List<ProductBO.MethodGroup> methodGroups = productBO.getMethodGroups();
-        for (ProductMethodDO productMethodDO : productMethodDOList) {
-            ProductBO.MethodGroup methodGroup = new ProductBO.MethodGroup();
-            if (methodGroups.size() >= 1) {
-                ProductBO.MethodGroup methodGroupEnd = methodGroups.get(methodGroups.size()-1);
-                if (methodGroupEnd.getName().equals(productMethodDO.getGroupName())) {
-                    ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
-                    methodGroupEnd.getOptions().add(option);
-                    option = null;
-                    continue;
+        if (productMethodDOList!=null){
+            List<ProductBO.MethodGroup> methodGroups = productBO.getMethodGroups();
+            for (ProductMethodDO productMethodDO : productMethodDOList) {
+                ProductBO.MethodGroup methodGroup = new ProductBO.MethodGroup();
+                if (methodGroups.size() >= 1) {
+                    ProductBO.MethodGroup methodGroupEnd = methodGroups.get(methodGroups.size()-1);
+                    if (methodGroupEnd.getName().equals(productMethodDO.getGroupName())) {
+                        ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
+                        methodGroupEnd.getOptions().add(option);
+                        option = null;
+                        continue;
+                    }
                 }
+                methodGroup.setName(productMethodDO.getGroupName());
+                ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
+                methodGroup.getOptions().add(option);
+                option = null;
+                methodGroups.add(methodGroup);
+                methodGroup = null;
             }
-            methodGroup.setName(productMethodDO.getGroupName());
-            ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
-            methodGroup.getOptions().add(option);
-            option = null;
-            methodGroups.add(methodGroup);
-            methodGroup = null;
         }
+
 
         return productBO;
     }
