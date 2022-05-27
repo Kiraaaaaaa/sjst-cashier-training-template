@@ -5,23 +5,28 @@ import com.meituan.catering.management.shop.api.http.model.enumeration.Managemen
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.dao.mapper.ShopMapper;
 import com.meituan.catering.management.shop.dao.model.ShopDO;
+
 import mockit.Expectations;
 import mockit.Injectable;
+import mockit.Mocked;
 import mockit.Tested;
+import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
 import java.util.Objects;
 
+@RunWith(JMockit.class)
 public class ShopBizServiceImplTest {
     @Tested
     private ShopBizServiceImpl shopBizService;
 
     @Test
-    public void testFindByBusinessNo(@Injectable TransactionTemplate transactionTemplate,
-                                     @Injectable ShopMapper shopMapper){
+    public void testFindByBusinessNo(@Injectable ShopMapper shopMapper,
+                                        @Injectable TransactionTemplate template){
         //录制
         new Expectations(){{
             shopMapper.findByBusinessNo(anyLong,anyLong,anyString);
@@ -33,7 +38,10 @@ public class ShopBizServiceImplTest {
 
         //验证
         Assert.assertTrue(Objects.nonNull(shopBO));
+        System.out.println(shopBO);
+
     }
+
 
     private ShopDO mockShopDO() {
         ShopDO shopDO = new ShopDO();

@@ -19,6 +19,7 @@ public class ShopThriftServiceImpl implements ShopThriftService {
 
     @Resource
     private ShopBizService shopBizService;
+
     @Override
     public ShopDetailThriftResponse findByBusinessNo(
             UserContextThriftRequest userContext, String businessNo) {

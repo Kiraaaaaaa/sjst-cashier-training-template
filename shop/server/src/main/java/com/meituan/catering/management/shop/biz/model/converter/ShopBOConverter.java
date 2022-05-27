@@ -8,7 +8,10 @@ import com.meituan.catering.management.shop.dao.model.ShopDO;
  * 从其他数据模型向门店BO的转换器
  */
 public class ShopBOConverter {
-    public static ShopBO toShopBO(ShopDO shopDO){
+    public static ShopBO toShopBO(ShopDO shopDO) {
+        if (shopDO == null){
+            return null;
+        }
         ShopBO shopBO = new ShopBO();
         shopBO.setBusinessNo(shopDO.getBusinessNo());
         shopBO.setName(shopDO.getName());

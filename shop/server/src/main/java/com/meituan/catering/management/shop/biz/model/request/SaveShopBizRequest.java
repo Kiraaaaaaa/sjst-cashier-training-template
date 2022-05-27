@@ -12,13 +12,13 @@ import lombok.Data;
 public class SaveShopBizRequest {
     private String name;
 
-    private SaveShopBizRequest.ContactBizModel contact;
+    private ContactBizModel contact;
 
     private BusinessTypeEnum businessType;
 
     private ManagementTypeEnum managementType;
 
-    private SaveShopBizRequest.OpeningHoursTimeRange openingHours;
+    private OpeningHoursTimeRange openingHours;
 
     private String businessArea;
 

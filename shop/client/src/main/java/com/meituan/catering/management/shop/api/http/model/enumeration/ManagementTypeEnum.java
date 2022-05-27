@@ -1,5 +1,6 @@
 package com.meituan.catering.management.shop.api.http.model.enumeration;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.meituan.catering.management.common.model.enumeration.DescribableEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

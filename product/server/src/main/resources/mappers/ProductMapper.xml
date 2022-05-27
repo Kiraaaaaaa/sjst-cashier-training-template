@@ -2,4 +2,166 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meituan.catering.management.product.dao.mapper.ProductMapper">
 
+    <resultMap id="BaseResultMap" type="com.meituan.catering.management.product.dao.model.ProductDO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="tenant_id" jdbcType="BIGINT" property="tenantId"/>
+        <result column="created_by" jdbcType="BIGINT" property="createdBy"/>
+        <result column="created_at" jdbcType="TIMESTAMP" property="createdAt"/>
+        <result column="last_modified_by" jdbcType="BIGINT" property="lastModifiedBy"/>
+        <result column="last_modified_at" jdbcType="TIMESTAMP" property="lastModifiedAt"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="unit_price" jdbcType="DECIMAL" property="unitPrice"/>
+        <result column="unit_of_measure" jdbcType="VARCHAR" property="unitOfMeasure"/>
+        <result column="min_sales_quantity" jdbcType="DECIMAL" property="minSalesQuantity"/>
+        <result column="increase_sales_quantity" jdbcType="DECIMAL" property="increaseSalesQuantity"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="enabled" jdbcType="TINYINT" property="enabled"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,tenant_id
+        ,created_by
+        ,created_at
+        ,last_modified_by
+        ,last_modified_at
+        ,name
+        ,unit_price
+        ,unit_of_measure
+        ,min_sales_quantity
+        ,increase_sales_quantity
+        ,description
+        ,enabled
+        ,version
+    </sql>
+
+    <insert id="insert" parameterType="com.meituan.catering.management.product.dao.model.ProductDO"
+            keyProperty="id"
+            useGeneratedKeys="true">
+        insert
+        into `product`(<include refid="Base_Column_List"/>)
+        values (
+        null
+        ,#{tenantId}
+        ,#{createdBy}
+        ,#{createdAt}
+        ,#{lastModifiedBy}
+        ,#{lastModifiedAt}
+        ,#{name}
+        ,#{unitPrice}
+        ,#{unitOfMeasure}
+        ,#{minSalesQuantity}
+        ,#{increaseSalesQuantity}
+        ,#{description}
+        ,#{enabled}
+        ,1
+        )
+    </insert>
+
+    <update id="updateSelective" parameterType="com.meituan.catering.management.product.dao.model.ProductDO">
+        update `product`
+        <set>
+            `last_modified_by` = #{lastModifiedBy}
+            ,`last_modified_at` = #{lastModifiedAt}
+            <if test="name!=null">
+                ,`name` = #{name}
+            </if>
+            <if test="unitPrice!=null">
+                ,`unit_price` = #{unitPrice}
+            </if>
+            <if test="unitOfMeasure!=null">
+                ,`unit_of_measure` = #{unitOfMeasure}
+            </if>
+            <if test="minSalesQuantity!=null">
+                ,`min_sales_quantity` = #{minSalesQuantity}
+            </if>
+            <if test="increaseSalesQuantity!=null">
+                ,`increase_sales_quantity` = #{increaseSalesQuantity}
+            </if>
+            <if test="description!=null">
+                ,`description` = #{description}
+            </if>
+            <if test="enabled!=null">
+                ,`enabled` = #{enabled}
+            </if>
+            ,`version` = #{version} + 1
+        </set>
+        <where>
+            `id` = #{id}
+            and `tenant_id` = #{tenantId}
+            and `version` = #{version}
+        </where>
+    </update>
+
+    <select id="searchForPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `product`
+        <where>
+            <if test="userId != null">
+                `created_by` = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                and `name` like #{condition.nameLike}
+            </if>
+            <if test="condition.enabled != null">
+                and `enabled` = #{condition.enabled}
+            </if>
+            <if test="condition.unitPrice.from != null and condition.unitPrice.to != null">
+                and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+            </if>
+            <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
+                and `unit_of_measure` = #{condition.unitOfMeasure}
+            </if>
+        </where>
+        <if test="sortFields.size != 0">
+            order by
+            <foreach collection="sortFields" item="sortField" separator=",">
+                ${sortField.field} ${sortField.asc}
+            </foreach>
+        </if>
+        <if test="pageIndex != null and pageSize!=null">
+            limit #{skip},#{limit}
+        </if>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `product`
+        where id = #{id}
+        and `tenant_id` = #{tenantId}
+    </select>
+
+    <select id="countForPage" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `product`
+        <where>
+            <if test="userId != null">
+                `created_by` = #{userId}
+            </if>
+            <if test="tenantId != null">
+                and `tenant_id` = #{tenantId}
+            </if>
+            <if test="condition.getNameLike != null and condition.getNameLike != ''">
+                and `name` like #{condition.nameLike}
+            </if>
+            <if test="condition.enabled != null">
+                and `enabled` = #{condition.enabled}
+            </if>
+            <if test="condition.unitPrice.from and condition.unitPrice.to != null">
+                and `unit_price` between #{condition.unitPrice.from} and #{condition.unitPrice.to}
+            </if>
+            <if test="condition.unitOfMeasure != null and condition.unitOfMeasure != ''">
+                and `unit_of_measure` = #{condition.unitOfMeasure}
+            </if>
+        </where>
+    </select>
+
+
 </mapper>

@@ -8,9 +8,12 @@ import com.meituan.catering.management.shop.api.http.model.enumeration.Managemen
 import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 
-public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter{
+public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter {
 
     public static ShopDetailHttpDTO toShopDetailHttpResponse(ShopBO shopBO) {
+        if (shopBO == null){
+            return null;
+        }
         ShopDetailHttpDTO shopDetailHttpResponse = new ShopDetailHttpDTO();
         shopDetailHttpResponse.setId(shopBO.getId());
         shopDetailHttpResponse.setTenantId(shopBO.getTenantId());
@@ -20,13 +23,12 @@ public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter{
         shopDetailHttpResponse.setManagementType(shopBO.getManagementType());
         shopDetailHttpResponse.setBusinessType(shopBO.getBusinessType());
         shopDetailHttpResponse.setContact(toContactHttpModel(shopBO));
-        shopDetailHttpResponse.setOpeningHours(toOpeningHoursTimeRange(shopBO.getOpenTime(),shopBO.getCloseTime()));
+        shopDetailHttpResponse.setOpeningHours(toOpeningHoursTimeRange(shopBO.getOpenTime(), shopBO.getCloseTime()));
         shopDetailHttpResponse.setBusinessArea(shopBO.getBusinessArea());
         shopDetailHttpResponse.setComment(shopBO.getComment());
         shopDetailHttpResponse.setEnabled(shopBO.getEnabled());
         shopDetailHttpResponse.setVersion(shopBO.getVersion());
         return shopDetailHttpResponse;
-
 
     }
 

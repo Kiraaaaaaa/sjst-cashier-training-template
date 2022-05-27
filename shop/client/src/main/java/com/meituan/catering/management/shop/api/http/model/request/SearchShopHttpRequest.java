@@ -59,7 +59,7 @@ public class SearchShopHttpRequest {
         private Set<BusinessTypeEnum> businessTypes = new LinkedHashSet<>();
 
         @ApiModelProperty("支持搜索的门店开放关闭状态")
-        private Boolean enabled;
+        private Boolean enabled = null;
 
     }
 

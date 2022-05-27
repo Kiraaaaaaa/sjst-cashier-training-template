@@ -21,22 +21,6 @@ public interface ProductMapper {
      */
     List<ProductDO> searchForPage(SearchProductDataRequest dataRequest);
 
-    /**
-     * 根据租户号找到商品DO实例
-     *
-     * @param tenantId 租户号
-     * @return 该租户下的所有商品DO实例
-     */
-    List<ProductDO> findAll(Long tenantId);
-
-    /**
-     * 根据物理ID列表找到商品DO实例列表
-     *
-     * @param tenantId 租户号
-     * @param ids      物理ID列表
-     * @return 商品DO实例
-     */
-    List<ProductDO> findByIds(Long tenantId, Set<Long> ids);
 
     /**
      * 根据物理ID找到商品DO实例
@@ -71,14 +55,4 @@ public interface ProductMapper {
      */
     int updateSelective(ProductDO productDO);
 
-    /**
-     * 根据物理ID修改商品上架状态
-     *
-     * @param tenantId 租户ID
-     * @param id       物理ID
-     * @param enabled  上架-1，下架-2
-     * @param version  乐观锁版本号
-     * @return 更新条数
-     */
-    int changeEnabledById(Long tenantId, Long id, Integer enabled, Integer version);
 }

@@ -3,12 +3,13 @@ package com.meituan.catering.management.common.model.api;
 import com.facebook.swift.codec.ThriftField;
 import com.facebook.swift.codec.ThriftStruct;
 import lombok.Data;
+import org.apache.http.HttpStatus;
 
 /**
  * @author mac
  */
 @ThriftStruct
-public final class Status {
+public final class Status implements HttpStatus {
 
     private Integer code = 0;
 

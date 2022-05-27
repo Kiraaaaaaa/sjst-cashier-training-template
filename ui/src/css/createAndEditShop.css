@@ -1,0 +1,51 @@
+.create-shop-footer {
+    border-top: 1px solid lightgray;
+    padding-top: 20px;
+}
+.create-shop-footer .ant-btn {
+    width: 90%;
+    border-radius: 10px;
+    background-color: rgb(255, 189, 0);
+}
+.create-shop-footer .ant-btn:hover {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(235 174 0);
+}
+.create-shop-footer .ant-btn:focus {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(255, 189, 0);
+}
+.create-shop-head .ant-row{
+    background-color: lightgray;
+    height: 40px;
+}
+.create-shop-head .ant-col{
+    line-height: 36px;
+    font-size: 20px;
+}
+.create-shop-info{
+    margin-bottom: 10px;
+    background-color: whitesmoke;
+    height: 30px;
+}
+.create-shop-info .ant-col{
+    font-size: 18px;
+    font-weight: bold;
+}
+.close-btn .ant-btn {
+
+    border-radius: 10px;
+    background-color: rgb(255, 189, 0);
+}
+.close-btn .ant-btn:hover {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(235 174 0);
+}
+.close-btn .ant-btn:focus {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(255, 189, 0);
+}

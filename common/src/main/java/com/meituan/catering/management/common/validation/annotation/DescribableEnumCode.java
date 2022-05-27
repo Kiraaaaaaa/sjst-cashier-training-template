@@ -37,7 +37,8 @@ public @interface DescribableEnumCode {
 
     @Target({FIELD, PARAMETER})
     @Retention(RUNTIME)
-    @Documented @interface List {
+    @Documented
+    @interface List {
 
         DescribableEnumCode[] value();
     }

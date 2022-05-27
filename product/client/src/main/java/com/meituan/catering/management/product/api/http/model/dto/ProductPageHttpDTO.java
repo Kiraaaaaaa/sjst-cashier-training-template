@@ -66,5 +66,6 @@ public class ProductPageHttpDTO {
 
         @ApiModelProperty("是否上架")
         private Boolean enabled;
+
     }
 }

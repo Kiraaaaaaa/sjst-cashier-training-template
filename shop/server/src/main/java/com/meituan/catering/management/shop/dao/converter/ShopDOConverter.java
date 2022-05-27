@@ -1,6 +1,7 @@
 package com.meituan.catering.management.shop.dao.converter;
 
 import com.meituan.catering.management.shop.biz.model.request.SaveShopBizRequest;
+import com.meituan.catering.management.shop.biz.model.request.UpdateShopBizRequest;
 import com.meituan.catering.management.shop.dao.model.ShopDO;
 
 import java.util.Date;
@@ -30,5 +31,28 @@ public class ShopDOConverter {
         shopDO.setLastModifiedBy(userId);
         shopDO.setLastModifiedAt(new Date());
         return shopDO;
+    }
+
+    public static ShopDO toShopDO(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) {
+        ShopDO shopDO = new ShopDO();
+        shopDO.setBusinessNo(businessNo);
+        shopDO.setName(updateShopBizRequest.getName());
+        shopDO.setBusinessType(updateShopBizRequest.getBusinessType());
+        shopDO.setManagementType(updateShopBizRequest.getManagementType());
+        shopDO.setContactTelephone(updateShopBizRequest.getContact().getTelephone());
+        shopDO.setContactCellphone(updateShopBizRequest.getContact().getCellphone());
+        shopDO.setContactName(updateShopBizRequest.getContact().getName());
+        shopDO.setContactAddress(updateShopBizRequest.getContact().getAddress());
+        shopDO.setOpeningHoursOpenTime(updateShopBizRequest.getOpeningHours().getOpenTime());
+        shopDO.setOpeningHoursCloseTime(updateShopBizRequest.getOpeningHours().getCloseTime());
+        shopDO.setBusinessArea(updateShopBizRequest.getBusinessArea());
+        shopDO.setComment(updateShopBizRequest.getComment());
+        shopDO.setTenantId(tenantId);
+        shopDO.setVersion(updateShopBizRequest.getVersion());
+        shopDO.setLastModifiedBy(userId);
+        shopDO.setLastModifiedAt(new Date());
+
+        return shopDO;
+
     }
 }

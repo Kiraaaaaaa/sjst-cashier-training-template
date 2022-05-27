@@ -5,7 +5,7 @@ import com.meituan.catering.management.common.model.enumeration.IError;
 /**
  * @author mac
  */
-public class BizException extends Exception{
+public class BizException extends RuntimeException{
     private IError errorCode;
 
     public BizException(IError errorCode) {
