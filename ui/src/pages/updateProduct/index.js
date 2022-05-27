@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Input, message, Modal, InputNumber, Divider } from "antd";
+import { Button, Form, Row, Col, Input, message, Modal, InputNumber, Divider, Skeleton } from "antd";
 import { LeftOutlined, UnorderedListOutlined, MinusCircleOutlined,  } from "@ant-design/icons";
 import "../../css/createAndEditProduct.css";
 import React, { useEffect, useState } from "react";
@@ -341,7 +341,7 @@ export default function UpdateProduct(){
         <div className="create-shop-head">
           <Row>
             <Col span={1}><LeftOutlined onClick={()=>navigate('/product')}/></Col>
-            <Col span={21}>编辑-{productItem!==undefined?productItem.name:null}</Col>
+            <Col span={21}>编辑-{(productItem===null || productItem===undefined)?null:productItem.name}</Col>
             <Col span={1}>
               <UnorderedListOutlined />
             </Col>
@@ -357,134 +357,140 @@ export default function UpdateProduct(){
           <Row className="create-shop-info">
             <Col>通用信息</Col>
           </Row>
-          <Row>
-            <Col span={24}>
-              <Form.Item
-              label="菜品名"
-              name='name'
-              rules={[
-                {
-                  required: true,
-                },
-                {
-                  pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,10}$/,
-                  message: '输入不能含特殊字符，且长度不大于10',
-                },
-              ]}
-              >
-                <Input/>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={12}>
-              <Form.Item
-              label="菜品单价"
-              name="unitPrice"
-              rules={[
-                {
-                  required: true,
-                  message: '输入不能为空',
-                },
-                {
-                  validator(_, value) {
-                    if (!value||(999.9 >= value && value >= 0.01)) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('价格区间在0.01到999.9之间!'));
-                  },
-                },
-              ]}
-              >
-                <InputNumber style={{width:'100%'}}/>
-              </Form.Item> 
-            </Col>
-            <Col span={11} offset={1}>
-                <Form.Item
-                label="计量单位"
-                name="unitOfMeasure"
-                rules={[
-                  {
-                    required: true,
-                  },
-                  {
-                    pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,6}$/,
-                    message: '输入不能含特殊字符，且长度不大于5',
-                  },
-                ]}
-                >
-                  <Input/>
-                </Form.Item> 
-            </Col>
-          </Row>
-          <Row>
-            <Col span={12}>
-              <Form.Item
-              name='minSalesQuantity'
-              label='起售量'
-              rules={[
-                {
-                  required: true,
-                  message: '输入不能为空',
-                },
-                {
-                  validator(_, value) {
-                    if (!value||(100 >= value && value >= 1)) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('输入区间在1~100!'));
-                  },
-                },
-              ]}
-              >
-                <InputNumber style={{width:'100%'}}/>
-              </Form.Item>
-            </Col>
-            <Col span={11} offset={1}>
-              <Form.Item
-              label='增售量'
-              name='increaseSalesQuantity'
-              rules={[
-                {
-                  required: true,
-                  message: '输入不能为空',
-                },
-                {
-                  validator(_, value) {
-                    if (!value||(100 >= value && value >= 1)) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('输入区间在1~100!'));
-                  },
-                },
-              ]}
-              >
-                <InputNumber min={1} style={{width:'100%'}}/>
-              </Form.Item> 
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <Form.Item
-              label='描述'
-              name='description'
-              rules={[
-                {
-                  type: 'string',
-                  required: true,
-                  whitespace: true,
-                  message: '输入不能为空'
-                },
-                {
-                  max: 50,
-                  message: '输入不能大于50个字符',
-                },               
-              ]}
-              >
-                <Input/>
-              </Form.Item> 
-            </Col>
-          </Row>
+          {
+            (productItem === undefined || productItem === null)? 
+            <Skeleton active /> :
+            <>
+              <Row>
+                <Col span={24}>
+                  <Form.Item
+                  label="菜品名"
+                  name='name'
+                  rules={[
+                    {
+                      required: true,
+                    },
+                    {
+                      pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,10}$/,
+                      message: '输入不能含特殊字符，且长度不大于10',
+                    },
+                  ]}
+                  >
+                    <Input/>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item
+                  label="菜品单价"
+                  name="unitPrice"
+                  rules={[
+                    {
+                      required: true,
+                      message: '输入不能为空',
+                    },
+                    {
+                      validator(_, value) {
+                        if (!value||(999.9 >= value && value >= 0.01)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('价格区间在0.01到999.9之间!'));
+                      },
+                    },
+                  ]}
+                  >
+                    <InputNumber style={{width:'100%'}}/>
+                  </Form.Item> 
+                </Col>
+                <Col span={11} offset={1}>
+                    <Form.Item
+                    label="计量单位"
+                    name="unitOfMeasure"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                      {
+                        pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,6}$/,
+                        message: '输入不能含特殊字符，且长度不大于5',
+                      },
+                    ]}
+                    >
+                      <Input/>
+                    </Form.Item> 
+                </Col>
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item
+                  name='minSalesQuantity'
+                  label='起售量'
+                  rules={[
+                    {
+                      required: true,
+                      message: '输入不能为空',
+                    },
+                    {
+                      validator(_, value) {
+                        if (!value||(100 >= value && value >= 1)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('输入区间在1~100!'));
+                      },
+                    },
+                  ]}
+                  >
+                    <InputNumber style={{width:'100%'}}/>
+                  </Form.Item>
+                </Col>
+                <Col span={11} offset={1}>
+                  <Form.Item
+                  label='增售量'
+                  name='increaseSalesQuantity'
+                  rules={[
+                    {
+                      required: true,
+                      message: '输入不能为空',
+                    },
+                    {
+                      validator(_, value) {
+                        if (!value||(100 >= value && value >= 1)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('输入区间在1~100!'));
+                      },
+                    },
+                  ]}
+                  >
+                    <InputNumber min={1} style={{width:'100%'}}/>
+                  </Form.Item> 
+                </Col>
+              </Row>
+              <Row>
+                <Col span={24}>
+                  <Form.Item
+                  label='描述'
+                  name='description'
+                  rules={[
+                    {
+                      type: 'string',
+                      required: true,
+                      whitespace: true,
+                      message: '输入不能为空'
+                    },
+                    {
+                      max: 50,
+                      message: '输入不能大于50个字符',
+                    },               
+                  ]}
+                  >
+                    <Input/>
+                  </Form.Item> 
+                </Col>
+              </Row>
+            </>
+          }
           <Row className="create-shop-info">
             <Col>做法</Col>
             <Col span={6} offset={17}>
@@ -494,7 +500,9 @@ export default function UpdateProduct(){
             </Col> 
           </Row>
           {
-            (methodGroup!==undefined && methodGroup.length>0) && methodGroup.map((item, index)=>{
+            methodGroup === undefined ?
+            <Skeleton active /> :
+            (methodGroup.length>0) && methodGroup.map((item, index)=>{
               return (
                 <>
                 {
@@ -594,7 +602,9 @@ export default function UpdateProduct(){
             <Col>加料</Col>
           </Row>
           {
-            (accessoryGroup!==undefined && accessoryGroup.length>0) && accessoryGroup[0].options.map((item, index) => {
+             methodGroup === undefined ?
+             <Skeleton active /> :
+            (accessoryGroup.length>0) && accessoryGroup[0].options.map((item, index) => {
               console.log(item);
               const name = item.name;
               const price = item.unitPrice;

@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Select, Input, TimePicker, message, Modal} from "antd";
+import { Button, Form, Row, Col, Select, Input, TimePicker, Space, Modal, notification, Tag } from "antd";
 import {LeftOutlined, UnorderedListOutlined} from "@ant-design/icons";
 import "../../css/createAndEditShop.css";
 import React, { useEffect, useState } from "react";
@@ -30,7 +30,7 @@ export default function CreatShop(){
 
   /** 创建门店request请求 */
   const creatAxiosRequest = (request, headerValues) => {
-    const [tenantId, userId, name] = [headerValues.tenantId, headerValues.userId, request.name];
+    const [tenantId, userId, shopName] = [headerValues.tenantId, headerValues.userId, request.name];
     const instance = axios.create({
       headers:{tenantId, userId}
     });
@@ -39,12 +39,38 @@ export default function CreatShop(){
       .then(response => {
         const code = response.data.status.code;
         if(code === 0){
-          message.success(`门店${name}创建成功`);
+          notification['success']({
+            message: `门店${shopName}创建成功`,
+            description:
+            <Space direction="vertical">
+              <div>
+                <Tag color='green'>创建者</Tag>
+                <span>{userId}</span>
+              </div>
+              <div>
+                <Tag color='blue'>创建时间</Tag>
+                <span>{moment().format('YYYY-MM-DD HH:mm:ss')}</span>
+              </div>
+            </Space>
+          });
           if(toShop){
             navigate('/shop');
           }
         }else{
-          message.error(`门店${name}创建失败，响应码${code}`);
+          notification['error']({
+            message: `门店${shopName}创建失败`,
+            description:
+            <Space direction="vertical">
+              <div>
+                <Tag color='red'>响应码</Tag>
+                <span>{code}</span>
+              </div>
+              <div>
+                <Tag color='yellow'>详细信息</Tag>
+                <span>请联系系统管理员</span>
+              </div>
+            </Space>
+          });
         }
         console.log(response);
       }, error => {

@@ -85,7 +85,7 @@ public class ProductController {
         return response;
     }
 
-    @RepeatSubmit
+//    @RepeatSubmit
     @ApiOperation("创建新商品")
     @PostMapping("/create")
     public ProductDetailHttpResponse create(
@@ -103,7 +103,7 @@ public class ProductController {
         return response;
     }
 
-    @RepeatSubmit
+//    @RepeatSubmit
     @ApiOperation("更新已有商品的信息")
     @PutMapping("/{id}")
     public ProductDetailHttpResponse update(

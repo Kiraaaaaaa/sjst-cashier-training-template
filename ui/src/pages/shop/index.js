@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, notification } from "antd";
+import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, notification, Skeleton } from "antd";
 import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined} from "@ant-design/icons";
 import "../../css/shop.css";
 import React, { useState, useEffect } from "react";
@@ -18,7 +18,20 @@ const BUSINESS_TYPE = new Map([
 ]);
 const MANAGEMENT_TYPE = new Map([['DIRECT_SALES', '直营'], ['ALLIANCE', '加盟']]);
 
+/** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
+function useCounter() {
+    const [count, setCount] = useState(0); // 计数
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        count<=1 && setCount(count + 1); // 时间小于2s，计数+1，否则暂停计数器
+      }, 1000);
+      return () => clearTimeout(timer); // 组件销毁前和更新前，清理 timer
+    }, [count]); // 监听依赖列表
+    // 重新搜索时重置计数
+    const reset = () => setCount(0);
 
+    return [count, reset]; 
+}
 export default function Shop(){
 
     let navigate = useNavigate();
@@ -27,6 +40,7 @@ export default function Shop(){
     const [shopList, setShopList] = useState([]);
     const [isSearchBtn, setIsSearchBtn] = useState(false);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
+    const [loaddingTime, resetTime] = useCounter();
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
 
@@ -147,8 +161,18 @@ export default function Shop(){
 
     /** 手动搜索结果 */
     const onSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
+        submitForm();
+    }
+    
+    /** 重置搜索 */
+    const resetSearch = () => {
+        resetTime();
+        setIsSearchBtn(true);
+        setPageIndex(DEFUALT_PAGE_INDEX);
+        initialSearchForm();
         submitForm();
     }
 
@@ -206,8 +230,7 @@ export default function Shop(){
         instance
             .post('/shop/search/', request)
             .then(res => {
-                console.log(res);
-                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
+                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], 1, 0] : 
                 [
                     res.data.data.records, 
                     res.data.data.totalPageCount, 
@@ -234,14 +257,6 @@ export default function Shop(){
             managementType: null,
             name: '',
         })
-    }
-
-    /** 重置搜索 */
-    const resetSearch = () => {
-        setIsSearchBtn(true);
-        setPageIndex(DEFUALT_PAGE_INDEX);
-        initialSearchForm();
-        submitForm();
     }
 
     /** 门店营业状态更新 */
@@ -436,7 +451,7 @@ export default function Shop(){
                 <Row className="create-shop-btn">
                     <Col span={12}>
                         <Form.Item label="门店名" name={"name"}>
-                            <Input/>
+                            <Input onPressEnter={onSearch}/>
                         </Form.Item>
                     </Col>
                     <Col span={4} offset={1}>
@@ -451,12 +466,27 @@ export default function Shop(){
                     </Col>
                 </Row>
             </Form>
-            <Table
-                columns={columns}
-                dataSource={shopList}
-                pagination={false}
-                scroll={{y: 320}}
-            />
+
+            {/** 骨架屏和表格显示逻辑 */}
+            {
+                shopList.length === 0?
+                    loaddingTime >= 1 ?
+                        <Table
+                        columns={columns}
+                        dataSource={shopList}
+                        pagination={false}
+                        scroll={{y: 320}}
+                        />
+                        :
+                        <Skeleton active paragraph={{ rows: 10 }}/>
+                    :
+                    <Table
+                    columns={columns}
+                    dataSource={shopList}
+                    pagination={false}
+                    scroll={{y: 320}}
+                    />
+            }
             <Row style={{marginTop: '1%'}}>  
                 <Col span={8} offset={8}>
                     <PaginationBtn/>

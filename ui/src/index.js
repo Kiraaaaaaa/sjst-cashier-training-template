@@ -6,14 +6,6 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider, Empty, Button } from "antd";
 import cn from 'antd/es/locale/zh_CN';
-// window.onbeforeunload = function (e) {
-//   if (localStorage.getItem("isUpload") === 'yes') { //刷新时提示的条件
-//     localStorage.setItem("isUpload", 'no');
-//     const dialogText = "重新加载网页，系统可能不会保存您做的更改";
-//     e.returnValue = dialogText;
-//     return dialogText;
-//   }
-// };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const renderEmpty = () => (

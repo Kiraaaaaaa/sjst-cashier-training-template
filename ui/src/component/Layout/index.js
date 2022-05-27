@@ -83,8 +83,8 @@ function LayoutHome (){
           <Routes>
               <Route path="/" element={<Home/>}/>
               <Route path="/shop" element={<Shop/>}/>
-              <Route path="/product" element={<Product/>}/>
               <Route path="/order" element={<Order/>}/>
+              <Route path="/product" element={<Product/>}/>
               <Route path="/createShop" element={<CreateShop/>}/>
               <Route path="/updateShop" element={<UpdateShop/>}/>
               <Route path='/createProduct' element={<CreatProduct/>}/>

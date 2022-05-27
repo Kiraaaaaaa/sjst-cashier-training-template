@@ -1,8 +1,7 @@
-import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, InputNumber, notification } from "antd";
-import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined, SettingOutlined } from "@ant-design/icons"
+import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, InputNumber, notification, Skeleton } from "antd";
+import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getConstantInfo } from "../../utils/index";
 import axios from "axios";
 const { Option } = Select;
 
@@ -14,16 +13,34 @@ const ENABLED = new Map([[true, '已上架'], [false, '已下架']]);
 const PRODUCT_STATUS = new Map([[true, '下架'], [false, '上架']]);
 const CURRENCY_UNIT = '元'; //统一价格单位;
 
+
+/** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
+function useCounter() {
+    const [count, setCount] = useState(0); // 计数
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        count<=1 && setCount(count + 1); // 时间小于2s，计数+1，否则暂停计数器
+      }, 1000);
+      return () => clearTimeout(timer); // 组件销毁前和更新前，清理 timer
+    }, [count]); // 监听依赖列表
+    // 重新搜索时重置计数
+    const reset = () => setCount(0);
+
+    return [count, reset]; 
+}
+
 export default function Product(){
 
     let navigate = useNavigate();
     const [form] = Form.useForm();
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
+    const [loaddingTime, resetTime] = useCounter();
     const [isSearchBtn, setIsSearchBtn] = useState(false);
     const [productList, setProductList] = useState([]);
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
+
     const columns = [
         {
             title: '状态',
@@ -65,7 +82,7 @@ export default function Product(){
                 },
                 {
                     text: '碗',
-                    value: '元/盘'
+                    value: '元/碗'
                 },
                 {
                     text: '克',
@@ -131,6 +148,7 @@ export default function Product(){
 
     /** 手动搜索结果 */
     const onSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         submitForm();
@@ -138,6 +156,7 @@ export default function Product(){
 
     /** 重置搜索 */
     const resetSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         initialSearchForm();
@@ -202,10 +221,9 @@ export default function Product(){
             .post('/product/search', request)
             .then(res => {
                 console.log(res);
-                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
-                [
+                const [data, totalPageCount, totalCount] = [
                     res.data.data.records, 
-                    res.data.data.totalPageCount, 
+                    res.data.data.totalPageCount === 0 ? 1 : res.data.data.totalPageCount, 
                     res.data.data.totalCount,
                 ];
                 if(isSearchBtn){
@@ -445,14 +463,9 @@ export default function Product(){
                     name="unitOfMeasure"
                     rules={[
                         {
-                            type: 'string',
-                            whitespace: true,
-                            message: '输入不能为空格',
+                          pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,5}$/,
+                          message: '不能含特殊字符，且长度不大于5',
                         },
-                        {
-                            max: 5,
-                            message: '计量单位的最大长度为5字符',
-                          },
                     ]}
                      >
                         <Input/>
@@ -476,12 +489,12 @@ export default function Product(){
                         }
                     ]}
                     >
-                        <Input/>
+                        <Input onPressEnter={onSearch}/>
                     </Form.Item>
                 </Col>
                 <Col span={4} offset={1}>
                     <Form.Item>
-                        <Button style={{width:'100%'}} onClick={onSearch}>查询</Button>
+                        <Button style={{width:'100%'}} onClick={onSearch} >查询</Button>
                     </Form.Item>
                 </Col>
                 <Col span={4} offset={1}>
@@ -491,12 +504,28 @@ export default function Product(){
                 </Col>
             </Row>
         </Form>
-        <Table
-            columns={columns}
-            dataSource={productList}
-            pagination={false}
-            scroll={{y: 320}}
-        />
+        
+        {/** 骨架屏和表格显示逻辑 */}
+        {
+            productList.length === 0 ?
+                loaddingTime >= 1 ? 
+                    <Table
+                    columns={columns}
+                    dataSource={productList}
+                    pagination={false}
+                    scroll={{y: 320}}
+                    /> 
+                    :
+                    <Skeleton active paragraph={{ rows: 10 }}/>
+                :
+                <Table
+                columns={columns}
+                dataSource={productList}
+                pagination={false}
+                scroll={{y: 320}}
+                />
+        }
+        
         <Row style={{marginTop: '1%'}}>  
             <Col span={8} offset={8}>
                 <PaginationBtn/>
