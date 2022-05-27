@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Select, Input, TimePicker, message, Modal } from "antd";
+import { Button, Form, Row, Col, Select, Input, TimePicker, message, Modal, notification, Space, Tag } from "antd";
 import { LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import "../../css/createAndEditShop.css";
 import React, { useEffect, useState } from "react";
@@ -62,7 +62,7 @@ export default function UpdateShop(){
 
   /** 更新门店请求 */
   const creatAxiosRequest = (request, formValues) => {
-    const [tenantId, userId, businessNo, name] = [formValues.tenantId, formValues.createdBy, formValues.businessNo, formValues.name];
+    const [tenantId, userId, businessNo, shopName] = [formValues.tenantId, formValues.createdBy, formValues.businessNo, formValues.name];
     const instance = axios.create({
       headers:{tenantId:tenantId, userId:userId}
     });
@@ -70,14 +70,40 @@ export default function UpdateShop(){
       .put(`/shop/${businessNo}`, request)
       .then(response=>{
         const code = response.data.status.code;
-        if(code===0){
-          message.success(`门店${name}更新成功`);
+        if(code === 0){
+          notification['success']({
+            message: `门店${shopName}更新成功`,
+            description:
+            <Space direction="vertical">
+              <div>
+                <Tag color='green'>修改者</Tag>
+                <span>{userId}</span>
+              </div>
+              <div>
+                <Tag color='blue'>更新时间</Tag>
+                <span>{moment().format('YYYY-MM-DD HH:mm:ss')}</span>
+              </div>
+            </Space>
+          });
           queryShop(tenantId, userId, businessNo);
+          if(toShop){
+            navigate('/shop');
+          }
         }else{
-          message.error(`门店${name}更新失败，响应码${code}`);
-        };
-        if(toShop){
-          navigate('/shop');
+          notification['error']({
+            message: `门店${shopName}更新失败`,
+            description:
+            <Space direction="vertical">
+              <div>
+                <Tag color='red'>响应码</Tag>
+                <span>{code}</span>
+              </div>
+              <div>
+                <Tag color='yellow'>详细信息</Tag>
+                <span>请联系系统管理员</span>
+              </div>
+            </Space>
+          });
         }
         console.log(response);
       }, error => {
@@ -137,6 +163,7 @@ export default function UpdateShop(){
         style={{margin: 20}}
         form={form}
         onFinish={onFinish}
+        colon={false}
         >
           <Row className="create-shop-info">
             <Col>通用信息</Col>
@@ -363,7 +390,7 @@ export default function UpdateShop(){
             <Button onClick={()=>{setModalVisible(false)}}>回到当前页面</Button>
             </Col>
             <Col span={11} offset={1}>
-            <Button onClick={()=>{navigate('/shop')}}>返回主页面</Button>
+            <Button onClick={()=>{navigate('/shop')}} style={{background: 'white'}}>返回主页面</Button>
             </Col>
           </Row>
           </div>

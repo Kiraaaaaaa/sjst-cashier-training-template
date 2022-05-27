@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Select, Input, Table, Tag, InputNumber, notification } from "antd";
+import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, InputNumber, notification, Skeleton } from "antd";
 import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,129 +9,117 @@ const DEFUALT_PAGE_INDEX = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const USER_INFO = {tenantId:500, userId:11000};
 const DEFULT_PAGE_TOTALCOUNT = [1, 2, 3, 4, 5];
-const ORDER_STATUS = new Map([
-    ['PLACED', '已下单'], ['PREPARING', '制作中'],
-    ['PREPARED', '已出餐'], ['BILLED', '已结账'], ['CANCELLED', '已取消']
-]);
+const ENABLED = new Map([[true, '已上架'], [false, '已下架']]);
+const PRODUCT_STATUS = new Map([[true, '下架'], [false, '上架']]);
+const CURRENCY_UNIT = '元'; //统一价格单位;
 
-const testData = [
-    {
-        status: 'PLACED',
-        shopName: '门店1',
-        tableNo: 'A08',
-        customerCount: 2,
-        totalPrice: 86.6,
-    }
-]
-export default function Order(){
+
+/** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
+function useCounter() {
+    const [count, setCount] = useState(0); // 计数
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        count<=1 && setCount(count + 1); // 时间小于2s，计数+1，否则暂停计数器
+      }, 1000);
+      return () => clearTimeout(timer); // 组件销毁前和更新前，清理 timer
+    }, [count]); // 监听依赖列表
+    // 重新搜索时重置计数
+    const reset = () => setCount(0);
+
+    return [count, reset]; 
+}
+
+export default function Product(){
 
     let navigate = useNavigate();
     const [form] = Form.useForm();
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
+    const [loaddingTime, resetTime] = useCounter();
     const [isSearchBtn, setIsSearchBtn] = useState(false);
     const [productList, setProductList] = useState([]);
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
+
     const columns = [
         {
             title: '状态',
-            dataIndex: 'status',
-            key: 'status',
-            sorter: (a, b) => a.status - b.status,
-            render: status => 
-            <Tag style={{fontSize: 15}} >{ORDER_STATUS.get(status)}</Tag>,
+            dataIndex: 'enabled',
+            key: 'enabled',
+            sorter: (a, b) => a.enabled - b.enabled,
+            render: enabled => 
+            <Tag style={{fontSize: 15}} color={enabled ? 'green': 'red'}>{ENABLED.get(enabled)}</Tag>,
         },
         {
-            title: '门店',
-            dataIndex: 'shopName',
-            key: 'shopName',
-            sorter: (a, b) => a.shopName.localeCompare(b.shopName),
+            title: '菜品名',
+            dataIndex: 'name',
+            key: 'name',
+            sorter: (a, b) => a.name.localeCompare(b.name),
         },
         {
-            title: '座位号',
-            dataIndex: 'tableNo',
-            key: 'tableNo',
-            sorter: (a, b) => a.tableNo - b.tableNo,
+            title: '菜品单价(元)',
+            dataIndex: 'unitPrice',
+            key: 'unitPrice',
+            sorter: (a, b) => a.unitPrice - b.unitPrice,
         },
         {
-            title: '就餐人数',
-            dataIndex: 'customerCount',
-            key: 'customerCount',
-            sorter: (a, b) => a.customerCount - b.customerCount,
-        },
-        {
-            title: '订单总价(元)',
-            dataIndex: 'totalPrice',
-            key: 'totalPrice',
-            sorter: (a, b) => a.totalPrice - b.totalPrice,
+            title: '计量单位',
+            dataIndex: 'unitOfMeasure',
+            key: 'unitOfMeasure',
+            filterSearch: true,
+            filters: [
+                {
+                    text: '斤',
+                    value: '元/斤',
+                },
+                {
+                    text: '份',
+                    value: '元/份',
+                },
+                {
+                    text: '盘',
+                    value: '元/盘',
+                },
+                {
+                    text: '碗',
+                    value: '元/碗'
+                },
+                {
+                    text: '克',
+                    value: '元/克',
+                },
+                {
+                    text: '公斤',
+                    value: '元/公斤',
+                },
+            ],
+            onFilter: (value, record) => record.unitOfMeasure.indexOf(value) === 0,
+            render: unitOfMeasure => (unitOfMeasure.split('/')[1])
         },
         {
             title: '操作',
-            render: text => <div style={{margin: -15}}>{getColumnOptions(text)}</div>,
+            render: text => (
+                <div style={{margin: -15}}>
+                    <Button type="link" onClick={()=>navigate('/updateProduct', {state: {data: text}, replace: true})}>
+                        编辑
+                    </Button>
+                    <span style={{color: 'lightgray'}}>|</span>
+                    <Popconfirm
+                    title={`确定${PRODUCT_STATUS.get(text.enabled)}此菜品?`}
+                    onConfirm={confirm.bind(this, text)}
+                    onCancel={cancel.bind(this, text)}
+                    okText="确定"
+                    cancelText="取消"
+                    >
+                    <Button type="link">
+                        {PRODUCT_STATUS.get(text.enabled)}
+                    </Button>
+                    </Popconfirm>                 
+                </div>
+            ),
         },
     ];
-    
-    const getColumnOptions = (orderItem) => {
-        switch (orderItem.status) {
-            case 'PLACED':
-                return (
-                    <>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
-                        制作
-                    </Button>
-                    <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
-                        加退菜
-                    </Button>
-                    </>
-                );
-            case 'PREPARING':
-                return (
-                    <>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
-                        制作
-                    </Button>
-                    <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/produce', {state: {data: orderItem}, replace: true})}>
-                        出餐
-                    </Button>
-                    <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
-                        加退菜
-                    </Button>
-                    </>
-                );
-            case 'PREPARED':
-                return (
-                    <>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
-                        加退菜
-                    </Button>
-                    <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
-                        结账
-                    </Button>   
-                    </>
-                );
-            case 'BILLED':
-                return (
-                    <Button type="link" onClick={()=>navigate('/orderCheck', {state: {data: orderItem}, replace: true})}>
-                        查看
-                    </Button> 
-                );
-            case 'CANCELLED':
-                return (
-                    <Button type="link" onClick={()=>navigate('/orderCheck', {state: {data: orderItem}, replace: true})}>
-                        查看
-                    </Button>
-                )
-            default:
-                return (
-                    <span>未知订单状态</span>
-                )
-        }
-    }
+
     useEffect(() => {
         resetSearch();
     }, []);
@@ -139,9 +127,11 @@ export default function Order(){
      /** 初始化表单 */
      const initialSearchForm = () => {
         form.setFieldsValue({
-            status: null,
+            enabled: null,
             minPrice: '',
             maxPrice: '',
+            unitOfMeasure: '',
+            name: '',
         })
     }
 
@@ -158,6 +148,7 @@ export default function Order(){
 
     /** 手动搜索结果 */
     const onSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         submitForm();
@@ -165,6 +156,7 @@ export default function Order(){
 
     /** 重置搜索 */
     const resetSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         initialSearchForm();
@@ -173,18 +165,18 @@ export default function Order(){
 
     /** 接口request结构体 */
     const createRequestBody = (searchValues, pageIndex, pageSize) => {
-        const [tableNo, customerCount, minPrice, maxPrice, status] = [
-            searchValues.tableNo,
-            searchValues.customerCount,
+        const [unitOfMeasure, minPrice, maxPrice, enabled, name] = [
+            searchValues.unitOfMeasure.length === 0 ? "" : CURRENCY_UNIT+'/'+searchValues.unitOfMeasure, 
             searchValues.minPrice, 
             searchValues.maxPrice,
-            searchValues.status, 
+            searchValues.enabled, 
+            searchValues.name
         ];
         const requestBody = {
             "condition": {
-                "customerCount": customerCount,
-                "status": status,
-                "tableNo": tableNo,
+                "enabled": enabled,
+                "name": name,
+                "unitOfMeasure": unitOfMeasure,
                 "unitPrice": {
                     "from": minPrice,
                     "to": maxPrice
@@ -195,7 +187,7 @@ export default function Order(){
               "sortFields": [
                 {
                   "asc": false,
-                  "field": "status"
+                  "field": "enabled"
                 },
                 {
                   "asc": false,
@@ -226,13 +218,12 @@ export default function Order(){
             headers: {tenantId: USER_INFO.tenantId, userId: USER_INFO.userId}
         });
         instance
-            .post('/order/catering/search', request)
+            .post('/product/search', request)
             .then(res => {
                 console.log(res);
-                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
-                [
+                const [data, totalPageCount, totalCount] = [
                     res.data.data.records, 
-                    res.data.data.totalPageCount, 
+                    res.data.data.totalPageCount === 0 ? 1 : res.data.data.totalPageCount, 
                     res.data.data.totalCount,
                 ];
                 if(isSearchBtn){
@@ -246,6 +237,47 @@ export default function Order(){
                 console.log(error);
             })
     }
+
+    /** 菜品状态更新 */
+    const updateStatusState = productItem =>{
+        const newProductList = productList.map(item => {
+            if(item.id === productItem.id){
+                item.enabled = item.enabled?0:1;
+                item.version += 1;
+            }
+            return item;
+        })
+        setProductList(newProductList);
+        submitForm();
+        message.success(`${productItem.enabled?'上架':'下架'}菜品成功`);
+    }
+
+    /** 创建菜品上/下架request请求 */
+    const creatAxiosRequest = (productItem, headerValues) => {
+        const [id, status, version] = [productItem.id, productItem.enabled, {version: productItem.version}];
+        const instance = axios.create({
+          headers:{tenantId: headerValues.tenantId, userId: headerValues.userId}
+        });
+        instance
+          .post(`/product/${id}/${status?'disable':'enable'}`, version)
+          .then(response => {
+              const code = response.data.status.code;
+              code===0?updateStatusState(productItem):message.error(`${status?'下架':'上架'}菜品失败，响应码${code}`);
+              submitForm();
+              console.log(response);
+          }, error => {
+            console.log(error);
+          })
+      }
+
+    const confirm = productItem =>{
+        creatAxiosRequest(productItem, USER_INFO);
+    }
+
+    const cancel = productItem =>{
+        message.error(`取消${productItem.enabled?'下架':'上架'}菜品`);
+    }
+    
 
     /** 自定义分页组件 */
     function PaginationBtn(){
@@ -346,10 +378,10 @@ export default function Order(){
         <div className="shop-head">
             <Row className="create-shop-btn">
                 <Col><LeftOutlined onClick={()=>navigate('/')}/></Col>
-                <Col offset={10}>订单管理</Col>
+                <Col offset={10}>菜品管理</Col>
                 <Col offset={8} span={3}>
-                    <Button onClick={()=>navigate('/createOrder')}>
-                        创建新订单
+                    <Button onClick={()=>navigate('/createProduct')}>
+                        创建新菜品
                     </Button>
                 </Col>
                 <Col>
@@ -365,81 +397,24 @@ export default function Order(){
         >
             <Row>
                 <Col span={8}>
-                    <Form.Item label="状态" name="status">
+                    <Form.Item label="状态" name="enabled">
                         <Select>
                             <Option value={null}>所有</Option>
-                            <Option value="PLACED">已下单</Option>
-                            <Option value="PREPARING">制作中 </Option>
-                            <Option value="PREPARED">已出餐</Option>
-                            <Option value="BILLED">已完成</Option>
-                            <Option value="CANCELLED">已取消</Option>
+                            <Option value={1}>已上架</Option>
+                            <Option value={0}>已下架 </Option>
                         </Select>
                     </Form.Item> 
                 </Col>
-                <Col span={8} offset={1}>
-                    <Form.Item 
-                    label="座位号"
-                     name="tableNo"
-                     rules={[
-                        {
-                          pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,5}$/,
-                          message: '不能含特殊字符，且长度不大于5',
-                        },
-                      ]}
-                     >
-                        <Input/>
-                    </Form.Item> 
-                </Col>
-                <Col span={6} offset={1}>
-                    <Form.Item 
-                    label="就餐人数 " 
-                    name="customerCount"
-                    rules={[
-                        {
-                          validator(_, value) {
-                            if (!value||(100 > value && value >= 1)) {
-                              return Promise.resolve();
-                            }
-                            return Promise.reject(new Error('最多两位数字!'));
-                          },
-                        },
-                      ]}
-                     >
-                        <InputNumber min={0} style={{width: '100%'}}/>
-                    </Form.Item> 
-                </Col>
-            </Row>
-            <Row className="create-shop-btn">
-                <Col span={12} style={{height: 0}}>
-                    <Form.Item label="订单总价">
+                <Col span={8} offset={1} style={{height: 0}}>
+                    <Form.Item label="菜品单价">
                         <Input.Group style={{width: '100%'}}>
                             <Row>
-                                <Col span={9}>
-                                    <Form.Item 
-                                    name='minPrice'
-                                    rules={[
-                                        {
-                                          validator(_, value) {
-                                            if (!value||(1000 >= value && value >= 0)) {
-                                              return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('价格区间在0到1000之间!'));
-                                          },
-                                        },
-                                    ]}
-                                    >
-                                        <InputNumber 
-                                        min={0} 
-                                        precision={0} 
-                                        style={{
-                                            width: '100%', 
-                                            borderRight: 0, 
-                                            borderRadius: 0
-                                        }}
-                                        />
+                                <Col span={7}>
+                                    <Form.Item name='minPrice'>
+                                        <InputNumber min={0} precision={0} style={{width: '100%', borderRight: 0, borderRadius: 0}}/>
                                     </Form.Item>
                                 </Col>
-                                <Col span={2}>
+                                <Col span={4}>
                                     <Input
                                     style={{
                                         borderRadius: 0,
@@ -452,20 +427,8 @@ export default function Order(){
                                     disabled
                                     />
                                 </Col>
-                                <Col span={9}>
-                                    <Form.Item 
-                                    name='maxPrice'
-                                    rules={[
-                                        {
-                                          validator(_, value) {
-                                            if (!value||(1000 >= value && value >= 0)) {
-                                              return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('价格区间在0到1000之间!'));
-                                          },
-                                        },
-                                    ]}
-                                    >
+                                <Col span={7}>
+                                    <Form.Item name='maxPrice'>
                                         <InputNumber 
                                         min={0} 
                                         precision={0} 
@@ -478,7 +441,7 @@ export default function Order(){
                                         />
                                     </Form.Item>
                                 </Col>
-                                <Col span={4}>
+                                <Col span={6}>
                                     <Input
                                     style={{
                                     borderLeft: 0,
@@ -494,9 +457,44 @@ export default function Order(){
                         </Input.Group>
                     </Form.Item> 
                 </Col>
+                <Col span={6} offset={1}>
+                    <Form.Item 
+                    label="计量单位" 
+                    name="unitOfMeasure"
+                    rules={[
+                        {
+                          pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,5}$/,
+                          message: '不能含特殊字符，且长度不大于5',
+                        },
+                    ]}
+                     >
+                        <Input/>
+                    </Form.Item> 
+                </Col>
+            </Row>
+            <Row className="create-shop-btn">
+                <Col span={12}>
+                    <Form.Item 
+                    label="菜品名" 
+                    name="name"
+                    rules={[
+                        {
+                            type: 'string',
+                            whitespace: true,
+                            message: '输入不能为空格',
+                        },
+                        {
+                            max: 10,
+                            message: '搜索关键字长度最大为10字符',
+                        }
+                    ]}
+                    >
+                        <Input onPressEnter={onSearch}/>
+                    </Form.Item>
+                </Col>
                 <Col span={4} offset={1}>
                     <Form.Item>
-                        <Button style={{width:'100%'}} onClick={onSearch}>查询</Button>
+                        <Button style={{width:'100%'}} onClick={onSearch} >查询</Button>
                     </Form.Item>
                 </Col>
                 <Col span={4} offset={1}>
@@ -506,13 +504,28 @@ export default function Order(){
                 </Col>
             </Row>
         </Form>
-        <Table
-            columns={columns}
-            dataSource={testData}
-            pagination={false}
-            scroll={{y: 320}}
-            
-        />
+        
+        {/** 骨架屏和表格显示逻辑 */}
+        {
+            productList.length === 0 ?
+                loaddingTime >= 1 ? 
+                    <Table
+                    columns={columns}
+                    dataSource={productList}
+                    pagination={false}
+                    scroll={{y: 320}}
+                    /> 
+                    :
+                    <Skeleton active paragraph={{ rows: 10 }}/>
+                :
+                <Table
+                columns={columns}
+                dataSource={productList}
+                pagination={false}
+                scroll={{y: 320}}
+                />
+        }
+        
         <Row style={{marginTop: '1%'}}>  
             <Col span={8} offset={8}>
                 <PaginationBtn/>

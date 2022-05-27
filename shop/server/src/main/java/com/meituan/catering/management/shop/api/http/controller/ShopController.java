@@ -48,6 +48,7 @@ public class ShopController {
     @Resource
     private ShopBizServiceValidator shopBizServiceValidator;
 
+
     @ApiOperation("分页搜索门店的概要信息列表")
     @PostMapping("/search")
     public ShopPageHttpResponse searchForPage(
@@ -82,7 +83,7 @@ public class ShopController {
 
     @ApiOperation("创建新门店")
     @PostMapping
-    @RepeatSubmit()
+//    @RepeatSubmit()
     public ShopDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
@@ -98,7 +99,7 @@ public class ShopController {
 
     @ApiOperation("更新已有门店的信息")
     @PutMapping("/{businessNo}")
-    @RepeatSubmit()
+//    @RepeatSubmit()
     public ShopDetailHttpResponse update(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
@@ -113,7 +114,7 @@ public class ShopController {
         return response;
     }
 
-    @RepeatSubmit()
+//    @RepeatSubmit()
     @ApiOperation("开放一个已关闭的门店")
     @PostMapping("/{businessNo}/open")
     public ShopDetailHttpResponse open(
@@ -131,7 +132,7 @@ public class ShopController {
         return response;
     }
 
-    @RepeatSubmit()
+//    @RepeatSubmit()
     @ApiOperation("关闭一个已开放的门店")
     @PostMapping("/{businessNo}/close")
     public ShopDetailHttpResponse close(
@@ -147,4 +148,7 @@ public class ShopController {
         response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
+
+
+
 }

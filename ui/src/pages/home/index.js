@@ -14,7 +14,7 @@ export default function Home(){
                 navigate("/shop")
             }}>跳转到门店</button>
             <button onClick={()=>{
-                navigate("/food")
+                navigate("/product")
             }}>跳转到菜品</button>
             <button onClick={()=>{
                 navigate("/order")
