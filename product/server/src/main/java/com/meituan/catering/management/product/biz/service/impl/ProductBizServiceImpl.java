@@ -93,44 +93,47 @@ public class ProductBizServiceImpl implements ProductBizService {
                 throw new BizException(ErrorCode.UPDATE_ERROR);
             }
             List<ProductAccessoryDO> accessoryDOS = ProductAccessoryDOConverter.toProductAccessoryDO(tenantId, id, request);
+            List<ProductAccessoryDO> accessoryDOSAfter = Lists.newArrayList(accessoryDOS);
             List<ProductAccessoryDO> accessoryDOList = accessoryMapper.findAllByProductId(tenantId,id);
-            accessoryMapper.deleteByProductId(tenantId,id);
-            if (!accessoryDOS.isEmpty()){
-                for (ProductAccessoryDO requestDO : accessoryDOS) {
-                    Long requestId = requestDO.getId();
-                    for (ProductAccessoryDO accessoryDO : accessoryDOList) {
-                        if (requestId != null && requestId.equals(accessoryDO.getId())){
-                            accessoryMapper.updateById(requestDO);
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (!flag){
-                        accessoryMapper.insert(requestDO);
+            for (ProductAccessoryDO accessoryDO : accessoryDOList) {
+                Long accessoryDOId = accessoryDO.getId();
+                for (int i = 0; i < accessoryDOS.size(); i++) {
+                    if (accessoryDOId!=null && accessoryDOId.equals(accessoryDOS.get(i).getId())){
+                        accessoryMapper.updateById(accessoryDOS.get(i));
+                        accessoryDOSAfter.remove(i);
+                        flag = true;
                         break;
                     }
                 }
+                if (!flag){
+                    accessoryMapper.deleteById(tenantId,accessoryDOId);
+                }
+            }
+            if (!accessoryDOSAfter.isEmpty()){
+                accessoryMapper.batchInsert(accessoryDOSAfter);
             }
             flag = false;
             List<ProductMethodDO> methodDOS = ProductMethodDOConverter.toProductMethodDO(tenantId, id, request);
+            List<ProductMethodDO> methodDOSAfter = Lists.newArrayList(methodDOS);
             List<ProductMethodDO> methodDOList = methodMapper.findAllByProductId(tenantId, id);
-            methodMapper.deleteByProductId(tenantId,id);
-            if (!methodDOS.isEmpty()){
-                for (ProductMethodDO requestDO : methodDOS) {
-                    Long requestId = requestDO.getId();
-                    for (ProductMethodDO  methodDO: methodDOList) {
-                        if (requestId != null && requestId.equals(methodDO.getId())){
-                            methodMapper.updateById(requestDO);
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (!flag){
-                        methodMapper.insert(requestDO);
+            for (ProductMethodDO methodDO : methodDOList) {
+                Long methodDOId = methodDO.getId();
+                for (int i = 0; i < methodDOS.size(); i++) {
+                    if (methodDOId!=null && methodDOId.equals(methodDOS.get(i).getId())){
+                        methodMapper.updateById(methodDOS.get(i));
+                        methodDOSAfter.remove(i);
+                        flag = true;
                         break;
                     }
                 }
+                if (!flag){
+                    methodMapper.deleteById(tenantId,methodDOId);
+                }
             }
+            if (!methodDOSAfter.isEmpty()){
+                methodMapper.batchInsert(methodDOSAfter);
+            }
+
             ProductDO productDOLater = productMapper.findById(tenantId, id);
             List<ProductAccessoryDO> accessoryDOLater = accessoryMapper.findAllByProductId(tenantId, id);
             List<ProductMethodDO> methodDOLater = methodMapper.findAllByProductId(tenantId, id);

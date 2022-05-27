@@ -58,12 +58,14 @@
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
     </update>
+
     <update id="deleteById">
-        update `product_accessroy`
+        update `product_accessory`
         set `deleted` = 0
         where `id` = #{id}
         and `tenant_id` = #{tenantId}
     </update>
+
     <select id="findAllByProductId" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

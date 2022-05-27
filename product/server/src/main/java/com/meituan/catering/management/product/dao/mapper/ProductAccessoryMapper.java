@@ -40,6 +40,7 @@ public interface ProductAccessoryMapper {
      */
     int deleteByProductId(Long tenantId, Long productId);
 
+
     /**
      * 根据ID删除商品加料
      * @param tenantId

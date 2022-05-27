@@ -54,6 +54,8 @@ public interface ProductMethodMapper {
      */
     int deleteByProductId(Long tenantId, Long productId);
 
+    int deleteById(Long tenantId,Long id);
+
     /**
      * 根据ID更新商品做法
      * @param productMethodDO

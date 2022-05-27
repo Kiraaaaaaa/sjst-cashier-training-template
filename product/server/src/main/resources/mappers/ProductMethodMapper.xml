@@ -54,6 +54,14 @@
         where `product_id` = #{productId}
         and `tenant_id` = #{tenantId}
     </update>
+    <update id="deleteById">
+        update `product_method`
+        set `deleted` = 0
+        <where>
+            `id` = #{id}
+            and `tenant_id` = #{tenantId}
+        </where>
+    </update>
 
     <select id="findAllByProductIds" resultMap="BaseResultMap">
         select
