@@ -14,6 +14,7 @@ import com.meituan.catering.management.shop.api.http.model.response.ShopPageHttp
 import com.meituan.catering.management.shop.biz.model.converter.*;
 import com.meituan.catering.management.shop.biz.model.request.*;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
+import com.meituan.catering.management.shop.biz.model.response.SearchShopBizResponse;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import com.meituan.catering.management.shop.biz.validator.ShopBizServiceValidator;
 import io.swagger.annotations.Api;
@@ -55,14 +56,14 @@ public class ShopController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("搜索条件") @Valid @RequestBody  SearchShopHttpRequest request) throws Exception {
+
+
         shopBizServiceValidator.searchByValid(tenantId, userId, request);
         ShopPageHttpResponse response = new ShopPageHttpResponse();
         SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
-        List<ShopBO> shopBOS = shopBizService.searchByConditional(tenantId, userId, searchShopBizRequest);
-        int totalCount = shopBizService.searchTotalCount(tenantId, userId, searchShopBizRequest);
+        SearchShopBizResponse searchShopBizResponse = shopBizService.searchForPage(tenantId, userId, searchShopBizRequest);
         response.setStatus(StatusHelper.success());
-        response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(
-                request.getPageIndex(), request.getPageSize(), totalCount, shopBOS));
+        response.setData(ShopPageHttpDTOConverter.toShopPageHttpDTO(searchShopBizResponse));
         return response;
     }
 

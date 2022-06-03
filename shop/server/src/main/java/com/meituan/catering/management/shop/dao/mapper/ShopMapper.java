@@ -58,7 +58,9 @@ public interface ShopMapper {
      * @param request
      * @return
      */
-    List<ShopDO> selectTotalCount(SearchShopDataRequest request);
+    Integer selectTotalCount(SearchShopDataRequest request);
+
+
 
     /**
      * 打开一个门店

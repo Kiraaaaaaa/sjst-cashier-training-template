@@ -3,6 +3,7 @@ package com.meituan.catering.management.product.api.thrift.service;
 import com.meituan.catering.management.common.helper.StatusHelper;
 import com.meituan.catering.management.common.model.api.thrift.UserContextThriftRequest;
 import com.meituan.catering.management.product.api.thrift.model.dto.ProductDetailThriftDTO;
+import com.meituan.catering.management.product.api.thrift.model.response.ProductDetailListThriftResponse;
 import com.meituan.catering.management.product.api.thrift.model.response.ProductDetailThriftResponse;
 import com.meituan.catering.management.product.biz.model.ProductBO;
 import com.meituan.catering.management.product.biz.model.converter.ProductDetailThriftDTOConverter;
@@ -32,7 +33,12 @@ public class ProductThriftServiceImpl implements ProductThriftService {
     }
 
     @Override
-    public List<ProductDetailThriftResponse> findByIds(UserContextThriftRequest userContext, Set<Long> idList) {
-        return null;
+    public ProductDetailListThriftResponse findByIds(UserContextThriftRequest userContext, Set<Long> idList) {
+        List<ProductBO> productBOS = productBizService.findByIds(userContext.getTenantId(), idList);
+        List<ProductDetailThriftDTO> thriftDTOS = ProductDetailThriftDTOConverter.toProductDetailThriftDTOList(productBOS);
+        ProductDetailListThriftResponse response = new ProductDetailListThriftResponse();
+        response.setData(thriftDTOS);
+        response.setStatus(StatusHelper.success());
+        return response;
     }
 }

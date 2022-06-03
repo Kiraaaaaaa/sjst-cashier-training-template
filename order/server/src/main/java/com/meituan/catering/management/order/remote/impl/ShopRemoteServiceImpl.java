@@ -21,15 +21,17 @@ public class ShopRemoteServiceImpl extends BaseThriftRemoteService implements Sh
 
 
     @Override
-    public ShopDetailRemoteResponse findByBusinessNo(Long tenantId,Long userId,String businessNo) throws BizException {
-        UserContextThriftRequest userContextThriftRequest=new UserContextThriftRequest();
+    public ShopDetailRemoteResponse findByBusinessNo(Long tenantId, Long userId, String businessNo) throws BizException {
+        UserContextThriftRequest userContextThriftRequest = new UserContextThriftRequest();
         userContextThriftRequest.setUserId(userId);
         userContextThriftRequest.setTenantId(tenantId);
         ShopDetailThriftResponse shopDetailThriftResponse = shopThriftService.get().findByBusinessNo(userContextThriftRequest, businessNo);
-        if (shopDetailThriftResponse.getStatus().isFailed()){
+        if (shopDetailThriftResponse.getStatus().isFailed()) {
             throw new BizException(ErrorCode.SYSTEM_ERROR);
         }
 
         return ShopDetailRemoteResponseConverter.toShopDetailRemoteResponse(shopDetailThriftResponse.getData());
     }
+
+
 }

@@ -1,9 +1,7 @@
 package com.meituan.catering.management.shop.api.thrift.service;
 
 import com.meituan.catering.management.common.helper.StatusHelper;
-import com.meituan.catering.management.common.model.api.BaseResponse;
 import com.meituan.catering.management.common.model.api.thrift.UserContextThriftRequest;
-import com.meituan.catering.management.shop.api.thrift.model.dto.ShopDetailThriftDTO;
 import com.meituan.catering.management.shop.api.thrift.model.response.ShopDetailThriftResponse;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.converter.ShopDetailThriftDTOConverter;
@@ -34,4 +32,6 @@ public class ShopThriftServiceImpl implements ShopThriftService {
     public List<ShopDetailThriftResponse> findByBusinessNoList(UserContextThriftRequest userContext, Set<String> businessNoList) {
         return null;
     }
+
+
 }

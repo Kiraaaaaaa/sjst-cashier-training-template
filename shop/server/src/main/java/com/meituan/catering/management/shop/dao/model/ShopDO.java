@@ -2,7 +2,7 @@ package com.meituan.catering.management.shop.dao.model;
 
 import com.meituan.catering.management.common.model.dao.BaseDO;
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

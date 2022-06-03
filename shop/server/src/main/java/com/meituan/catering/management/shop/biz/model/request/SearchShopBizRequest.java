@@ -1,7 +1,7 @@
 package com.meituan.catering.management.shop.biz.model.request;
 
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,8 +10,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import static java.lang.Boolean.FALSE;
 
 
 /**

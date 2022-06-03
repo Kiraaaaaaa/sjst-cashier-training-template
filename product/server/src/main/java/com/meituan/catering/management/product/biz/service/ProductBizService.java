@@ -8,6 +8,9 @@ import com.meituan.catering.management.product.biz.model.request.UpdateProductBi
 import com.meituan.catering.management.product.biz.model.response.SearchProductBizResponse;
 import com.meituan.catering.management.product.dao.model.ProductDO;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * 商品管理服务
  */
@@ -21,6 +24,14 @@ public interface ProductBizService {
      * @return
      */
     ProductBO findById(Long tenantId,Long id);
+
+    /**
+     * 根据商品id集合查询
+     * @param tenantId
+     * @param idList
+     * @return
+     */
+    List<ProductBO> findByIds(Long tenantId, Set<Long> idList);
 
     /**
      *

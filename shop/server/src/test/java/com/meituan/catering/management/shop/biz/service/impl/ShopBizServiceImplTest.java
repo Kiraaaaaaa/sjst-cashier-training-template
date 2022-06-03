@@ -1,14 +1,13 @@
 package com.meituan.catering.management.shop.biz.service.impl;
 
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.dao.mapper.ShopMapper;
 import com.meituan.catering.management.shop.dao.model.ShopDO;
 
 import mockit.Expectations;
 import mockit.Injectable;
-import mockit.Mocked;
 import mockit.Tested;
 import mockit.integration.junit4.JMockit;
 import org.junit.Assert;

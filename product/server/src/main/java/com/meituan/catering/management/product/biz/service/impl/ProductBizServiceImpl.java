@@ -63,6 +63,14 @@ public class ProductBizServiceImpl implements ProductBizService {
     }
 
     @Override
+    public List<ProductBO> findByIds(Long tenantId, Set<Long> idList) {
+        List<ProductDO> productDOS = productMapper.findByIds(tenantId, idList);
+        List<ProductAccessoryDO> accessoryDOS = accessoryMapper.findAllByProductIds(tenantId, idList);
+        List<ProductMethodDO> methodDOS = methodMapper.findAllByProductIds(tenantId, idList);
+        return ProductBOConverter.toProductBOS(productDOS,accessoryDOS,methodDOS);
+    }
+
+    @Override
     public ProductBO insert(Long tenantId, Long userId, CreateProductBizRequest request){
         return transactionTemplate.execute(status ->{
             ProductDO productDO = ProductDOConverter.toProductDO(userId, tenantId, request);
@@ -181,7 +189,7 @@ public class ProductBizServiceImpl implements ProductBizService {
         }
         List<ProductDO> productDOS = productMapper.searchForPage(searchProductDataRequest);
 
-        List<ProductBO> productBOS = ProductBOConverter.toProductBOS(productDOS);
+        List<ProductBO> productBOS = ProductBOConverter.toProductBOS(productDOS,null,null);
 
         return SearchProductBizResponseConverter.toSearchProductBizResponse(request.getPageIndex(), request.getPageSize(), totalCount, productBOS);
     }

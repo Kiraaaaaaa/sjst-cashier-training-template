@@ -4,6 +4,7 @@ import com.facebook.swift.service.ThriftMethod;
 import com.facebook.swift.service.ThriftService;
 import com.meituan.catering.management.common.api.thrift.service.ConsoleThriftService;
 import com.meituan.catering.management.common.model.api.thrift.UserContextThriftRequest;
+import com.meituan.catering.management.product.api.thrift.model.response.ProductDetailListThriftResponse;
 import com.meituan.catering.management.product.api.thrift.model.response.ProductDetailThriftResponse;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface ProductThriftService extends ConsoleThriftService {
     ProductDetailThriftResponse findById(UserContextThriftRequest userContext, Long id);
 
     @ThriftMethod
-    List<ProductDetailThriftResponse> findByIds(UserContextThriftRequest userContext, Set<Long> idList);
+    ProductDetailListThriftResponse findByIds(UserContextThriftRequest userContext, Set<Long> idList);
 }

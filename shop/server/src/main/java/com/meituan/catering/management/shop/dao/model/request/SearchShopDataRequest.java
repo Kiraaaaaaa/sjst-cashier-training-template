@@ -2,11 +2,10 @@ package com.meituan.catering.management.shop.dao.model.request;
 
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
 import com.meituan.catering.management.common.utils.SearchLikeKeyWord;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;

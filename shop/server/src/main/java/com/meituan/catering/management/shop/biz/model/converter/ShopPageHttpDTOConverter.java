@@ -3,9 +3,11 @@ package com.meituan.catering.management.shop.biz.model.converter;
 
 import com.meituan.catering.management.shop.api.http.model.dto.ShopPageHttpDTO;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
+import com.meituan.catering.management.shop.biz.model.response.SearchShopBizResponse;
 
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -17,21 +19,17 @@ import java.util.List;
  */
 public class ShopPageHttpDTOConverter {
 
-    public static ShopPageHttpDTO toShopPageHttpDTO(Integer pageIndex, Integer pageSize, Integer totalCount, List<ShopBO> shopBOS) {
-        if (shopBOS == null || shopBOS.size()==0){
-            return null;
-        }
-        ShopPageHttpDTO shopPageHttpDTO = new ShopPageHttpDTO();
-        shopPageHttpDTO.setPageIndex(pageIndex);
-        shopPageHttpDTO.setPageSize(pageSize);
-        shopPageHttpDTO.setTotalCount(totalCount);
-        Integer totalPageCount = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1;
-        shopPageHttpDTO.setTotalPageCount(totalPageCount);
+    public static ShopPageHttpDTO toShopPageHttpDTO(SearchShopBizResponse response) {
 
-        List<ShopPageHttpDTO.Record> records = shopPageHttpDTO.getRecords();
+        ShopPageHttpDTO shopPageHttpDTO = new ShopPageHttpDTO();
+        shopPageHttpDTO.setPageIndex(response.getPageIndex());
+        shopPageHttpDTO.setPageSize(response.getPageSize());
+        shopPageHttpDTO.setTotalCount(response.getTotalCount());
+        shopPageHttpDTO.setTotalPageCount(response.getTotalPageCount());
+
+        List<ShopBO> shopBOS = response.getRecords();
         for (ShopBO shopBO : shopBOS) {
-            ShopPageHttpDTO.Record record = ShopPageHttpDTOConverter.buildRecord(shopBO);
-            records.add(record);
+            shopPageHttpDTO.getRecords().add(buildRecord(shopBO));
         }
         return shopPageHttpDTO;
     }

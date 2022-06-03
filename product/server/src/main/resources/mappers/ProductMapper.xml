@@ -162,6 +162,15 @@
             </if>
         </where>
     </select>
+    <select id="findByIds" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/>
+        from `product`
+        where tenant_id = #{tenantId}
+        and `id` in (
+        <foreach collection="idList" item="id" separator=",">
+            ${id}
+        </foreach>)
+    </select>
 
 
 </mapper>

@@ -1,4 +1,4 @@
-package com.meituan.catering.management.shop.api.http.model.enumeration;
+package com.meituan.catering.management.common.model.enumeration;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.meituan.catering.management.common.model.enumeration.DescribableEnum;

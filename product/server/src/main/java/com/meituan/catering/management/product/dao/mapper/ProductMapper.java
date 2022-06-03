@@ -32,6 +32,14 @@ public interface ProductMapper {
     ProductDO findById(Long tenantId, Long id);
 
     /**
+     * 根据id集合找商品DO实例
+     * @param tenantId
+     * @param idList
+     * @return
+     */
+    List<ProductDO> findByIds(Long tenantId,Set<Long> idList);
+
+    /**
      * 为分页查询计算符合查询条件的总条目数
      *
      * @param dataRequest 查询条件

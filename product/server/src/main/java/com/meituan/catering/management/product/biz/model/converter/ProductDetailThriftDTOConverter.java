@@ -1,10 +1,14 @@
 package com.meituan.catering.management.product.biz.model.converter;
 
-import com.meituan.catering.management.common.model.api.http.AuditingHttpModel;
+import cn.hutool.core.util.ObjectUtil;
+import com.google.common.collect.Lists;
 import com.meituan.catering.management.common.model.api.thrift.AuditingThriftModel;
-import com.meituan.catering.management.product.api.http.model.dto.ProductDetailHttpDTO;
 import com.meituan.catering.management.product.api.thrift.model.dto.ProductDetailThriftDTO;
 import com.meituan.catering.management.product.biz.model.ProductBO;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * <p>
@@ -17,6 +21,7 @@ import com.meituan.catering.management.product.biz.model.ProductBO;
 public class ProductDetailThriftDTOConverter {
 
     public static ProductDetailThriftDTO toProductDetailThriftDTO(ProductBO productBO){
+
         if (productBO == null){
             return null;
         }
@@ -27,17 +32,25 @@ public class ProductDetailThriftDTOConverter {
         productDetailThriftDTO.setEnabled(productBO.getEnabled());
         productDetailThriftDTO.setName(productBO.getName());
         productDetailThriftDTO.setUnitPrice(productBO.getUnitPrice().doubleValue());
-        productDetailThriftDTO.setMinSalesQuantity(productBO.getMinSalesQuantity().doubleValue());
-        productDetailThriftDTO.setIncreaseSalesQuantity(productBO.getIncreaseSalesQuantity().doubleValue());
+
+        if (Objects.nonNull(productBO.getMinSalesQuantity())){
+            productDetailThriftDTO.setMinSalesQuantity(productBO.getMinSalesQuantity().doubleValue());
+        }
+        if (Objects.nonNull(productBO.getIncreaseSalesQuantity())){
+            productDetailThriftDTO.setIncreaseSalesQuantity(productBO.getIncreaseSalesQuantity().doubleValue());
+        }
         productDetailThriftDTO.setUnitOfMeasure(productBO.getUnitOfMeasure());
         productDetailThriftDTO.setDescription(productBO.getDescription());
 
         AuditingThriftModel auditing = productDetailThriftDTO.getAuditing();
         auditing.setLastModifiedBy(productBO.getAuditing().getLastModifiedBy());
         auditing.setCreatedBy(productBO.getAuditing().getCreatedBy());
-        auditing.setCreatedAtTimestamp(productBO.getAuditing().getCreatedAt().getTime());
-        auditing.setLastModifiedAtTimestamp(productBO.getAuditing().getLastModifiedAt().getTime());
-
+        if (productBO.getAuditing().getCreatedAt()!=null){
+            auditing.setCreatedAtTimestamp(productBO.getAuditing().getCreatedAt().getTime());
+        }
+        if (productBO.getAuditing().getLastModifiedAt()!=null){
+            auditing.setLastModifiedAtTimestamp(productBO.getAuditing().getLastModifiedAt().getTime());
+        }
 
         for (ProductBO.AccessoryGroup accessoryGroup : productBO.getAccessoryGroups()) {
             productDetailThriftDTO.getAccessoryGroups().add(toAccessoryGroup(accessoryGroup));
@@ -47,6 +60,15 @@ public class ProductDetailThriftDTOConverter {
         }
 
         return productDetailThriftDTO;
+    }
+
+    public static List<ProductDetailThriftDTO> toProductDetailThriftDTOList(List<ProductBO> productBOS){
+
+        ArrayList<ProductDetailThriftDTO> list = Lists.newArrayList();
+        for (ProductBO productBO : productBOS) {
+            list.add(toProductDetailThriftDTO(productBO));
+        }
+        return list;
     }
 
     private static ProductDetailThriftDTO.AccessoryGroup toAccessoryGroup(ProductBO.AccessoryGroup accessoryBO){

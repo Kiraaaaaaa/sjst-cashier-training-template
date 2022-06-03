@@ -64,4 +64,5 @@ public interface ProductAccessoryMapper {
      */
     List<ProductAccessoryDO> findAllByProductId(Long tenantId,Long productId);
 
+
 }

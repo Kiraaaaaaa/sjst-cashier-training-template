@@ -3,6 +3,7 @@ package com.meituan.catering.management.shop.biz.service;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 import com.meituan.catering.management.shop.biz.model.request.*;
+import com.meituan.catering.management.shop.biz.model.response.SearchShopBizResponse;
 import com.meituan.catering.management.shop.dao.model.request.CloseShopDataRequest;
 
 import java.util.List;
@@ -53,9 +54,9 @@ public interface ShopBizService {
      * @param searchShopBizRequest
      * @return
      */
-    List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
+    SearchShopBizResponse searchForPage(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
 
-    int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest);
+
 
     /**
      * 打开一个门店

@@ -1,16 +1,11 @@
 package com.meituan.catering.management.shop.biz.model;
 
-import com.meituan.catering.management.common.model.api.http.AuditingHttpModel;
-import com.meituan.catering.management.common.model.api.http.ContactHttpModel;
 import com.meituan.catering.management.common.model.biz.BaseBO;
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
-import io.swagger.annotations.ApiModelProperty;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.validator.constraints.Length;
 
 /**
  * 门店BO定义

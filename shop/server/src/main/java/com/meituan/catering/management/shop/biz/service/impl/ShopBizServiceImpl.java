@@ -3,8 +3,10 @@ package com.meituan.catering.management.shop.biz.service.impl;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
+import com.meituan.catering.management.shop.biz.model.converter.SearchShopBizResponseConverter;
 import com.meituan.catering.management.shop.biz.model.converter.ShopBOConverter;
 import com.meituan.catering.management.shop.biz.model.request.*;
+import com.meituan.catering.management.shop.biz.model.response.SearchShopBizResponse;
 import com.meituan.catering.management.shop.biz.service.ShopBizService;
 import com.meituan.catering.management.shop.dao.converter.SearchShopDataRequestConverter;
 import com.meituan.catering.management.shop.dao.converter.ShopDOConverter;
@@ -20,6 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * {@link ShopBizService}的核心实现
@@ -68,28 +71,15 @@ public class ShopBizServiceImpl implements ShopBizService {
     }
 
     @Override
-    public List<ShopBO> searchByConditional(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) throws BizException {
-        return transactionTemplate.execute(status -> {
-            List<ShopBO> shopBOS = new ArrayList<>();
-            SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId, userId, searchShopBizRequest);
-            List<ShopDO> shopDOS = shopMapper.selectByConditional(searchShopDataRequest);
-            for (ShopDO shopDO : shopDOS) {
-                ShopBO shopBO = ShopBOConverter.toShopBO(shopDO);
-                shopBOS.add(shopBO);
-            }
-            return shopBOS;
-        });
+    public SearchShopBizResponse searchForPage(Long tenantId, Long userId, SearchShopBizRequest request) {
+        SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId, userId, request);
+        List<ShopDO> shopDOS = shopMapper.selectByConditional(searchShopDataRequest);
+        Integer totalCount = shopMapper.selectTotalCount(searchShopDataRequest);
+        return SearchShopBizResponseConverter.toSearchShopBizResponse(request.getPageIndex(), request.getPageSize(), totalCount,shopDOS);
     }
 
-    @Override
-    public int searchTotalCount(Long tenantId, Long userId, SearchShopBizRequest searchShopBizRequest) {
-        return transactionTemplate.execute(status -> {
-            SearchShopDataRequest searchShopDataRequest = SearchShopDataRequestConverter.toSearchShopDataRequest(tenantId, userId, searchShopBizRequest);
-            List<ShopDO> shopDOS = shopMapper.selectTotalCount(searchShopDataRequest);
-            int totalCount = shopDOS.size();
-            return totalCount;
-        });
-    }
+
+
 
     @Override
     public ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest) throws BizException {

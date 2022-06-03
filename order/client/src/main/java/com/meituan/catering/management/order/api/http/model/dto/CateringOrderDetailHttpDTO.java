@@ -204,7 +204,7 @@ public class CateringOrderDetailHttpDTO {
                 @ApiModelProperty("名称")
                 private String name;
 
-                @ApiModelProperty("备注")
+                @ApiModelProperty("分组名")
                 private String groupName;
 
                 @ApiModelProperty("单价")

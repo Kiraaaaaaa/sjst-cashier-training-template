@@ -36,12 +36,13 @@ public class HttpExceptionHandlerConfig {
         return buildGlobalModelAndView(ex, HttpStatus.BAD_REQUEST);
     }
 
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
         return buildGlobalModelAndView(ex, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(BizException.class)
     public BaseResponse handleRuntimeException(BizException ex){
         BaseResponse<Object> baseResponse = new BaseResponse<>();
         baseResponse.setStatus(StatusHelper.failure(ex.getErrorCode()));

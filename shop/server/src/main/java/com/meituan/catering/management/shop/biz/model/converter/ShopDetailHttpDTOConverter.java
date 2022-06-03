@@ -4,8 +4,6 @@ import com.meituan.catering.management.common.model.api.http.AuditingHttpModel;
 import com.meituan.catering.management.common.model.api.http.ContactHttpModel;
 import com.meituan.catering.management.common.model.biz.AuditingBO;
 import com.meituan.catering.management.shop.api.http.model.dto.ShopDetailHttpDTO;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.response.ShopDetailHttpResponse;
 import com.meituan.catering.management.shop.biz.model.ShopBO;
 
 public class ShopDetailHttpDTOConverter extends ShopHttpVOConverter {

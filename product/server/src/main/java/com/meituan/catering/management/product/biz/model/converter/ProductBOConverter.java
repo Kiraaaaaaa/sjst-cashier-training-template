@@ -6,9 +6,10 @@ import com.meituan.catering.management.product.biz.model.ProductBO;
 import com.meituan.catering.management.product.dao.model.ProductAccessoryDO;
 import com.meituan.catering.management.product.dao.model.ProductDO;
 import com.meituan.catering.management.product.dao.model.ProductMethodDO;
+import io.lettuce.core.XAddArgs;
+import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 从其他数据模型向商品BO的转换器
@@ -16,7 +17,7 @@ import java.util.List;
 public abstract class ProductBOConverter {
 
     public static ProductBO toProductBO(ProductDO productDO, List<ProductMethodDO> productMethodDOList,
-                                  List<ProductAccessoryDO> productAccessoryDOList) {
+                                        List<ProductAccessoryDO> productAccessoryDOList) {
         if (productDO == null) {
             return null;
         }
@@ -34,80 +35,43 @@ public abstract class ProductBOConverter {
         productBO.setTenantId(productDO.getTenantId());
         productBO.setVersion(productDO.getVersion());
         productBO.setAuditing(toAuditingBO(productDO));
-        if (productAccessoryDOList != null){
-            List<ProductBO.AccessoryGroup> accessoryGroups = productBO.getAccessoryGroups();
-            for (ProductAccessoryDO productAccessoryDO : productAccessoryDOList) {
-                ProductBO.AccessoryGroup accessoryGroup = new ProductBO.AccessoryGroup();
-                if (accessoryGroups.size() >= 1) {
-                    ProductBO.AccessoryGroup accessoryGroupEnd = accessoryGroups.get(accessoryGroups.size() - 1);
-                    if (accessoryGroupEnd.getName().equals(productAccessoryDO.getGroupName())) {
-                        ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
-                        accessoryGroupEnd.getOptions().add(option);
-                        option = null;
-                        continue;
-                    }
-                }
-                accessoryGroup.setName(productAccessoryDO.getGroupName());
-                ProductBO.AccessoryGroup.Option option = toAccessoryOption(productAccessoryDO);
-                accessoryGroup.getOptions().add(option);
-                option = null;
-                accessoryGroups.add(accessoryGroup);
-                accessoryGroup = null;
-            }
-        }
 
-        if (productMethodDOList!=null){
-            List<ProductBO.MethodGroup> methodGroups = productBO.getMethodGroups();
-            for (ProductMethodDO productMethodDO : productMethodDOList) {
-                ProductBO.MethodGroup methodGroup = new ProductBO.MethodGroup();
-                if (methodGroups.size() >= 1) {
-                    ProductBO.MethodGroup methodGroupEnd = methodGroups.get(methodGroups.size()-1);
-                    if (methodGroupEnd.getName().equals(productMethodDO.getGroupName())) {
-                        ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
-                        methodGroupEnd.getOptions().add(option);
-                        option = null;
-                        continue;
-                    }
-                }
-                methodGroup.setName(productMethodDO.getGroupName());
-                ProductBO.MethodGroup.Option option = toMethodOption(productMethodDO);
-                methodGroup.getOptions().add(option);
-                option = null;
-                methodGroups.add(methodGroup);
-                methodGroup = null;
-            }
-        }
-
+        productBO.getAccessoryGroups().addAll(Objects.requireNonNull(buildAccessory(productAccessoryDOList)));
+        productBO.getMethodGroups().addAll(Objects.requireNonNull(buildMethod(productMethodDOList)));
 
         return productBO;
     }
 
-
-    public static List<ProductBO> toProductBOS(List<ProductDO> productDOS){
-        if (productDOS.isEmpty()){
+    public static List<ProductBO> toProductBOS(List<ProductDO> productDOS, List<ProductAccessoryDO> accessory, List<ProductMethodDO> method) {
+        if (CollectionUtils.isEmpty(productDOS)) {
             return null;
         }
-        ArrayList<ProductBO> productBOS = Lists.newArrayList();
+        Collection<ProductAccessoryDO> accessoryDOS = CollectionUtils.emptyIfNull(accessory);
+        Collection<ProductMethodDO> methodDOS = CollectionUtils.emptyIfNull(method);
+        List<ProductBO> productBOS = Lists.newArrayList();
         for (ProductDO productDO : productDOS) {
-            ProductBO productBO = new ProductBO();
-            productBO.setEnabled(productDO.getEnabled());
-            productBO.setName(productDO.getName());
-            productBO.setUnitPrice(productDO.getUnitPrice());
-            productBO.setMinSalesQuantity(productDO.getMinSalesQuantity());
-            productBO.setIncreaseSalesQuantity(productDO.getIncreaseSalesQuantity());
-            productBO.setUnitOfMeasure(productDO.getUnitOfMeasure());
-            productBO.setDescription(productDO.getDescription());
-            productBO.setId(productDO.getId());
-            productBO.setTenantId(productDO.getTenantId());
-            productBO.setVersion(productDO.getVersion());
-            productBO.setAuditing(toAuditingBO(productDO));
-            productBOS.add(productBO);
-            productBO = null;
+
+            List<ProductAccessoryDO> accessoryDOList = Lists.newArrayList();
+
+            for (ProductAccessoryDO accessoryDO : accessoryDOS) {
+                if (productDO.getId().equals(accessoryDO.getProductId())){
+                    accessoryDOList.add(accessoryDO);
+                }
+            }
+            List<ProductMethodDO> methodDOList = Lists.newArrayList();
+            for (ProductMethodDO methodDO : methodDOS) {
+                if (productDO.getId().equals(methodDO.getProductId())){
+                    methodDOList.add(methodDO);
+                }
+            }
+            productBOS.add(toProductBO(productDO,methodDOList,accessoryDOList));
+            accessoryDOList = null;
+            methodDOList = null;
         }
         return productBOS;
     }
 
-    private static AuditingBO toAuditingBO(ProductDO productDO){
+    private static AuditingBO toAuditingBO(ProductDO productDO) {
         AuditingBO auditingBO = new AuditingBO();
         auditingBO.setCreatedAt(productDO.getCreatedAt());
         auditingBO.setCreatedBy(productDO.getCreatedBy());
@@ -116,7 +80,6 @@ public abstract class ProductBOConverter {
 
         return auditingBO;
     }
-
 
     private static ProductBO.AccessoryGroup.Option toAccessoryOption(ProductAccessoryDO productAccessoryDO) {
 
@@ -137,4 +100,49 @@ public abstract class ProductBOConverter {
         return option;
     }
 
+    private static List<ProductBO.AccessoryGroup> buildAccessory(List<ProductAccessoryDO> accessoryDOS) {
+        ArrayList<ProductBO.AccessoryGroup> list = Lists.newArrayList();
+        for (ProductAccessoryDO accessoryDO : accessoryDOS) {
+            ProductBO.AccessoryGroup accessoryGroup = new ProductBO.AccessoryGroup();
+            if (list.size() >= 1) {
+                ProductBO.AccessoryGroup accessoryLast = list.get(list.size() - 1);
+                if (accessoryLast.getName().equals(accessoryDO.getGroupName())) {
+                    ProductBO.AccessoryGroup.Option option = toAccessoryOption(accessoryDO);
+                    accessoryLast.getOptions().add(option);
+                    option = null;
+                    continue;
+                }
+            }
+            accessoryGroup.setName(accessoryDO.getGroupName());
+            ProductBO.AccessoryGroup.Option option = toAccessoryOption(accessoryDO);
+            accessoryGroup.getOptions().add(option);
+            option = null;
+            list.add(accessoryGroup);
+            accessoryGroup = null;
+        }
+        return list;
+    }
+
+    private static List<ProductBO.MethodGroup> buildMethod(List<ProductMethodDO> methodDOS) {
+        ArrayList<ProductBO.MethodGroup> list = Lists.newArrayList();
+        for (ProductMethodDO methodDO : methodDOS) {
+            ProductBO.MethodGroup methodGroup = new ProductBO.MethodGroup();
+            if (list.size() >= 1) {
+                ProductBO.MethodGroup methodLast = list.get(list.size() - 1);
+                if (methodLast.getName().equals(methodDO.getGroupName())) {
+                    ProductBO.MethodGroup.Option option = toMethodOption(methodDO);
+                    methodLast.getOptions().add(option);
+                    option = null;
+                    continue;
+                }
+            }
+            methodGroup.setName(methodDO.getGroupName());
+            ProductBO.MethodGroup.Option option = toMethodOption(methodDO);
+            methodGroup.getOptions().add(option);
+            option = null;
+            list.add(methodGroup);
+            methodGroup = null;
+        }
+        return list;
+    }
 }

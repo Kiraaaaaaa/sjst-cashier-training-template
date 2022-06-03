@@ -5,7 +5,7 @@ import com.facebook.swift.codec.ThriftStruct;
 import com.meituan.catering.management.common.model.api.thrift.AuditingThriftModel;
 import com.meituan.catering.management.common.model.api.thrift.ContactThriftModel;
 import com.meituan.catering.management.common.model.enumeration.BusinessTypeEnum;
-import com.meituan.catering.management.shop.api.http.model.enumeration.ManagementTypeEnum;
+import com.meituan.catering.management.common.model.enumeration.ManagementTypeEnum;
 import lombok.Data;
 
 /**
