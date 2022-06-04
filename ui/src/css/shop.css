@@ -46,3 +46,10 @@ input:not([type=range]) {
 .ant-modal-body {
     padding: 10px 24px 24px !important;
 }
+/* .test {
+    background: rgb(235 174 0);
+}
+.test .ant-table-tbody>tr.ant-table-row:hover>td, .ant-table-tbody>tr>td.ant-table-cell-row-hover{
+    background: rgb(235 174 0) !important;
+    cursor: pointer;
+} */

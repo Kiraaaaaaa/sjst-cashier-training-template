@@ -1,0 +1,26 @@
+.shop-select-btn .ant-btn {
+    border-radius: 0px 10px 10px 0px;
+    background-color: rgb(255, 189, 0);
+}
+.add-orderItem-btn .ant-btn, .make-orderItem-btn .ant-btn, .bill-btn .ant-btn {
+    border-radius: 10px;
+    background-color: rgb(255, 189, 0);
+}
+.shop-select-btn .ant-btn:hover, .add-orderItem-btn .ant-btn:hover, .make-orderItem-btn .ant-btn:hover, .bill-btn .ant-btn:hover{
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(235 174 0);
+}
+.shop-select-btn .ant-btn:focus, .add-orderItem-btn .ant-btn:focus, .make-orderItem-btn .ant-btn:focus, .bill-btn .ant-btn:focus {
+    color: black;
+    background-color: rgb(235 174 0);
+    border-color: rgb(255, 189, 0);
+}
+
+/* .test {
+    background: rgb(255, 189, 0);
+}
+.test .ant-table-tbody>tr.ant-table-row:hover>td, .ant-table-tbody>tr>td.ant-table-cell-row-hover{
+    background: rgb(255, 189, 0) !important;
+    cursor: pointer;
+} */

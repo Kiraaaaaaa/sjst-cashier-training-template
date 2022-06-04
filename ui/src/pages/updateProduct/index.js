@@ -77,8 +77,6 @@ export default function UpdateProduct(){
     const instance = axios.create({
       headers:{tenantId:tenantId, userId:userId}
     });
-    console.log(request);
-    console.log(tenantId, userId, id, name);
     instance
       .put(`/product/${id}`, request)
       .then(response=>{
