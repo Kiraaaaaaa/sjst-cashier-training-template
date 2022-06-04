@@ -50,6 +50,18 @@ export default function Shop(){
             dataIndex: 'enabled',
             key: 'enabled',
             sorter: (a, b) => a.enabled - b.enabled,
+            filterSearch: true,
+            filters: [
+                {
+                    text: '营业中',
+                    value: true,
+                },
+                {
+                    text: '停业中',
+                    value: false,
+                }
+            ],
+            onFilter: (value, record) => record.enabled === value,
             render: enabled => <Tag style={{fontSize: 15}} color={enabled ? 'green': 'red'}>{enabled ? "营业中" : "停业中"}</Tag>,
         },
         {

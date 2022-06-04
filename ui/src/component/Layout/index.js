@@ -1,8 +1,7 @@
-import { Button, Col, Layout, Menu, Row, Badge} from 'antd';
-import MenuItem from 'antd/lib/menu/MenuItem';
+import { Layout, Menu, Badge, Avatar} from 'antd';
 import React from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
-import { QuestionCircleOutlined, BellOutlined } from "@ant-design/icons";
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import { QuestionCircleOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
 import Home from '../../pages/home';
 import Shop from '../../pages/shop';
 import Product from '../../pages/product';
@@ -13,7 +12,12 @@ import Logo from '../../logo.png';
 import '../../css/layout.css';
 import CreatProduct from '../../pages/createProduct';
 import UpdateProduct from '../../pages/updateProduct';
-
+import CreateOrder from '../../pages/createOrder';
+import OrderMake from '../../pages/orderMake';
+import OrderProduce from '../../pages/orderProduce';
+import OrderAdjust from '../../pages/orderAdjust';
+import OrderBill from '../../pages/orderBill';
+import PayResult from '../../pages/payResult';
 const { Header, Content, Sider } = Layout;
 const items1 = ['运营中心', '营销中心', '会员中心', '库存管理', '报表中心'].map((key) => ({
   key: key,
@@ -33,6 +37,9 @@ function LayoutHome (){
             <BellOutlined style={{fontSize: '150%', cursor: 'pointer'}}/>
           </Badge>
           <QuestionCircleOutlined style={{width: 70, fontSize: '150%', cursor: 'pointer'}}/>
+          <Badge count={1}>
+            <Avatar icon={<UserOutlined />} style={{cursor: 'pointer'}}/>
+          </Badge>
         </div>
       </Header>
     </div>
@@ -85,10 +92,16 @@ function LayoutHome (){
               <Route path="/shop" element={<Shop/>}/>
               <Route path="/order" element={<Order/>}/>
               <Route path="/product" element={<Product/>}/>
+              <Route path="/orderBill" element={<OrderBill/>}/>
+              <Route path="/orderMake" element={<OrderMake/>}/>
+              <Route path='/payReasult' element={<PayResult/>}/>
               <Route path="/createShop" element={<CreateShop/>}/>
               <Route path="/updateShop" element={<UpdateShop/>}/>
-              <Route path='/createProduct' element={<CreatProduct/>}/>
-              <Route path='/updateProduct' element={<UpdateProduct/>}/>
+              <Route path="/orderAdjust" element={<OrderAdjust/>}/>
+              <Route path="/createOrder" element={<CreateOrder/>}/>
+              <Route path="/orderProduce" element={<OrderProduce/>}/>
+              <Route path="/createProduct" element={<CreatProduct/>}/>
+              <Route path="/updateProduct" element={<UpdateProduct/>}/>
           </Routes>
         </Content>
       </Layout>

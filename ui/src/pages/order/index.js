@@ -21,6 +21,20 @@ const testData = [
         tableNo: 'A08',
         customerCount: 2,
         totalPrice: 86.6,
+    },
+    {
+        status: 'PREPARED',
+        shopName: '门店2',
+        tableNo: 'A08',
+        customerCount: 2,
+        totalPrice: 86.6,
+    },
+    {
+        status: 'PREPARING',
+        shopName: '门店3',
+        tableNo: 'A09',
+        customerCount: 3,
+        totalCount: 90,
     }
 ]
 export default function Order(){
@@ -30,7 +44,8 @@ export default function Order(){
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
     const [isSearchBtn, setIsSearchBtn] = useState(false);
-    const [productList, setProductList] = useState([]);
+    const [orderList, setOrderList] = useState([]);
+    const [rowActiveIndex, setRowActiveIndex] = useState();
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
     const columns = [
@@ -71,17 +86,17 @@ export default function Order(){
             render: text => <div style={{margin: -15}}>{getColumnOptions(text)}</div>,
         },
     ];
-    
+
     const getColumnOptions = (orderItem) => {
         switch (orderItem.status) {
             case 'PLACED':
                 return (
                     <>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderMake')}>
                         制作
                     </Button>
                     <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderAdjust', {state: {data: orderItem}, replace: true})}>
                         加退菜
                     </Button>
                     </>
@@ -89,15 +104,15 @@ export default function Order(){
             case 'PREPARING':
                 return (
                     <>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderMake', {state: {data: orderItem}, replace: true})}>
                         制作
                     </Button>
                     <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/produce', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderProduce', {state: {data: orderItem}, replace: true})}>
                         出餐
                     </Button>
                     <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderAdjust', {state: {data: orderItem}, replace: true})}>
                         加退菜
                     </Button>
                     </>
@@ -105,11 +120,11 @@ export default function Order(){
             case 'PREPARED':
                 return (
                     <>
-                    <Button type="link" onClick={()=>navigate('/adjust', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderAdjust', {state: {data: orderItem}, replace: true})}>
                         加退菜
                     </Button>
                     <span style={{color: 'lightgray'}}>|</span>
-                    <Button type="link" onClick={()=>navigate('/prepare', {state: {data: orderItem}, replace: true})}>
+                    <Button type="link" onClick={()=>navigate('/orderBill', {state: {data: orderItem}, replace: true})}>
                         结账
                     </Button>   
                     </>
@@ -140,6 +155,8 @@ export default function Order(){
      const initialSearchForm = () => {
         form.setFieldsValue({
             status: null,
+            tableNo: '',
+            customerCount: '',
             minPrice: '',
             maxPrice: '',
         })
@@ -152,7 +169,7 @@ export default function Order(){
 
     /** 表单提交 */
     const onSearchFinish = searchValues => {
-        console.log(pageIndex, pageSize);
+        console.log(searchValues);
         createPageRequest(searchValues);
     }
 
@@ -241,7 +258,7 @@ export default function Order(){
                 setTotalPageCount(totalPageCount);
                 setTotalCountBtn(totalPageCount);   
                 setIsSearchBtn(false);
-                setProductList(data);
+                setOrderList(data);
             }, error => {
                 console.log(error);
             })
@@ -341,6 +358,9 @@ export default function Order(){
     }
     /** */ 
 
+    const hangdleInboundReceiptClick = (rowActiveIndex) => {
+        setRowActiveIndex(rowActiveIndex);
+    };
     return (
         <div>
         <div className="shop-head">
@@ -365,48 +385,41 @@ export default function Order(){
         >
             <Row>
                 <Col span={8}>
-                    <Form.Item label="状态" name="status">
+                    <Form.Item
+                    label='状态'
+                    name='status'
+                    >
                         <Select>
                             <Option value={null}>所有</Option>
-                            <Option value="PLACED">已下单</Option>
-                            <Option value="PREPARING">制作中 </Option>
-                            <Option value="PREPARED">已出餐</Option>
-                            <Option value="BILLED">已完成</Option>
-                            <Option value="CANCELLED">已取消</Option>
+                            <Option value='PLACED'>已下单</Option>
+                            <Option value='PREPARING'>制作中 </Option>
+                            <Option value='PREPARED'>已出餐</Option>
+                            <Option value='BILLED'>已完成</Option>
+                            <Option value='CANCELLED'>已取消</Option>
                         </Select>
-                    </Form.Item> 
+                    </Form.Item>
                 </Col>
                 <Col span={8} offset={1}>
-                    <Form.Item 
-                    label="座位号"
-                     name="tableNo"
-                     rules={[
-                        {
-                          pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,5}$/,
-                          message: '不能含特殊字符，且长度不大于5',
-                        },
-                      ]}
-                     >
-                        <Input/>
-                    </Form.Item> 
-                </Col>
-                <Col span={6} offset={1}>
-                    <Form.Item 
-                    label="就餐人数 " 
-                    name="customerCount"
+                    <Form.Item
+                    label='座位号'
+                    name='tableNo'
                     rules={[
                         {
-                          validator(_, value) {
-                            if (!value||(100 > value && value >= 1)) {
-                              return Promise.resolve();
-                            }
-                            return Promise.reject(new Error('最多两位数字!'));
-                          },
+                          pattern: /^[\u4e00-\u9fa5a-zA-Z0-9]{1,10}$/,
+                          message: '不能含特殊字符，且长度不大于10',
                         },
                       ]}
-                     >
-                        <InputNumber min={0} style={{width: '100%'}}/>
-                    </Form.Item> 
+                    >
+                        <Input/>
+                    </Form.Item>
+                </Col>
+                <Col span={6} offset={1}>
+                    <Form.Item
+                    label='用餐人数'
+                    name='customerCount'
+                    >
+                        <InputNumber min={1} max={999} style={{width: '100%'}}/>
+                    </Form.Item>
                 </Col>
             </Row>
             <Row className="create-shop-btn">
@@ -414,32 +427,12 @@ export default function Order(){
                     <Form.Item label="订单总价">
                         <Input.Group style={{width: '100%'}}>
                             <Row>
-                                <Col span={9}>
-                                    <Form.Item 
-                                    name='minPrice'
-                                    rules={[
-                                        {
-                                          validator(_, value) {
-                                            if (!value||(1000 >= value && value >= 0)) {
-                                              return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('价格区间在0到1000之间!'));
-                                          },
-                                        },
-                                    ]}
-                                    >
-                                        <InputNumber 
-                                        min={0} 
-                                        precision={0} 
-                                        style={{
-                                            width: '100%', 
-                                            borderRight: 0, 
-                                            borderRadius: 0
-                                        }}
-                                        />
+                                <Col span={7}>
+                                    <Form.Item name='minPrice'>
+                                        <InputNumber min={0} precision={0} style={{width: '100%', borderRight: 0, borderRadius: 0}}/>
                                     </Form.Item>
                                 </Col>
-                                <Col span={2}>
+                                <Col span={4}>
                                     <Input
                                     style={{
                                         borderRadius: 0,
@@ -452,22 +445,13 @@ export default function Order(){
                                     disabled
                                     />
                                 </Col>
-                                <Col span={9}>
+                                <Col span={7}>
                                     <Form.Item 
                                     name='maxPrice'
-                                    rules={[
-                                        {
-                                          validator(_, value) {
-                                            if (!value||(1000 >= value && value >= 0)) {
-                                              return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('价格区间在0到1000之间!'));
-                                          },
-                                        },
-                                    ]}
                                     >
                                         <InputNumber 
                                         min={0} 
+                                        max={9999}
                                         precision={0} 
                                         style={{
                                             width: '100%', 
@@ -478,7 +462,7 @@ export default function Order(){
                                         />
                                     </Form.Item>
                                 </Col>
-                                <Col span={4}>
+                                <Col span={6}>
                                     <Input
                                     style={{
                                     borderLeft: 0,
@@ -496,7 +480,7 @@ export default function Order(){
                 </Col>
                 <Col span={4} offset={1}>
                     <Form.Item>
-                        <Button style={{width:'100%'}} onClick={onSearch}>查询</Button>
+                        <Button style={{width:'100%'}} onClick={onSearch} >查询</Button>
                     </Form.Item>
                 </Col>
                 <Col span={4} offset={1}>
@@ -511,7 +495,12 @@ export default function Order(){
             dataSource={testData}
             pagination={false}
             scroll={{y: 320}}
-            
+            // rowClassName={(_, index) => (rowActiveIndex === index ? 'test' : '')}
+            // onRow={(records, index)=>{
+            //     return {
+            //         onClick: () => hangdleInboundReceiptClick(index)
+            //     }
+            // }}
         />
         <Row style={{marginTop: '1%'}}>  
             <Col span={8} offset={8}>

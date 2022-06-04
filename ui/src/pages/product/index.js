@@ -47,6 +47,18 @@ export default function Product(){
             dataIndex: 'enabled',
             key: 'enabled',
             sorter: (a, b) => a.enabled - b.enabled,
+            filterSearch: true,
+            filters: [
+                {
+                    text: '已上架',
+                    value: true,
+                },
+                {
+                    text: '已下架',
+                    value: false,
+                }
+            ],
+            onFilter: (value, record) => record.enabled === value,
             render: enabled => 
             <Tag style={{fontSize: 15}} color={enabled ? 'green': 'red'}>{ENABLED.get(enabled)}</Tag>,
         },
