@@ -118,6 +118,7 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("制作信息") @Valid @RequestBody PrepareCateringOrderHttpRequest request) {
+        validator.prepareValid(tenantId,userId,orderId,request);
 
         return null;
     }
