@@ -119,7 +119,16 @@ public class OrderBizServiceValidator {
             throw new BizException(ErrorCode.PREPARE_ERROR);
         }
 
+        for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
+            for (PrepareCateringOrderHttpRequest.Item item : request.getItems()) {
+                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo()) && !item.getVersion().equals(cateringOrderItemDO.getVersion())) {
+                    throw new BizException(ErrorCode.PREPARE_ERROR);
+                }
+            }
+        }
+
+
     }
 
-
 }
+

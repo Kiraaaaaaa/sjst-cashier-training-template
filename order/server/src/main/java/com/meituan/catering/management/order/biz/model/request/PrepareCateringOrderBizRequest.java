@@ -21,7 +21,10 @@ import java.util.List;
  * @Author:zhangzhefeng 2022/6/3 9:02
  * @ClassName: PrepareCateringOrderBizRequest
  */
+@Data
 public class PrepareCateringOrderBizRequest {
+
+    private Long tenantId;
 
     private Long orderId;
 

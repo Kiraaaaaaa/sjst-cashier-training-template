@@ -40,6 +40,18 @@ public class ProductPageHttpDTOConverter {
             record.setIncreaseSalesQuantity(productBO.getIncreaseSalesQuantity());
             record.setDescription(productBO.getDescription());
             record.setEnabled(productBO.getEnabled());
+            List<ProductBO.MethodGroup> methodGroups = productBO.getMethodGroups();
+            for (ProductBO.MethodGroup methodGroup : methodGroups) {
+                ProductPageHttpDTO.Record.MethodGroup methodDTO = buildMethod(methodGroup);
+                record.getMethodGroups().add(methodDTO);
+                methodDTO = null;
+            }
+            List<ProductBO.AccessoryGroup> accessoryGroups = productBO.getAccessoryGroups();
+            for (ProductBO.AccessoryGroup accessoryGroup : accessoryGroups) {
+                ProductPageHttpDTO.Record.AccessoryGroup accessoryDTO = buildAccessory(accessoryGroup);
+                record.getAccessoryGroups().add(accessoryDTO);
+                accessoryDTO = null;
+            }
 
             AuditingHttpModel auditing = record.getAuditing();
             auditing.setLastModifiedBy(productBO.getAuditing().getLastModifiedBy());
@@ -56,6 +68,35 @@ public class ProductPageHttpDTOConverter {
 
 
 
+    private static ProductPageHttpDTO.Record.AccessoryGroup buildAccessory(ProductBO.AccessoryGroup accessoryBiz){
+
+        ProductPageHttpDTO.Record.AccessoryGroup accessoryDTO = new ProductPageHttpDTO.Record.AccessoryGroup();
+        accessoryDTO.setName(accessoryBiz.getName());
+        List<ProductBO.AccessoryGroup.Option> options = accessoryBiz.getOptions();
+        for (ProductBO.AccessoryGroup.Option option : options) {
+            ProductPageHttpDTO.Record.AccessoryGroup.Option optionDTO = new ProductPageHttpDTO.Record.AccessoryGroup.Option();
+            optionDTO.setId(option.getId());
+            optionDTO.setName(option.getName());
+            optionDTO.setUnitPrice(option.getUnitPrice());
+            optionDTO.setUnitOfMeasure(option.getUnitOfMeasure());
+            accessoryDTO.getOptions().add(optionDTO);
+            optionDTO = null;
+        }
+        return accessoryDTO;
+    }
+    private static ProductPageHttpDTO.Record.MethodGroup buildMethod(ProductBO.MethodGroup methodBiz){
+        ProductPageHttpDTO.Record.MethodGroup methodDTO = new ProductPageHttpDTO.Record.MethodGroup();
+        methodDTO.setName(methodBiz.getName());
+        List<ProductBO.MethodGroup.Option> options = methodBiz.getOptions();
+        for (ProductBO.MethodGroup.Option option : options) {
+            ProductPageHttpDTO.Record.MethodGroup.Option optionDTO = new ProductPageHttpDTO.Record.MethodGroup.Option();
+            optionDTO.setId(option.getId());
+            optionDTO.setName(option.getName());
+            methodDTO.getOptions().add(optionDTO);
+            optionDTO = null;
+        }
+        return methodDTO;
+    }
 
 
 }

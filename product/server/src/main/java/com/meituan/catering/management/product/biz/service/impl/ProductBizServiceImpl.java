@@ -180,16 +180,20 @@ public class ProductBizServiceImpl implements ProductBizService {
         return ProductBOConverter.toProductBO(productDOLater,methodDOLater,accessoryDOLater);
     }
 
+
     @Override
     public SearchProductBizResponse searchForPage(SearchProductBizRequest request) {
         SearchProductDataRequest searchProductDataRequest = SearchProductDataRequestConverter.toSearchProductDataRequest(request);
         int totalCount = productMapper.countForPage(searchProductDataRequest);
-        if (totalCount == 0){
-            return SearchProductBizResponseConverter.toSearchProductBizResponse(request.getPageIndex(),request.getPageSize(),totalCount,null);
-        }
         List<ProductDO> productDOS = productMapper.searchForPage(searchProductDataRequest);
 
-        List<ProductBO> productBOS = ProductBOConverter.toProductBOS(productDOS,null,null);
+        List<ProductBO> productBOS = Lists.newArrayList();
+        for (ProductDO productDO : productDOS) {
+            List<ProductAccessoryDO> accessoryDOS = accessoryMapper.findAllByProductId(productDO.getTenantId(), productDO.getId());
+            List<ProductMethodDO> methodDOS = methodMapper.findAllByProductId(productDO.getTenantId(), productDO.getId());
+            ProductBO productBO = ProductBOConverter.toProductBO(productDO, methodDOS, accessoryDOS);
+            productBOS.add(productBO);
+        }
 
         return SearchProductBizResponseConverter.toSearchProductBizResponse(request.getPageIndex(), request.getPageSize(), totalCount, productBOS);
     }
