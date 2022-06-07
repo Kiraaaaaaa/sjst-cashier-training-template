@@ -2,9 +2,9 @@ package com.meituan.catering.management.order.biz.service.impl;
 
 import com.meituan.catering.management.order.biz.model.CateringOrderBO;
 import com.meituan.catering.management.order.biz.model.converter.CateringOrderBOConverter;
-import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderBizResponseConverter;
-import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderDataRequestConverter;
-import com.meituan.catering.management.order.biz.model.request.PlaceCateringOrderBizRequest;
+import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderResponseConverter;
+import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderRequestConverter;
+
 import com.meituan.catering.management.order.biz.model.request.SearchCateringOrderBizRequest;
 import com.meituan.catering.management.order.biz.model.response.SearchCateringOrderBizResponse;
 import com.meituan.catering.management.order.biz.service.CateringOrderQueryService;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +36,7 @@ public class CateringOrderQueryServiceImpl implements CateringOrderQueryService 
     @Override
     public CateringOrderBO findById(Long tenantId, Long orderId) {
         CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
-        if (cateringOrderDO != null) {
+        if (Objects.nonNull(cateringOrderDO)) {
             List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(tenantId, orderId);
             List<Long> orderItemIds = itemDOS.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
             List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.batchQueryByOrderItemId(tenantId, orderItemIds);
@@ -47,10 +48,10 @@ public class CateringOrderQueryServiceImpl implements CateringOrderQueryService 
 
     @Override
     public SearchCateringOrderBizResponse searchForPage(Long tenantId, SearchCateringOrderBizRequest request) {
-        SearchCateringOrderDataRequest dataRequest = SearchCateringOrderDataRequestConverter.toSearchCateringOrderDataRequest(tenantId, request);
+        SearchCateringOrderDataRequest dataRequest = SearchCateringOrderRequestConverter.toSearchCateringOrderDataRequest(tenantId, request);
         List<CateringOrderDO> cateringOrderDOS = orderMapper.searchForPage(dataRequest);
         Integer totalCount = orderMapper.countForPage(dataRequest);
-        SearchCateringOrderBizResponse bizResponse = SearchCateringOrderBizResponseConverter.toSearchCateringOrderBizResponse(request.getPageIndex(), request.getPageSize(), totalCount, cateringOrderDOS);
+        SearchCateringOrderBizResponse bizResponse = SearchCateringOrderResponseConverter.toSearchCateringOrderBizResponse(request.getPageIndex(), request.getPageSize(), totalCount, cateringOrderDOS);
         return bizResponse;
     }
 

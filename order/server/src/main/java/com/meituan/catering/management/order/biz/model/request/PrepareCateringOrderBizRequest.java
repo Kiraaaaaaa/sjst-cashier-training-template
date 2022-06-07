@@ -1,15 +1,7 @@
 package com.meituan.catering.management.order.biz.model.request;
 
-import com.meituan.catering.management.order.api.http.model.request.PrepareCateringOrderHttpRequest;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +20,11 @@ public class PrepareCateringOrderBizRequest {
 
     private Long orderId;
 
+    private Long userId;
+
     private Integer version;
+
+    private Date lastModifiedAt;
 
     private final List<Item> items = new LinkedList<>();
 

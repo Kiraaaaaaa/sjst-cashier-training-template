@@ -13,7 +13,10 @@ public enum ErrorCode implements IError {
     CLOSE_ERROR(630006, "关闭失败"),
     ILLEGAL_CODE_ERROR(630007, "非法字符"),
     INSET_ERROR(630008, "插入失败"),
-    PREPARE_ERROR(630009,"制作失败");
+    PREPARE_ERROR(630009,"制作失败"),
+    PRODUCE_ERROR(630010,"出餐失败"),
+    BILL_ERROR(630011,"支付失败"),
+    ADJUST_ERROR(630012,"加退菜失败");
 
     private final int code;
     private final String message;

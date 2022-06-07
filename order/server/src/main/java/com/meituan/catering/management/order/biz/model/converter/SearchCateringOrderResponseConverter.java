@@ -15,7 +15,7 @@ import java.util.List;
  * @Author:zhangzhefeng 2022/5/30 17:30
  * @ClassName: SearchCateringOrderBizResponseConverter
  */
-public class SearchCateringOrderBizResponseConverter {
+public class SearchCateringOrderResponseConverter {
 
     public static SearchCateringOrderBizResponse toSearchCateringOrderBizResponse(Integer pageIndex, Integer pageSize, Integer totalCount, List<CateringOrderDO> orderDOS){
 

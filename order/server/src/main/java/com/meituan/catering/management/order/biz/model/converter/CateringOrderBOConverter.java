@@ -13,6 +13,7 @@ import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 从其他数据模型向订单BO的转换器
@@ -22,8 +23,8 @@ public abstract class CateringOrderBOConverter {
     public static CateringOrderBO toCateringOrderBO(
             CateringOrderDO cateringOrderDO,
             List<CateringOrderItemDO> cateringOrderItemDOS,
-            List<CateringOrderItemAccessoryDO> cateringOrderItemAccessoryDOS){
-        if (cateringOrderDO == null){
+            List<CateringOrderItemAccessoryDO> cateringOrderItemAccessoryDOS) {
+        if (Objects.isNull(cateringOrderDO)) {
             return null;
         }
 
@@ -53,15 +54,15 @@ public abstract class CateringOrderBOConverter {
         cateringOrderBO.getBilling().setBillingPaymentChannel(cateringOrderDO.getBillingPaymentChannel());
 
         for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
-            cateringOrderBO.getItem().add(buildItem(cateringOrderItemDO,cateringOrderItemAccessoryDOS));
+            cateringOrderBO.getItem().add(buildItem(cateringOrderItemDO, cateringOrderItemAccessoryDOS));
         }
 
         return cateringOrderBO;
     }
 
 
-    private static CateringOrderBO.CateringOrderItem buildItem(CateringOrderItemDO itemDO, List<CateringOrderItemAccessoryDO> accessoryDOS){
-        if (itemDO == null){
+    private static CateringOrderBO.CateringOrderItem buildItem(CateringOrderItemDO itemDO, List<CateringOrderItemAccessoryDO> accessoryDOS) {
+        if (Objects.isNull(itemDO)) {
             return null;
         }
 
@@ -86,7 +87,7 @@ public abstract class CateringOrderBOConverter {
 
         List<CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory> accessories = itemBO.getAccessories();
         for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
-            if (accessoryDO.getOrderItemId().equals(itemDO.getId())){
+            if (accessoryDO.getOrderItemId().equals(itemDO.getId())) {
                 accessories.add(buildAccessory(accessoryDO));
             }
         }
@@ -94,8 +95,8 @@ public abstract class CateringOrderBOConverter {
         return itemBO;
     }
 
-    private static CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory buildAccessory(CateringOrderItemAccessoryDO accessoryDO){
-        if (accessoryDO == null){
+    private static CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory buildAccessory(CateringOrderItemAccessoryDO accessoryDO) {
+        if (Objects.isNull(accessoryDO)) {
             return null;
         }
 

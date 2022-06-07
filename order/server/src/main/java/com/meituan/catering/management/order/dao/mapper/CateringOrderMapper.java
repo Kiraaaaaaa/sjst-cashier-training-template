@@ -34,5 +34,19 @@ public interface CateringOrderMapper {
      */
     Integer countForPage(SearchCateringOrderDataRequest request);
 
+    /**
+     * 下单操作
+     * @param cateringOrderDO
+     * @return
+     */
     Integer insert(CateringOrderDO cateringOrderDO);
+
+    /**
+     * 修改状态
+     * @param cateringOrderDO
+     * @return
+     */
+    Integer update(CateringOrderDO cateringOrderDO);
+
+
 }

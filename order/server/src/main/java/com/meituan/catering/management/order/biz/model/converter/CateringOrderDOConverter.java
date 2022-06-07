@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 从其他数据模型向订单DO的转换器
@@ -51,10 +52,10 @@ public abstract class CateringOrderDOConverter {
         cateringOrderItemDO.setStatus(CateringOrderItemStatusEnum.PLACED);
         cateringOrderItemDO.setPlaceQuantity(item.getQuantity());
         cateringOrderItemDO.setProduceQuantity(new BigDecimal(0));
-        cateringOrderItemDO.setLatestQuantity(new BigDecimal(0));
+        cateringOrderItemDO.setLatestQuantity(item.getQuantity());
         cateringOrderItemDO.setProductId(item.getProductId());
         for (ProductDetailRemoteResponse productDetail : productDetailList) {
-            if (item.getProductId().equals(productDetail.getId())) {
+            if (Objects.equals(item.getProductId(), productDetail.getId())) {
                 cateringOrderItemDO.setProductNameOnPlace(productDetail.getName());
                 cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
                 cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
@@ -106,4 +107,6 @@ public abstract class CateringOrderDOConverter {
 
         return list;
     }
+
+
 }

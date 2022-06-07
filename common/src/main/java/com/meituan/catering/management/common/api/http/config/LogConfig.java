@@ -24,7 +24,7 @@ public class LogConfig {
         int lineNumber = stackTrace.getLineNumber();
         String methodName = stackTrace.getMethodName();
         String message = e.getMessage();
-        LOG.error("类名:{},文件名:{},行数:{},方法名:{}",className,fileName,lineNumber,methodName);
+        LOG.error("类名:{},文件名:{},行数:{},方法名:{},信息:{}",className,fileName,lineNumber,methodName,message);
 
     }
 

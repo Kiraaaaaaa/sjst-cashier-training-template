@@ -13,7 +13,7 @@ import java.util.List;
  * @Author:zhangzhefeng 2022/6/1 15:04
  * @ClassName: PlaceCateringOrderBizRequestConverter
  */
-public class PlaceCateringOrderBizRequestConverter {
+public class PlaceCateringOrderRequestConverter {
 
     public static PlaceCateringOrderBizRequest toPlaceCateringOrderBizRequest(PlaceCateringOrderHttpRequest request) {
         PlaceCateringOrderBizRequest bizRequest = new PlaceCateringOrderBizRequest();

@@ -4,6 +4,8 @@ import com.meituan.catering.management.common.model.enumeration.DescribableEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 /**
  * 订单主状态
  */
@@ -35,12 +37,21 @@ public enum CateringOrderStatusEnum implements DescribableEnum {
     /**
      * 已取消
      */
-    CANCELLED(-100, "已取消"),
+    CANCELLED(500, "已取消"),
 
     ;
 
     private final int code;
 
     private final String name;
+
+    public static CateringOrderStatusEnum getEnum(int code){
+        for (CateringOrderStatusEnum value : CateringOrderStatusEnum.values()) {
+            if (Objects.equals(value.getCode(),code)){
+                return value;
+            }
+        }
+        return null;
+    }
 
 }
