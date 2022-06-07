@@ -14,9 +14,12 @@
         <result column="latest_quantity" jdbcType="DECIMAL" property="latestQuantity"/>
         <result column="product_accessory_id" jdbcType="BIGINT" property="productAccessoryId"/>
         <result column="product_accessory_name_on_place" jdbcType="VARCHAR" property="productAccessoryNameOnPlace"/>
-        <result column="product_accessory_group_name_on_place" jdbcType="VARCHAR" property="productAccessoryGroupNameOnPlace"/>
-        <result column="product_accessory_unit_price_on_place" jdbcType="DECIMAL" property="productAccessoryUnitPriceOnPlace"/>
-        <result column="product_accessory_unit_of_measure_on_place" jdbcType="VARCHAR" property="productAccessoryUnitOfMeasureOnPlace"/>
+        <result column="product_accessory_group_name_on_place" jdbcType="VARCHAR"
+                property="productAccessoryGroupNameOnPlace"/>
+        <result column="product_accessory_unit_price_on_place" jdbcType="DECIMAL"
+                property="productAccessoryUnitPriceOnPlace"/>
+        <result column="product_accessory_unit_of_measure_on_place" jdbcType="VARCHAR"
+                property="productAccessoryUnitOfMeasureOnPlace"/>
 
     </resultMap>
 
@@ -39,7 +42,7 @@
     <insert id="batchInsert">
         insert into `catering_order_item_accessory` (<include refid="Base_Column_List"/>)
         values
-        <foreach collection="accessoryDOS" item="accessoryDO" separator="," >
+        <foreach collection="accessoryDOS" item="accessoryDO" separator=",">
             (
             null
             ,#{accessoryDO.tenantId}
@@ -58,17 +61,85 @@
             )
         </foreach>
     </insert>
+    <insert id="insert">
+        insert into `catering_order_item_accessory` (<include refid="Base_Column_List"/>)
+        values (
+        null
+        ,#{tenantId}
+        ,#{version}
+        ,#{orderItemId}
+        ,#{seqNo}
+        ,#{status}
+        ,#{placeQuantity}
+        ,#{produceQuantity}
+        ,#{latestQuantity}
+        ,#{productAccessoryId}
+        ,#{productAccessoryNameOnPlace}
+        ,#{productAccessoryGroupNameOnPlace}
+        ,#{productAccessoryUnitPriceOnPlace}
+        ,#{productAccessoryUnitOfMeasureOnPlace}
+        )
+    </insert>
+
+    <update id="produce">
+        update `catering_order_item_accessory`
+        <set>
+            `status` = #{accessory.status}
+            ,`version` = #{accessory.version}+1
+            ,`produce_quantity` = #{accessory.quantityOnProduce}
+        </set>
+        <where>
+            `version` = #{accessory.version}
+            and `order_item_id` = #{itemId}
+            and `tenant_id` = #{tenantId}
+            and `seq_no` = #{accessory.seqNo}
+        </where>
+    </update>
+
+    <update id="update">
+        update `catering_order_item_accessory`
+        <set>
+            `version` = #{version}+1
+            <if test="status != null">
+                ,`status` = #{status}
+            </if>
+            <if test="latestQuantity != null">
+                ,`latest_quantity` = #{latestQuantity}
+            </if>
+            <if test="produceQuantity != null">
+                ,`produce_quantity` = #{produceQuantity}
+            </if>
+            <if test="latestQuantity != null">
+                ,`latest_quantity` = #{latestQuantity}
+            </if>
+        </set>
+        <where>
+            `version` = #{version}
+            and `order_item_id` = #{orderItemId}
+            and `tenant_id` = #{tenantId}
+            and `seq_no` = #{seqNo}
+        </where>
+    </update>
 
     <select id="batchQueryByOrderItemId" resultMap="BaseResultMap">
-        select <include refid="Base_Column_List"/>
+        select
+        <include refid="Base_Column_List"/>
         from `catering_order_item_accessory`
         where `tenant_id` = #{tenantId}
         and `order_item_id` in
-            (
-            <foreach collection="orderItemIds" item="orderItemId" separator=",">
-                ${orderItemId}
-            </foreach>
-            )
+        (
+        <foreach collection="orderItemIds" item="orderItemId" separator=",">
+            ${orderItemId}
+        </foreach>
+        )
+    </select>
+
+    <select id="queryByOrderItemId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `catering_order_item_accessory`
+        where `tenant_id` = #{tenantId}
+        and `order_item_id` = #{orderItemId}
     </select>
 
 

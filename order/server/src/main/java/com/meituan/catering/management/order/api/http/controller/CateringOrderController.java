@@ -1,6 +1,5 @@
 package com.meituan.catering.management.order.api.http.controller;
 
-import cn.hutool.core.lang.hash.Hash;
 import com.meituan.catering.management.common.helper.StatusHelper;
 import com.meituan.catering.management.order.api.http.model.dto.CateringOrderDetailHttpDTO;
 import com.meituan.catering.management.order.api.http.model.dto.CateringOrderPageHttpDTO;
@@ -13,11 +12,8 @@ import com.meituan.catering.management.order.api.http.model.request.SearchCateri
 import com.meituan.catering.management.order.api.http.model.response.CateringOrderDetailHttpResponse;
 import com.meituan.catering.management.order.api.http.model.response.CateringOrderPageHttpResponse;
 import com.meituan.catering.management.order.biz.model.CateringOrderBO;
-import com.meituan.catering.management.order.biz.model.converter.CateringOrderHttpVOConverter;
-import com.meituan.catering.management.order.biz.model.converter.PlaceCateringOrderBizRequestConverter;
-import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderBizRequestConverter;
-import com.meituan.catering.management.order.biz.model.request.PlaceCateringOrderBizRequest;
-import com.meituan.catering.management.order.biz.model.request.SearchCateringOrderBizRequest;
+import com.meituan.catering.management.order.biz.model.converter.*;
+import com.meituan.catering.management.order.biz.model.request.*;
 import com.meituan.catering.management.order.biz.model.response.SearchCateringOrderBizResponse;
 import com.meituan.catering.management.order.biz.service.CateringOrderBizService;
 import com.meituan.catering.management.order.biz.service.CateringOrderQueryService;
@@ -37,10 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 订单交易Http API
@@ -58,12 +50,6 @@ public class CateringOrderController {
     @Resource
     private CateringOrderBizService service;
 
-    @Resource
-    private ShopRemoteService shopRemoteService;
-
-    @Resource
-    private ProductRemoteService productRemoteService;
-
     @ApiOperation("分页搜索订单的概要信息列表")
     @PostMapping("/search")
     public CateringOrderPageHttpResponse searchForPage(
@@ -72,7 +58,7 @@ public class CateringOrderController {
             @ApiParam("搜索条件") @Valid @RequestBody SearchCateringOrderHttpRequest request) {
         validator.sqlValid(tenantId, userId, request);
         CateringOrderPageHttpResponse response = new CateringOrderPageHttpResponse();
-        SearchCateringOrderBizRequest bizRequest = SearchCateringOrderBizRequestConverter.toSearchCateringOrderBizRequest(request);
+        SearchCateringOrderBizRequest bizRequest = SearchCateringOrderRequestConverter.toSearchCateringOrderBizRequest(request);
         SearchCateringOrderBizResponse cateringOrderBizResponse = queryService.searchForPage(tenantId, bizRequest);
         CateringOrderPageHttpDTO dto = CateringOrderHttpVOConverter.toPageHttpDTO(cateringOrderBizResponse);
         response.setData(dto);
@@ -89,10 +75,7 @@ public class CateringOrderController {
         OrderBizServiceValidator.baseValid(tenantId, userId);
         CateringOrderDetailHttpResponse response = new CateringOrderDetailHttpResponse();
         CateringOrderBO cateringOrderBO = queryService.findById(tenantId, orderId);
-        CateringOrderDetailHttpDTO detailHttpDTO = CateringOrderHttpVOConverter.toDetailHttpDTO(cateringOrderBO);
-        response.setStatus(StatusHelper.success());
-        response.setData(detailHttpDTO);
-        return response;
+        return getResponse(cateringOrderBO);
     }
 
     @ApiOperation("创建新订单")
@@ -102,13 +85,9 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("下单信息") @Valid @RequestBody PlaceCateringOrderHttpRequest request) {
         validator.createValid(tenantId,userId,request);
-        PlaceCateringOrderBizRequest bizRequest = PlaceCateringOrderBizRequestConverter.toPlaceCateringOrderBizRequest(request);
+        PlaceCateringOrderBizRequest bizRequest = PlaceCateringOrderRequestConverter.toPlaceCateringOrderBizRequest(request);
         CateringOrderBO cateringOrderBO = service.insert(tenantId, userId, bizRequest);
-        CateringOrderDetailHttpDTO detailHttpDTO = CateringOrderHttpVOConverter.toDetailHttpDTO(cateringOrderBO);
-        CateringOrderDetailHttpResponse response = new CateringOrderDetailHttpResponse();
-        response.setStatus(StatusHelper.success());
-        response.setData(detailHttpDTO);
-        return response;
+        return getResponse(cateringOrderBO);
     }
 
     @ApiOperation("针对一个订单进行制作")
@@ -119,8 +98,9 @@ public class CateringOrderController {
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("制作信息") @Valid @RequestBody PrepareCateringOrderHttpRequest request) {
         validator.prepareValid(tenantId,userId,orderId,request);
-
-        return null;
+        PrepareCateringOrderBizRequest bizRequest = PrepareCateringOrderRequestConverter.toPrepareCateringOrderBizRequest(tenantId, userId,orderId, request);
+        CateringOrderBO cateringOrderBO = service.prepare(bizRequest);
+        return getResponse(cateringOrderBO);
     }
 
     @ApiOperation("针对一个订单进行出餐")
@@ -130,7 +110,10 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("出餐信息") @Valid @RequestBody ProduceCateringOrderHttpRequest request) {
-        return null;
+        validator.produceValid(tenantId,userId,orderId,request);
+        ProduceCateringOrderBizRequest bizRequest = ProduceCateringOrderRequestConverter.toProduceCateringOrderBizRequest(tenantId,userId,orderId,request);
+        CateringOrderBO cateringOrderBO = service.produce(bizRequest);
+        return getResponse(cateringOrderBO);
     }
 
     @ApiOperation("针对一个订单进行加退菜")
@@ -140,7 +123,10 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("加退菜信息") @Valid @RequestBody AdjustCateringOrderHttpRequest request) {
-        return null;
+        validator.adjustValid(tenantId,userId,orderId,request);
+        AdjustCateringOrderBizRequest bizRequest = AdjustCateringOrderRequestConverter.toAdjustCateringOrderBizRequest(tenantId, userId, orderId, request);
+        CateringOrderBO cateringOrderBO = service.adjust(bizRequest);
+        return getResponse(cateringOrderBO);
     }
 
     @ApiOperation("针对一个订单进行结账")
@@ -150,6 +136,18 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("结账信息") @Valid @RequestBody BillCateringOrderHttpRequest request) {
-        return null;
+        validator.billValid(tenantId,userId,orderId,request);
+        BillCateringOrderBizRequest bizRequest = BillCateringOrderRequestConverter.toBillCateringOrderBizRequest(tenantId, userId, orderId, request);
+        CateringOrderBO cateringOrderBO = service.bill(bizRequest);
+        return getResponse(cateringOrderBO);
+    }
+
+
+    private static CateringOrderDetailHttpResponse getResponse(CateringOrderBO cateringOrderBO){
+        CateringOrderDetailHttpDTO detailHttpDTO = CateringOrderHttpVOConverter.toDetailHttpDTO(cateringOrderBO);
+        CateringOrderDetailHttpResponse response = new CateringOrderDetailHttpResponse();
+        response.setStatus(StatusHelper.success());
+        response.setData(detailHttpDTO);
+        return response;
     }
 }

@@ -3,13 +3,12 @@ package com.meituan.catering.management.order.biz.validator;
 import cn.hutool.core.stream.CollectorUtil;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
-import com.meituan.catering.management.order.api.http.model.request.PlaceCateringOrderHttpRequest;
-import com.meituan.catering.management.order.api.http.model.request.PrepareCateringOrderHttpRequest;
-import com.meituan.catering.management.order.api.http.model.request.SearchCateringOrderHttpRequest;
+import com.meituan.catering.management.order.api.http.model.request.*;
 import com.meituan.catering.management.order.dao.mapper.CateringOrderItemAccessoryMapper;
 import com.meituan.catering.management.order.dao.mapper.CateringOrderItemMapper;
 import com.meituan.catering.management.order.dao.mapper.CateringOrderMapper;
 import com.meituan.catering.management.order.dao.model.CateringOrderDO;
+import com.meituan.catering.management.order.dao.model.CateringOrderItemAccessoryDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
 import com.meituan.catering.management.order.remote.ProductRemoteService;
 import com.meituan.catering.management.order.remote.ShopRemoteService;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.swing.*;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -126,9 +126,74 @@ public class OrderBizServiceValidator {
                 }
             }
         }
+    }
 
+    public void produceValid(Long tenantId, Long userId, Long orderId, ProduceCateringOrderHttpRequest request) {
+        baseValid(tenantId, userId);
+        CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
+        if (Objects.isNull(cateringOrderDO)) {
+            throw new BizException(ErrorCode.PRODUCE_ERROR);
+        }
+        if (!request.getVersion().equals(cateringOrderDO.getVersion())) {
+            throw new BizException(ErrorCode.PRODUCE_ERROR);
+        }
+
+        List<CateringOrderItemDO> cateringOrderItemDOS = itemMapper.queryByOrderId(tenantId, orderId);
+        if (CollectionUtils.isEmpty(cateringOrderItemDOS)) {
+            throw new BizException(ErrorCode.PRODUCE_ERROR);
+        }
+
+        for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
+            for (ProduceCateringOrderHttpRequest.Item item : request.getItems()) {
+                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo()) && !item.getVersion().equals(cateringOrderItemDO.getVersion())) {
+                    throw new BizException(ErrorCode.PRODUCE_ERROR);
+                }
+                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo()) &&
+                        item.getQuantityOnProduce().compareTo(cateringOrderItemDO.getLatestQuantity()
+                                .subtract(cateringOrderItemDO.getProduceQuantity())) > 0) {
+                    throw new BizException(ErrorCode.PRODUCE_ERROR);
+                }
+            }
+        }
 
     }
 
+    public void billValid(Long tenantId, Long userId, Long orderId, BillCateringOrderHttpRequest request){
+        baseValid(tenantId,userId);
+        CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
+        if (!cateringOrderDO.getVersion().equals(request.getVersion())){
+            throw new BizException(ErrorCode.BILL_ERROR);
+        }
+    }
+
+    public void adjustValid(Long tenantId,Long userId,Long orderId,AdjustCateringOrderHttpRequest request){
+        baseValid(tenantId,userId);
+        CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
+        if (Objects.isNull(cateringOrderDO)) {
+            throw new BizException(ErrorCode.ADJUST_ERROR);
+        }
+        if (!request.getVersion().equals(cateringOrderDO.getVersion())) {
+            throw new BizException(ErrorCode.ADJUST_ERROR);
+        }
+
+        List<CateringOrderItemDO> cateringOrderItemDOS = itemMapper.queryByOrderId(tenantId, orderId);
+        if (CollectionUtils.isEmpty(cateringOrderItemDOS)) {
+            throw new BizException(ErrorCode.ADJUST_ERROR);
+        }
+        for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
+            for (AdjustCateringOrderHttpRequest.Item item : request.getItems()) {
+                if (Objects.isNull(item.getProductId())){
+                    if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())
+                            && !item.getVersion().equals(cateringOrderItemDO.getVersion())) {
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                    if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())
+                            &&(item.getQuantityOnAdjustment().add(cateringOrderItemDO.getLatestQuantity())).compareTo(BigDecimal.ZERO)<0){
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                }
+            }
+        }
+    }
 }
 

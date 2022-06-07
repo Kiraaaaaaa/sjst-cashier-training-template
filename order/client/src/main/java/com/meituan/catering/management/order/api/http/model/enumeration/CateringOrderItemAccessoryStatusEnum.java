@@ -26,7 +26,7 @@ public enum CateringOrderItemAccessoryStatusEnum implements DescribableEnum {
     /**
      * 已取消
      */
-    CANCELLED(-100, "已取消"),
+    CANCELLED(500, "已取消"),
     ;
 
     private final int code;

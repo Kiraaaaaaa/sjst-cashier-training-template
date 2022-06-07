@@ -8,6 +8,7 @@ import com.meituan.catering.management.order.biz.model.response.SearchCateringOr
 
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 从其他数据模型向订单Http模型的转换器
@@ -15,7 +16,7 @@ import java.util.List;
 public abstract class CateringOrderHttpVOConverter {
 
     public static CateringOrderDetailHttpDTO toDetailHttpDTO(CateringOrderBO orderBO) {
-        if (orderBO == null) {
+        if (Objects.isNull(orderBO)) {
             return null;
         }
         CateringOrderDetailHttpDTO dto = new CateringOrderDetailHttpDTO();

@@ -46,26 +46,51 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into `catering_order` (<include refid="Base_Column_List"/>)
         values(
-         0
-         ,#{tenantId}
-         ,#{createdBy}
-         ,#{createdAt}
-         ,#{lastModifiedBy}
-         ,#{lastModifiedAt}
-         ,#{version}
-         ,#{status}
-         ,#{shopId}
-         ,#{shopBusinessNo}
-         ,#{shopNameOnPlace}
-         ,#{tableNo}
-         ,#{customerCount}
-         ,#{totalPrice}
-         ,#{comment}
-         ,#{billingPromotion}
-         ,#{billingPaid}
-         ,#{billingPaymentChannel}
+        0
+        ,#{tenantId}
+        ,#{createdBy}
+        ,#{createdAt}
+        ,#{lastModifiedBy}
+        ,#{lastModifiedAt}
+        ,#{version}
+        ,#{status}
+        ,#{shopId}
+        ,#{shopBusinessNo}
+        ,#{shopNameOnPlace}
+        ,#{tableNo}
+        ,#{customerCount}
+        ,#{totalPrice}
+        ,#{comment}
+        ,#{billingPromotion}
+        ,#{billingPaid}
+        ,#{billingPaymentChannel}
         )
     </insert>
+    <update id="update">
+        update `catering_order`
+        <set>
+            `version` = #{version}+1
+            ,`last_modified_by` = #{lastModifiedBy}
+            ,`last_modified_at` = #{lastModifiedAt}
+            <if test="status!=null">
+                ,`status` = #{status}
+            </if>
+            <if test="billingPromotion != null">
+                ,`billing_promotion` = #{billingPromotion}
+            </if>
+            <if test="billingPaid != null">
+                ,`billing_paid` = #{billingPaid}
+            </if>
+            <if test="billingPaymentChannel != null">
+                ,`billing_payment_channel` = #{billingPaymentChannel}
+            </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId}
+            and `version` = #{version}
+            and `id` = #{id}
+        </where>
+    </update>
 
 
     <select id="queryById" resultMap="BaseResultMap">
