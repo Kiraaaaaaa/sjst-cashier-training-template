@@ -18,8 +18,6 @@ import com.meituan.catering.management.order.biz.model.response.SearchCateringOr
 import com.meituan.catering.management.order.biz.service.CateringOrderBizService;
 import com.meituan.catering.management.order.biz.service.CateringOrderQueryService;
 import com.meituan.catering.management.order.biz.validator.OrderBizServiceValidator;
-import com.meituan.catering.management.order.remote.ProductRemoteService;
-import com.meituan.catering.management.order.remote.ShopRemoteService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

@@ -123,15 +123,30 @@
             </if>
         </where>
         <if test="sortFields.size != 0">
-            order by
+            ORDER BY
             <foreach collection="sortFields" item="sortField" separator=",">
-                ${sortField.field} ${sortField.asc}
+                <choose>
+                    <when test="sortField.field == 'status'">
+                        CASE
+                        WHEN ${sortField.field} = "PLACED" THEN 1
+                        WHEN ${sortField.field} = "PREPARING" THEN 2
+                        WHEN ${sortField.field} = "PREPARED" THEN 3
+                        WHEN ${sortField.field} = "DRAFT" THEN 4
+                        WHEN ${sortField.field} = "PLACED" THEN 5
+                        WHEN ${sortField.field} = "CANCELLED" THEN 6
+                        END ${sortField.asc}
+                    </when>
+                    <when test="sortField.field != 'status'">
+                        ${sortField.field} ${sortField.asc}
+                    </when>
+                </choose>
             </foreach>
         </if>
         <if test="pageIndex != null and pageSize!=null">
             limit #{skip},#{limit}
         </if>
     </select>
+
     <select id="countForPage" resultType="java.lang.Integer">
         select
         count(*)
