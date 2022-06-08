@@ -132,7 +132,7 @@
                         WHEN ${sortField.field} = "PREPARING" THEN 2
                         WHEN ${sortField.field} = "PREPARED" THEN 3
                         WHEN ${sortField.field} = "DRAFT" THEN 4
-                        WHEN ${sortField.field} = "PLACED" THEN 5
+                        WHEN ${sortField.field} = "BILLED" THEN 5
                         WHEN ${sortField.field} = "CANCELLED" THEN 6
                         END ${sortField.asc}
                     </when>

@@ -71,7 +71,6 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId) {
         OrderBizServiceValidator.baseValid(tenantId, userId);
-        CateringOrderDetailHttpResponse response = new CateringOrderDetailHttpResponse();
         CateringOrderBO cateringOrderBO = queryService.findById(tenantId, orderId);
         return getResponse(cateringOrderBO);
     }
@@ -82,9 +81,9 @@ public class CateringOrderController {
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("下单信息") @Valid @RequestBody PlaceCateringOrderHttpRequest request) {
-        validator.createValid(tenantId,userId,request);
-        PlaceCateringOrderBizRequest bizRequest = PlaceCateringOrderRequestConverter.toPlaceCateringOrderBizRequest(request);
-        CateringOrderBO cateringOrderBO = service.insert(tenantId, userId, bizRequest);
+        validator.createValid(tenantId, userId, request);
+        PlaceCateringOrderBizRequest bizRequest = PlaceCateringOrderRequestConverter.toPlaceCateringOrderBizRequest(tenantId, userId, request);
+        CateringOrderBO cateringOrderBO = service.place(bizRequest);
         return getResponse(cateringOrderBO);
     }
 
@@ -95,8 +94,8 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("制作信息") @Valid @RequestBody PrepareCateringOrderHttpRequest request) {
-        validator.prepareValid(tenantId,userId,orderId,request);
-        PrepareCateringOrderBizRequest bizRequest = PrepareCateringOrderRequestConverter.toPrepareCateringOrderBizRequest(tenantId, userId,orderId, request);
+        validator.prepareValid(tenantId, userId, orderId, request);
+        PrepareCateringOrderBizRequest bizRequest = PrepareCateringOrderRequestConverter.toPrepareCateringOrderBizRequest(tenantId, userId, orderId, request);
         CateringOrderBO cateringOrderBO = service.prepare(bizRequest);
         return getResponse(cateringOrderBO);
     }
@@ -108,8 +107,8 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("出餐信息") @Valid @RequestBody ProduceCateringOrderHttpRequest request) {
-        validator.produceValid(tenantId,userId,orderId,request);
-        ProduceCateringOrderBizRequest bizRequest = ProduceCateringOrderRequestConverter.toProduceCateringOrderBizRequest(tenantId,userId,orderId,request);
+        validator.produceValid(tenantId, userId, orderId, request);
+        ProduceCateringOrderBizRequest bizRequest = ProduceCateringOrderRequestConverter.toProduceCateringOrderBizRequest(tenantId, userId, orderId, request);
         CateringOrderBO cateringOrderBO = service.produce(bizRequest);
         return getResponse(cateringOrderBO);
     }
@@ -121,7 +120,7 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("加退菜信息") @Valid @RequestBody AdjustCateringOrderHttpRequest request) {
-        validator.adjustValid(tenantId,userId,orderId,request);
+        validator.adjustValid(tenantId, userId, orderId, request);
         AdjustCateringOrderBizRequest bizRequest = AdjustCateringOrderRequestConverter.toAdjustCateringOrderBizRequest(tenantId, userId, orderId, request);
         CateringOrderBO cateringOrderBO = service.adjust(bizRequest);
         return getResponse(cateringOrderBO);
@@ -134,14 +133,14 @@ public class CateringOrderController {
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("订单ID") @PathVariable Long orderId,
             @ApiParam("结账信息") @Valid @RequestBody BillCateringOrderHttpRequest request) {
-        validator.billValid(tenantId,userId,orderId,request);
+        validator.billValid(tenantId, userId, orderId, request);
         BillCateringOrderBizRequest bizRequest = BillCateringOrderRequestConverter.toBillCateringOrderBizRequest(tenantId, userId, orderId, request);
         CateringOrderBO cateringOrderBO = service.bill(bizRequest);
         return getResponse(cateringOrderBO);
     }
 
 
-    private static CateringOrderDetailHttpResponse getResponse(CateringOrderBO cateringOrderBO){
+    private static CateringOrderDetailHttpResponse getResponse(CateringOrderBO cateringOrderBO) {
         CateringOrderDetailHttpDTO detailHttpDTO = CateringOrderHttpVOConverter.toDetailHttpDTO(cateringOrderBO);
         CateringOrderDetailHttpResponse response = new CateringOrderDetailHttpResponse();
         response.setStatus(StatusHelper.success());

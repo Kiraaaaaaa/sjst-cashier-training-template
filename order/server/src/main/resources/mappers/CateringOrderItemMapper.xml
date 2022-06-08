@@ -141,5 +141,13 @@
         where `tenant_id` = #{tenantId}
         and `order_id` = #{orderId}
     </select>
+    <select id="queryByOrderIdAndSeqNo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `catering_order_item`
+        where `tenant_id` = #{tenantId}
+        and `order_id` = #{orderId}
+        and `seq_no` = #{seqNo}
+    </select>
 
 </mapper>

@@ -41,7 +41,7 @@ public class AdjustCateringOrderRequestConverter {
 
         CateringOrderDO cateringOrderDO = new CateringOrderDO();
 
-        int code = itemDOS.get(0).getStatus().getCode();
+        int code = CateringOrderStatusEnum.CANCELLED.getCode();
         for (CateringOrderItemDO itemDO : itemDOS) {
             if (code > itemDO.getStatus().getCode()) {
                 code = itemDO.getStatus().getCode();
@@ -82,15 +82,15 @@ public class AdjustCateringOrderRequestConverter {
             cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
             cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
             if (Objects.nonNull(item.getProductMethodId())) {
-                for (ProductDetailRemoteResponse.MethodGroup methodGroup : productDetail.getMethodGroups()) {
-                    for (ProductDetailRemoteResponse.MethodGroup.Option option : methodGroup.getOptions()) {
+                productDetail.getMethodGroups().forEach(methodGroup -> {
+                    methodGroup.getOptions().forEach(option -> {
                         if (Objects.equals(item.getProductMethodId(), option.getId())) {
                             cateringOrderItemDO.setProductMethodId(option.getId());
                             cateringOrderItemDO.setProductMethodNameOnPlace(option.getName());
                             cateringOrderItemDO.setProductMethodGroupNameOnPlace(methodGroup.getName());
                         }
-                    }
-                }
+                    });
+                });
             }
         }
         //说明是更新
@@ -155,7 +155,7 @@ public class AdjustCateringOrderRequestConverter {
             cateringOrderItemAccessoryDO.setLatestQuantity(accessory.getQuantityOnAdjustment());
             cateringOrderItemAccessoryDO.setProduceQuantity(BigDecimal.ZERO);
             cateringOrderItemAccessoryDO.setPlaceQuantity(accessory.getQuantityOnAdjustment());
-            for (ProductDetailRemoteResponse.AccessoryGroup.Option option : accessoryDetail.getOptions()) {
+            accessoryDetail.getOptions().forEach(option -> {
                 if (Objects.equals(option.getId(), accessory.getProductAccessoryId())) {
                     cateringOrderItemAccessoryDO.setProductAccessoryId(option.getId());
                     cateringOrderItemAccessoryDO.setProductAccessoryNameOnPlace(option.getName());
@@ -163,7 +163,7 @@ public class AdjustCateringOrderRequestConverter {
                     cateringOrderItemAccessoryDO.setProductAccessoryUnitPriceOnPlace(BigDecimal.valueOf(option.getUnitPrice()));
                     cateringOrderItemAccessoryDO.setProductAccessoryUnitOfMeasureOnPlace(option.getUnitOfMeasure());
                 }
-            }
+            });
         }
         return cateringOrderItemAccessoryDO;
     }

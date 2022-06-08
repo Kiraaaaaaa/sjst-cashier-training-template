@@ -29,8 +29,10 @@ import java.util.Objects;
  */
 public class PlaceCateringOrderRequestConverter {
 
-    public static PlaceCateringOrderBizRequest toPlaceCateringOrderBizRequest(PlaceCateringOrderHttpRequest request) {
+    public static PlaceCateringOrderBizRequest toPlaceCateringOrderBizRequest(Long tenantId, Long userId, PlaceCateringOrderHttpRequest request) {
         PlaceCateringOrderBizRequest bizRequest = new PlaceCateringOrderBizRequest();
+        bizRequest.setTenantId(tenantId);
+        bizRequest.setUserId(userId);
         bizRequest.setShopBusinessNo(request.getShopBusinessNo());
         bizRequest.setTableNo(request.getTableNo());
         bizRequest.setCustomerCount(request.getCustomerCount());
@@ -48,9 +50,9 @@ public class PlaceCateringOrderRequestConverter {
     public static CateringOrderDO toCateringOrderDO(Long tenantId, Long userId, PlaceCateringOrderBizRequest request, ShopDetailRemoteResponse shopDetail) {
 
         CateringOrderDO cateringOrderDO = new CateringOrderDO();
-        if(CollectionUtils.isEmpty(request.getItems())){
+        if (CollectionUtils.isEmpty(request.getItems())) {
             cateringOrderDO.setStatus(CateringOrderStatusEnum.DRAFT);
-        }else {
+        } else {
             cateringOrderDO.setStatus(CateringOrderStatusEnum.PLACED);
         }
         cateringOrderDO.setShopId(shopDetail.getId());
@@ -78,34 +80,33 @@ public class PlaceCateringOrderRequestConverter {
         cateringOrderItemDO.setSeqNo(item.getSeqNo());
         cateringOrderItemDO.setStatus(CateringOrderItemStatusEnum.PLACED);
         cateringOrderItemDO.setPlaceQuantity(item.getQuantity());
-        cateringOrderItemDO.setProduceQuantity(new BigDecimal(0));
+        cateringOrderItemDO.setProduceQuantity(BigDecimal.ZERO);
         cateringOrderItemDO.setLatestQuantity(item.getQuantity());
         cateringOrderItemDO.setProductId(item.getProductId());
-        for (ProductDetailRemoteResponse productDetail : productDetailList) {
+        productDetailList.forEach(productDetail -> {
             if (Objects.equals(item.getProductId(), productDetail.getId())) {
                 cateringOrderItemDO.setProductNameOnPlace(productDetail.getName());
                 cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
                 cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
                 cateringOrderItemDO.setProductMethodId(item.getProductMethodId());
-                for (ProductDetailRemoteResponse.MethodGroup methodGroup : productDetail.getMethodGroups()) {
-                    for (ProductDetailRemoteResponse.MethodGroup.Option option : methodGroup.getOptions()) {
+                productDetail.getMethodGroups().forEach(methodGroup -> {
+                    methodGroup.getOptions().forEach(option -> {
                         if (option.getId().equals(item.getProductMethodId())) {
                             cateringOrderItemDO.setProductMethodGroupNameOnPlace(methodGroup.getName());
                             cateringOrderItemDO.setProductMethodNameOnPlace(option.getName());
                         }
-                    }
-                }
-
+                    });
+                });
             }
+        });
 
-        }
         return cateringOrderItemDO;
     }
 
     public static List<CateringOrderItemAccessoryDO> toCateringOrderItemAccessoryDO(CateringOrderItemDO orderItemDO, PlaceCateringOrderBizRequest.Item request, List<ProductDetailRemoteResponse> productDetailList) {
 
         ArrayList<CateringOrderItemAccessoryDO> list = Lists.newArrayList();
-        for (PlaceCateringOrderBizRequest.Item.Accessory accessory : request.getAccessories()) {
+        request.getAccessories().forEach(accessory -> {
             CateringOrderItemAccessoryDO accessoryDO = new CateringOrderItemAccessoryDO();
             accessoryDO.setTenantId(orderItemDO.getTenantId());
             accessoryDO.setVersion(1);
@@ -130,7 +131,7 @@ public class PlaceCateringOrderRequestConverter {
             }
             list.add(accessoryDO);
             accessoryDO = null;
-        }
+        });
 
         return list;
     }
@@ -145,9 +146,10 @@ public class PlaceCateringOrderRequestConverter {
 
         List<PlaceCateringOrderBizRequest.Item.Accessory> accessories = item.getAccessories();
         List<PlaceCateringOrderHttpRequest.Item.Accessory> httpAccessories = httpItem.getAccessories();
-        for (PlaceCateringOrderHttpRequest.Item.Accessory httpAccessory : httpAccessories) {
+        httpAccessories.forEach(httpAccessory -> {
             accessories.add(buildAccessory(httpAccessory));
-        }
+
+        });
         return item;
     }
 

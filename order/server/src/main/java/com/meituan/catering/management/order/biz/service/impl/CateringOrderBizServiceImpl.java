@@ -4,6 +4,7 @@ package com.meituan.catering.management.order.biz.service.impl;
 import com.google.common.collect.Lists;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderStatusEnum;
 import com.meituan.catering.management.order.biz.model.CateringOrderBO;
 import com.meituan.catering.management.order.biz.model.converter.*;
 import com.meituan.catering.management.order.biz.model.request.*;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,41 +51,46 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
     private ProductRemoteService productRemoteService;
 
     @Override
-    public CateringOrderBO insert(Long tenantId, Long userId, PlaceCateringOrderBizRequest request) {
+    public CateringOrderBO place(PlaceCateringOrderBizRequest request) {
         return transactionTemplate.execute(status -> {
-            ShopDetailRemoteResponse shopDetail = shopRemoteService.findByBusinessNo(tenantId, userId, request.getShopBusinessNo());
-            Set<Long> ids = request.getItems().stream().map(PlaceCateringOrderBizRequest.Item::getProductId).collect(Collectors.toSet());
-            List<ProductDetailRemoteResponse> productDetailList = null;
-            if (!CollectionUtils.isEmpty(ids)) {
-                productDetailList = productRemoteService.findByIds(tenantId, userId, ids);
-            }
-            CateringOrderDO cateringOrderDO = PlaceCateringOrderRequestConverter.toCateringOrderDO(tenantId, userId, request, shopDetail);
+            ShopDetailRemoteResponse shopDetail = shopRemoteService.findByBusinessNo(request.getTenantId(), request.getUserId(), request.getShopBusinessNo());
+            Set<Long> ids = request.getItems().stream().map(PlaceCateringOrderBizRequest.Item::getProductId).filter(Objects::nonNull).collect(Collectors.toSet());
+            List<ProductDetailRemoteResponse> productDetailList = productRemoteService.findByIds(request.getTenantId(), request.getUserId(), ids);
+            CateringOrderDO cateringOrderDO = PlaceCateringOrderRequestConverter.toCateringOrderDO(request.getTenantId(), request.getUserId(), request, shopDetail);
             Integer insert = orderMapper.insert(cateringOrderDO);
             if (insert == 0) {
                 throw new BizException(ErrorCode.INSET_ERROR);
             }
-            for (PlaceCateringOrderBizRequest.Item item : request.getItems()) {
+            ArrayList<CateringOrderItemDO> itemLists = Lists.newArrayList();
+            request.getItems().forEach(item -> {
                 CateringOrderItemDO cateringOrderItemDO = PlaceCateringOrderRequestConverter.toCateringOrderItemDO(cateringOrderDO, item, productDetailList);
-                Integer insertItem = itemMapper.insert(cateringOrderItemDO);
-                if (insertItem == 0) {
+                itemLists.add(cateringOrderItemDO);
+            });
+            if (!CollectionUtils.isEmpty(itemLists)) {
+                Integer itemInsert = itemMapper.batchInsert(itemLists);
+                if (itemInsert != itemLists.size()) {
                     throw new BizException(ErrorCode.INSET_ERROR);
-                }
-                List<CateringOrderItemAccessoryDO> cateringOrderItemAccessoryDOS = PlaceCateringOrderRequestConverter.toCateringOrderItemAccessoryDO(cateringOrderItemDO, item, productDetailList);
-                if (CollectionUtils.isNotEmpty(cateringOrderItemAccessoryDOS)) {
-                    Integer batchInsert = accessoryMapper.batchInsert(cateringOrderItemAccessoryDOS);
-                    if (batchInsert == 0) {
-                        throw new BizException(ErrorCode.INSET_ERROR);
-                    }
                 }
             }
 
-            CateringOrderDO queryOrderDO = orderMapper.queryById(tenantId, cateringOrderDO.getId());
-            List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(tenantId, cateringOrderDO.getId());
-            List<Long> orderItemIds = itemDOS.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
-            List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.batchQueryByOrderItemId(tenantId, orderItemIds);
-            return CateringOrderBOConverter.toCateringOrderBO(queryOrderDO, itemDOS, accessoryDOS);
+            ArrayList<CateringOrderItemAccessoryDO> accessoryLists = Lists.newArrayList();
+            List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(request.getTenantId(), cateringOrderDO.getId());
+            request.getItems().forEach(item -> {
+                itemDOS.forEach(itemDO -> {
+                    if (item.getSeqNo().equals(itemDO.getSeqNo())) {
+                        List<CateringOrderItemAccessoryDO> accessoryDOS = PlaceCateringOrderRequestConverter.toCateringOrderItemAccessoryDO(itemDO, item, productDetailList);
+                        accessoryLists.addAll(accessoryDOS);
+                    }
+                });
+            });
+            if (!CollectionUtils.isEmpty(accessoryLists)) {
+                Integer accessoryInsert = accessoryMapper.batchInsert(accessoryLists);
+                if (accessoryInsert != accessoryLists.size()) {
+                    throw new BizException(ErrorCode.INSET_ERROR);
+                }
+            }
+            return getCateringOrderBO(request.getTenantId(), cateringOrderDO.getId());
         });
-
     }
 
     @Override
@@ -142,6 +147,10 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
 
     @Override
     public CateringOrderBO bill(BillCateringOrderBizRequest request) {
+        CateringOrderDO orderDO = orderMapper.queryById(request.getTenantId(), request.getOrderId());
+        if (orderDO.getStatus() != CateringOrderStatusEnum.PREPARED) {
+            throw new BizException(ErrorCode.BILL_ERROR);
+        }
         CateringOrderDO cateringOrderDO = BillCateringOrderRequestConverter.toCateringOrderDO(request);
         Integer update = orderMapper.update(cateringOrderDO);
         if (update <= 0) {
@@ -242,7 +251,10 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
         CateringOrderDO queryOrderDO = orderMapper.queryById(tenantId, orderId);
         List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(tenantId, orderId);
         List<Long> orderItemIds = itemDOS.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
-        List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.batchQueryByOrderItemId(tenantId, orderItemIds);
+        List<CateringOrderItemAccessoryDO> accessoryDOS = null;
+        if (!CollectionUtils.isEmpty(orderItemIds)) {
+            accessoryDOS = accessoryMapper.batchQueryByOrderItemId(tenantId, orderItemIds);
+        }
         return CateringOrderBOConverter.toCateringOrderBO(queryOrderDO, itemDOS, accessoryDOS);
     }
 

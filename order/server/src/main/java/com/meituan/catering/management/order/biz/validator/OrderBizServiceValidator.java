@@ -1,6 +1,6 @@
 package com.meituan.catering.management.order.biz.validator;
 
-import cn.hutool.core.stream.CollectorUtil;
+import com.google.common.collect.Sets;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
 import com.meituan.catering.management.order.api.http.model.request.*;
@@ -14,16 +14,16 @@ import com.meituan.catering.management.order.remote.ProductRemoteService;
 import com.meituan.catering.management.order.remote.ShopRemoteService;
 import com.meituan.catering.management.order.remote.model.response.ProductDetailRemoteResponse;
 import com.meituan.catering.management.order.remote.model.response.ShopDetailRemoteResponse;
-import com.meituan.catering.management.product.api.http.model.request.SearchProductHttpRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.swing.*;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -102,6 +102,24 @@ public class OrderBizServiceValidator {
                 throw new BizException(ErrorCode.INSET_ERROR);
             }
         }
+        AtomicInteger itemSize = new AtomicInteger();
+        HashSet<String> itemSet = Sets.newHashSet();
+        request.getItems().forEach(item -> {
+            itemSet.add(item.getSeqNo());
+            itemSize.getAndIncrement();
+            AtomicInteger accessorySize = new AtomicInteger();
+            HashSet<String> accessorySet = Sets.newHashSet();
+            item.getAccessories().forEach(accessory -> {
+                accessorySet.add(accessory.getSeqNo());
+                accessorySize.getAndIncrement();
+            });
+            if (!Objects.equals(accessorySet.size(), accessorySize.get())) {
+                throw new BizException(ErrorCode.INSET_ERROR);
+            }
+        });
+        if (!Objects.equals(itemSet.size(), itemSize.get())) {
+            throw new BizException(ErrorCode.INSET_ERROR);
+        }
     }
 
     public void prepareValid(Long tenantId, Long userId, Long orderId, PrepareCateringOrderHttpRequest request) {
@@ -143,31 +161,45 @@ public class OrderBizServiceValidator {
             throw new BizException(ErrorCode.PRODUCE_ERROR);
         }
 
-        for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
-            for (ProduceCateringOrderHttpRequest.Item item : request.getItems()) {
-                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo()) && !item.getVersion().equals(cateringOrderItemDO.getVersion())) {
-                    throw new BizException(ErrorCode.PRODUCE_ERROR);
+        cateringOrderItemDOS.forEach(cateringOrderItemDO -> {
+            request.getItems().forEach(item -> {
+                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())) {
+                    if (!item.getVersion().equals(cateringOrderItemDO.getVersion())) {
+                        throw new BizException(ErrorCode.PRODUCE_ERROR);
+                    }
+                    if (item.getQuantityOnProduce().compareTo(cateringOrderItemDO.getLatestQuantity()
+                            .subtract(cateringOrderItemDO.getProduceQuantity())) > 0) {
+                        throw new BizException(ErrorCode.PRODUCE_ERROR);
+                    }
+                    List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.queryByOrderItemId(tenantId, cateringOrderItemDO.getId());
+                    item.getAccessories().forEach(accessory -> {
+                        accessoryDOS.forEach(accessoryDO -> {
+                            if (Objects.equals(accessory.getSeqNo(), accessoryDO.getSeqNo())) {
+                                if (!accessory.getVersion().equals(accessoryDO.getVersion())) {
+                                    throw new BizException(ErrorCode.PRODUCE_ERROR);
+                                }
+                                if (accessory.getQuantityOnProduce().compareTo(accessoryDO.getLatestQuantity()
+                                        .subtract(accessoryDO.getProduceQuantity())) > 0) {
+                                    throw new BizException(ErrorCode.PRODUCE_ERROR);
+                                }
+                            }
+                        });
+                    });
                 }
-                if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo()) &&
-                        item.getQuantityOnProduce().compareTo(cateringOrderItemDO.getLatestQuantity()
-                                .subtract(cateringOrderItemDO.getProduceQuantity())) > 0) {
-                    throw new BizException(ErrorCode.PRODUCE_ERROR);
-                }
-            }
-        }
-
+            });
+        });
     }
 
-    public void billValid(Long tenantId, Long userId, Long orderId, BillCateringOrderHttpRequest request){
-        baseValid(tenantId,userId);
+    public void billValid(Long tenantId, Long userId, Long orderId, BillCateringOrderHttpRequest request) {
+        baseValid(tenantId, userId);
         CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
-        if (!cateringOrderDO.getVersion().equals(request.getVersion())){
+        if (!cateringOrderDO.getVersion().equals(request.getVersion())) {
             throw new BizException(ErrorCode.BILL_ERROR);
         }
     }
 
-    public void adjustValid(Long tenantId,Long userId,Long orderId,AdjustCateringOrderHttpRequest request){
-        baseValid(tenantId,userId);
+    public void adjustValid(Long tenantId, Long userId, Long orderId, AdjustCateringOrderHttpRequest request) {
+        baseValid(tenantId, userId);
         CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
         if (Objects.isNull(cateringOrderDO)) {
             throw new BizException(ErrorCode.ADJUST_ERROR);
@@ -177,23 +209,57 @@ public class OrderBizServiceValidator {
         }
 
         List<CateringOrderItemDO> cateringOrderItemDOS = itemMapper.queryByOrderId(tenantId, orderId);
+        List<String> seqNoList = cateringOrderItemDOS.stream().map(CateringOrderItemDO::getSeqNo).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(cateringOrderItemDOS)) {
             throw new BizException(ErrorCode.ADJUST_ERROR);
         }
-        for (CateringOrderItemDO cateringOrderItemDO : cateringOrderItemDOS) {
-            for (AdjustCateringOrderHttpRequest.Item item : request.getItems()) {
-                if (Objects.isNull(item.getProductId())){
+        cateringOrderItemDOS.forEach(cateringOrderItemDO -> {
+            request.getItems().forEach(item -> {
+                if (Objects.isNull(item.getProductId())) {
                     if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())
                             && !item.getVersion().equals(cateringOrderItemDO.getVersion())) {
                         throw new BizException(ErrorCode.ADJUST_ERROR);
                     }
                     if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())
-                            &&(item.getQuantityOnAdjustment().add(cateringOrderItemDO.getLatestQuantity())).compareTo(BigDecimal.ZERO)<0){
+                            && (item.getQuantityOnAdjustment().add(cateringOrderItemDO.getLatestQuantity()))
+                            .compareTo(BigDecimal.ZERO) < 0) {
                         throw new BizException(ErrorCode.ADJUST_ERROR);
                     }
                 }
+                if (Objects.nonNull(item.getProductId())) {
+                    if (seqNoList.contains(item.getSeqNo())) {
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                }
+            });
+        });
+        request.getItems().forEach(item -> {
+            CateringOrderItemDO orderItemDO = itemMapper.queryByOrderIdAndSeqNo(tenantId, orderId, item.getSeqNo());
+            AtomicInteger size = new AtomicInteger();
+            HashSet<String> set = Sets.newHashSet();
+            item.getAccessories().forEach(accessory -> {
+                if (Objects.isNull(accessory.getProductAccessoryId())) {
+                    CateringOrderItemAccessoryDO accessoryDO = accessoryMapper.queryByItemIdAndSeqNO(tenantId, orderItemDO.getId(), accessory.getSeqNo());
+                    if (!Objects.equals(accessoryDO.getVersion(), accessory.getVersion())) {
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                }
+                if (Objects.nonNull(accessory.getProductAccessoryId()) && Objects.isNull(item.getProductId())) {
+                    List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.queryByOrderItemId(tenantId, orderItemDO.getId());
+                    List<String> lists = accessoryDOS.stream().map(CateringOrderItemAccessoryDO::getSeqNo).collect(Collectors.toList());
+                    if (lists.contains(accessory.getSeqNo())) {
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                }
+                if (Objects.nonNull(accessory.getProductAccessoryId()) && Objects.nonNull(item.getProductId())) {
+                    set.add(accessory.getSeqNo());
+                    size.getAndIncrement();
+                }
+            });
+            if (!Objects.equals(set.size(), size.get())) {
+                throw new BizException(ErrorCode.ADJUST_ERROR);
             }
-        }
+        });
     }
 }
 

@@ -1,5 +1,6 @@
 package com.meituan.catering.management.order.remote.impl;
 
+import cn.hutool.core.stream.CollectorUtil;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.api.thrift.UserContextThriftRequest;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
@@ -10,10 +11,12 @@ import com.meituan.catering.management.order.remote.model.response.ProductDetail
 import com.meituan.catering.management.product.api.thrift.model.response.ProductDetailListThriftResponse;
 import com.meituan.catering.management.product.api.thrift.service.ProductThriftService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -27,6 +30,9 @@ public class ProductRemoteServiceImpl extends BaseThriftRemoteService implements
 
     @Override
     public List<ProductDetailRemoteResponse> findByIds(Long tenantId, Long userId, Set<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)){
+            throw new BizException(ErrorCode.THRIFT_ERROR);
+        }
         UserContextThriftRequest userContextThriftRequest = new UserContextThriftRequest();
         userContextThriftRequest.setUserId(userId);
         userContextThriftRequest.setTenantId(tenantId);

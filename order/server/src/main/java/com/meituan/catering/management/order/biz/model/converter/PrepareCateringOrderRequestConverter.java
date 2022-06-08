@@ -61,8 +61,6 @@ public class PrepareCateringOrderRequestConverter {
         return list;
     }
 
-
-
     private static PrepareCateringOrderBizRequest.Item buildItem(PrepareCateringOrderHttpRequest.Item item) {
         PrepareCateringOrderBizRequest.Item bizItem = new PrepareCateringOrderBizRequest.Item();
         bizItem.setSeqNo(item.getSeqNo());

@@ -9,7 +9,7 @@ import com.meituan.catering.management.order.biz.model.request.*;
  */
 public interface CateringOrderBizService {
 
-    CateringOrderBO insert(Long tenantId, Long userId, PlaceCateringOrderBizRequest request);
+    CateringOrderBO place(PlaceCateringOrderBizRequest request);
 
     CateringOrderBO prepare(PrepareCateringOrderBizRequest request);
 

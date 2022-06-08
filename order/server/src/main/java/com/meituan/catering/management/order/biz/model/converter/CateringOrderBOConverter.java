@@ -86,11 +86,11 @@ public abstract class CateringOrderBOConverter {
         itemBO.getProductSnapShot().setUnitOfMeasure(itemDO.getProductUnitOfMeasureOnPlace());
 
         List<CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory> accessories = itemBO.getAccessories();
-        for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
+        accessoryDOS.forEach(accessoryDO -> {
             if (accessoryDO.getOrderItemId().equals(itemDO.getId())) {
                 accessories.add(buildAccessory(accessoryDO));
             }
-        }
+        });
 
         return itemBO;
     }
