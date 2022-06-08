@@ -18,6 +18,7 @@ import OrderProduce from '../../pages/orderProduce';
 import OrderAdjust from '../../pages/orderAdjust';
 import OrderBill from '../../pages/orderBill';
 import PayResult from '../../pages/payResult';
+import OrderCheck from '../../pages/orderCheck';
 const { Header, Content, Sider } = Layout;
 const items1 = ['运营中心', '营销中心', '会员中心', '库存管理', '报表中心'].map((key) => ({
   key: key,
@@ -95,6 +96,7 @@ function LayoutHome (){
               <Route path="/orderBill" element={<OrderBill/>}/>
               <Route path="/orderMake" element={<OrderMake/>}/>
               <Route path='/payReasult' element={<PayResult/>}/>
+              <Route path="/orderCheck" element={<OrderCheck/>}/>
               <Route path="/createShop" element={<CreateShop/>}/>
               <Route path="/updateShop" element={<UpdateShop/>}/>
               <Route path="/orderAdjust" element={<OrderAdjust/>}/>

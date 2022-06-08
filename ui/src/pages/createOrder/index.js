@@ -52,7 +52,7 @@ export default function CreatProduct(){
   /** 默认添加的菜品选择项 */
   const productItems = [
     {
-      key: 1,
+      key: 'DEFAULT_ITEM',
       name: null,
       children: null,
       type: 'product',
@@ -82,7 +82,10 @@ export default function CreatProduct(){
   const [productPageBtnGroup, setProductPageBtnGroup] = useState(DEFULT_PAGE_TOTALCOUNT);
   const [productTotalPageCount, setProductTotalPageCount] = useState();
   const [productModalVisible, setProductModalVisible] = useState();
-  const [productCache, setProductCache] = useState();
+  const [productCache, setProductCache] = useState([]);
+  const [backCache, setBackCache] = useState();
+  const [changeItem, setChangeItem] = useState();
+  const [lastItem, setLastItem] = useState();
 
   const columns = [
     {
@@ -116,7 +119,7 @@ export default function CreatProduct(){
               />
             </Col>
             <Col>
-              <Button onClick={()=>{handleProductSelect(index)}}>选择</Button>
+              <Button onClick={()=>{changeProduct(records)}}>选择</Button>
             </Col>
           </Row>
         )
@@ -202,6 +205,11 @@ export default function CreatProduct(){
     },
 ];
 
+const changeProduct = (records) => {
+  setChangeItem(records);
+  resetProductSearch();
+  setProductModalVisible(true);
+}
 /** 生成订单项的序号 */
 const getOrderItemNo = (orderItem, index) => {
   let itemNo = null;
@@ -220,7 +228,6 @@ const getOrderItemNo = (orderItem, index) => {
 /** 订单项中菜品或者配料数量的修改 */
 const quantityChange = (value, records, index) =>{
   let newOrderItemList = [].concat(orderItemList);
-  console.log('1', newOrderItemList);
   records.type === 'product' ? 
     [newOrderItemList[index].quantity, newOrderItemList[index].totalPrice] = [value, records.name !== null ? newOrderItemList[index].unitPrice * value : '']
     : 
@@ -237,7 +244,7 @@ const quantityChange = (value, records, index) =>{
 }
 
 const confirm = (records, index) => {
-  let newOrderItemList = [...orderItemList];
+  let newOrderItemList = [].concat(orderItemList);
   let isError = false;
   records.type ===  'product' ? 
     newOrderItemList.length === 1 ? 
@@ -273,6 +280,7 @@ const cancel = () => {
   const onFinish = (orderInfo) => {
     if(requestValid(orderInfo)){
       const requestBody = createRequestBody(orderInfo);
+      console.log('结构体:', requestBody);
       creatAxiosRequest(requestBody, USER_INFO);
     }
   }
@@ -282,7 +290,6 @@ const cancel = () => {
   }
   /** 创建下单request结构体 */
   const createRequestBody = (orderInfo) => {
-    console.log(orderInfo);
     let items = [];
     let totalPrice = 0;
     orderInfo.table.map((item, index)=>{
@@ -301,7 +308,7 @@ const cancel = () => {
         {
           accessories: accessoryGroups,
           productId: item.id,
-          productMethodId: item.methodId!==undefined?item.methodId:"",
+          productMethodId: item.methodId!==undefined?item.methodId:null,
           quantity: item.quantity,
           seqNo: index+1
         }
@@ -316,8 +323,6 @@ const cancel = () => {
       tableNo: orderInfo.tableNo,
       totalPrice: totalPrice
     }
-    console.log('body');
-    console.log(bodyObj);
     return bodyObj;
   }
 
@@ -382,11 +387,16 @@ const cancel = () => {
     setShopModalVisible(true);
   }
 
+  /** 选择菜品(支持多选) */
   const handleProductSelect = (index) => {
-    console.log(orderItemList);
+    setChangeItem(undefined);
+    setLastItem(undefined);
     resetProductSearch();
+    setBackCache([].concat(productCache)); //备份取消前的菜品选择缓存
     setProductModalVisible(true);
   }
+
+
 
   /*****************************************************  门店选择模块 ***************************************************************/
 
@@ -651,7 +661,6 @@ const cancel = () => {
 
   const handleShopClick = (shopItem, index) => {
     setShopModalVisible(false);
-    console.log(shopItem);
     form.setFieldsValue({
       shopName: shopItem.name,
       shopBusinessNo: shopItem.businessNo,
@@ -662,10 +671,39 @@ const cancel = () => {
 
 /*********************************************************菜品选择模块****************************************************************/
 
+  /** 取消菜品选择 */
+  const handleProductCancel = () => {
+    setProductModalVisible(false);
+    setProductCache(backCache);
+  }
+  
 /** 勾选菜品或者配料的触发事件 */
 const handleCheckbox = (productItem) => {
+  if(changeItem !== undefined){
+    if(productItem.checked){
+      message.error('不能选择已被选中的菜品, 请更换其它菜品');
+      return;
+    } 
+    setLastItem(productItem);
+  }
+  const newLastItem = lastItem;
+  console.log('上次选择', newLastItem);
   let selectProductCache = [].concat(productList);
   selectProductCache.map((item, index)=>{
+    if(changeItem !== undefined && changeItem.type === 'product' && changeItem.id === item.id){
+      item.checked = false;
+      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
+        i.checked = false;
+        return i;
+      })
+    }
+    if(newLastItem !== undefined && newLastItem.type === 'product' && newLastItem.id === item.id){
+      item.checked = false;
+      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
+        i.checked = false;
+        return i;
+      })
+    }
     if(productItem.type === 'product' && productItem.id === item.id){
       item.checked = !item.checked;
       item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
@@ -693,8 +731,14 @@ const handleCheckbox = (productItem) => {
 /** 勾选完菜品后将其添加到一个或多个订单项中 */
 const handleProductSave = () => {
   let newOrderItemList = [].concat(orderItemList);
+  let newProductCache = productCache;
   let newChildren = [];
-  productList.map((item)=>{
+  let isDefaultItem = false;
+  if(changeItem !== undefined && changeItem.key === 'DEFAULT_ITEM'){
+    newOrderItemList.splice(0, 1);
+    isDefaultItem = true;
+  }
+  newProductCache.map((item)=>{
     if(item.checked){
       if(item.accessoryGroups.length > 0){
         item.children.map((i, ind)=>{
@@ -707,11 +751,98 @@ const handleProductSave = () => {
       item['key'] = item.id;
       item['quantity'] = MIN_SALE_NUMBER;
       item['totalPrice'] = item.quantity * item.unitPrice;
-      newOrderItemList.push(item);
+      let notExist = true;
+      newOrderItemList.map((i, ind)=>{
+        if(item.id === i.id){
+          notExist = false;
+        }
+      })
+      if(notExist){
+        isDefaultItem ? newOrderItemList.unshift(item) : newOrderItemList.push(item);
+      }
+    }
+    else
+    {
+      newOrderItemList.map((i, ind)=>{
+        if(item.id === i.id){
+          newOrderItemList.splice(i, 1);
+        }
+      })
     }
   })
   setProductModalVisible(false);
   setOrderItemList(newOrderItemList);
+}
+/** 重新组织查询到的菜品分页数据用于填充表单显示配料和做法 */
+const reconfigProductList = (resList) => {
+  const newProductCache = [].concat(productCache);
+  const newProductList = [].concat(productList);
+  if(productCache.length === 0){
+    setProductCache(resList);
+  }
+  if(productCache.length > 0){
+    newProductList.map((item, index)=>{
+      let notExist = true;
+      newProductCache.map((i, ind)=>{
+        if(i.id === item.id){
+          notExist = false;
+        }
+      })
+      if(notExist){
+        newProductCache.push(item);
+      }
+    })
+    setProductCache(newProductCache);
+  }
+  let arr = [];
+  const newResList = resList.map((item, index)=>{
+    newProductCache.map((i, ind)=>{
+      if(i.id === item.id){
+        arr.push(
+          {
+            seat: index,
+            product: i,
+          }
+        )
+      }
+    })
+    item['key'] = index;
+    item['type'] = 'product';
+    item['checked'] = false;
+    if(item.accessoryGroups.length > 0){
+      item['children'] = item.accessoryGroups[0].options;
+      item.children.map((i, ind)=>{
+        i['key'] = i.id;
+        i['type'] = 'accessory';
+        i['checked'] = false;
+      })
+    }
+    return item;
+  })
+  arr.map((item, index)=>{
+    newResList[item.seat] = item.product
+  })
+  return newResList;
+}
+
+/** 选择做法时将做法数据添加到对应订单项中 */
+const handleMethodChange = (selectedOptions, productIndex) => {
+  let newProductList = [].concat(productList);
+  if(selectedOptions === undefined){
+    newProductList[productIndex].methodId = null;
+    newProductList[productIndex].methodName = null;
+  }
+  else{
+    const [groupId, methodId] = [selectedOptions[0], selectedOptions[1]];
+    newProductList[productIndex]['methodId'] = methodId;
+    newProductList[productIndex].methodGroups[groupId].children.map((item, index)=>{
+      if(item.id === methodId){
+        newProductList[productIndex]['methodName'] = item.name;
+      }
+      return item;
+    })
+  }
+  setProductList(newProductList);
 }
 
 const productColumns = [
@@ -795,26 +926,6 @@ const productColumns = [
     }
   }
 ];
-
-/** 选择做法时将做法数据添加到对应订单项中 */
-const handleMethodChange = (selectedOptions, productIndex) => {
-  let newProductList = [].concat(productList);
-  if(selectedOptions === undefined){
-    newProductList[productIndex].methodId = null;
-    newProductList[productIndex].methodName = null;
-  }
-  else{
-    const [groupId, methodId] = [selectedOptions[0], selectedOptions[1]];
-    newProductList[productIndex]['methodId'] = methodId;
-    newProductList[productIndex].methodGroups[groupId].children.map((item, index)=>{
-      if(item.id === methodId){
-        newProductList[productIndex]['methodName'] = item.name;
-      }
-      return item;
-    })
-  }
-  setProductList(newProductList);
-}
 
   /** 初始化表单 */
   const initialProductSearchForm = () => {
@@ -915,24 +1026,6 @@ const handleMethodChange = (selectedOptions, productIndex) => {
           })
   }
 
-  /** 重新组织查询到的菜品分页数据用于填充表单显示配料和做法 */
-  const reconfigProductList = (productList) => {
-    return productList.map((item, index)=>{
-      item['key'] = index;
-      item['type'] = 'product';
-      item['checked'] = false;
-      if(item.accessoryGroups.length > 0){
-        item['children'] = item.accessoryGroups[0].options;
-        item.children.map((i, ind)=>{
-          i['key'] = i.id;
-          i['type'] = 'accessory';
-          i['checked'] = false;
-        })
-      }
-      return item;
-    })
-  }
-
   /** 自定义分页组件 */
   function ProductPaginationBtn(){
       return (
@@ -1025,102 +1118,6 @@ const handleMethodChange = (selectedOptions, productIndex) => {
           productSubmitForm();
       }
   }
-  
-  /** */ 
-
-  // const handleProductClick = (productItem) => {
-  //   setProductModalVisible(false);
-  //   addProduct(productItem, ItemIndex);
-  // };
-  // const addProduct = (productItem, index) => {
-  //   console.log(index);
-  //   let newOrderItemList = [...orderItemList];
-  //   [newOrderItemList[index].name, newOrderItemList[index].productId] = [productItem.name, productItem.id];
-  //   setOrderItemList(newOrderItemList);
-  //   initialForm();
-  // }
-
-  // const addOrderItem = () => {
-  //   let newOrderItemList = [...orderItemList];
-  //   newOrderItemList.push(
-  //     {
-  //       name: null,
-  //       accessories: [
-  //         {
-  //           productAccessoryId: null,
-  //           quantity: null,
-  //           seqNo: ""
-  //         }
-  //       ],
-  //       productId: null,
-  //       productMethodId: null,
-  //       quantity: 1,
-  //       seqNo: ""
-  //     },
-  //   )
-  //   setOrderItemList(newOrderItemList);
-  //   initialForm();
-  // }
-
-  // const rowSelection = {
-  //   onSelect: (record, selected, selectedRows) => {
-  //     console.log('已选中');
-  //     console.log(selectedRows);
-
-  //     selectProductCache = [];
-  //     selectedRows.map((rowItem)=>{
-  //       if(rowItem.type === 'product'){
-  //         let isExist = true;
-  //         selectProductCache.map((item, index)=>{
-  //           if(item.productId === rowItem.id){
-  //             isExist = false;
-  //           }
-  //         })
-  //         isExist && selectProductCache.push(
-  //           {
-  //             name: rowItem.name,
-  //             productId: rowItem.id,
-  //             accessories: [],
-  //           }
-  //         )
-  //       }
-  //       if(rowItem.type === 'accessory'){
-  //         productList.map((item, index)=>{
-  //           item.accessoryGroups.length > 0 && item.accessoryGroups[0].options.map((i, ind)=>{
-  //             if(i.id === rowItem.id){ 
-  //               let isExist = true;
-  //               selectProductCache.map((existItem, existIndex)=>{
-  //                 if(existItem.productId === item.id){
-  //                   existItem.accessories.push(
-  //                     {
-  //                       name: rowItem.name,
-  //                       productAccessoryId: rowItem.id,
-  //                     }
-  //                   )
-  //                   isExist = false;
-  //                 }
-  //               })
-  //               if(isExist){
-  //                 selectProductCache.push(
-  //                   {
-  //                     name: item.name,
-  //                     productId: item.id,
-  //                     accessories: [{name: rowItem.name, productAccessoryId: rowItem.id}],
-  //                   }
-  //                 )
-  //               }
-  //             }
-  //           })
-  //         })
-  //       }
-  //     })
-  //     console.log(selectProductCache);
-  //   },
-  //   onSelectAll: (selected, selectedRows, changeRows) => {
-  //     console.log('全选');
-  //     console.log(selected, selectedRows, changeRows);
-  //   },
-  // };
     return (
       <>
         <div className="create-shop-head">
@@ -1223,7 +1220,7 @@ const handleMethodChange = (selectedOptions, productIndex) => {
             columns={columns}
             pagination={false}
             scroll={{y: 320}}
-            />
+          />
           </Form.Item>
           <Row className="add-orderItem-btn">
             <Col span={24}>
@@ -1259,7 +1256,7 @@ const handleMethodChange = (selectedOptions, productIndex) => {
         width='80%'
         centered
         forceRender
-        // closable={false}
+        closable={false}
         >
           <div>
             <Form
@@ -1366,7 +1363,7 @@ const handleMethodChange = (selectedOptions, productIndex) => {
         footer={
           <Row className="create-shop-footer">
             <Col span={6} offset={12}>
-                <Button style={{width: '80%', background: 'white'}} onClick={()=>{setProductModalVisible(false)}}>取消</Button>
+                <Button style={{width: '80%', background: 'white'}} onClick={handleProductCancel}>取消</Button>
             </Col>
             <Col span={6}>
               <Button style={{width: '80%'}} onClick={handleProductSave}>确认</Button>
@@ -1505,27 +1502,27 @@ const handleMethodChange = (selectedOptions, productIndex) => {
             // rowSelection={{ ...rowSelection, checkStrictly }}
             />
           }
-            <Row style={{marginTop: '1%'}}>  
-                <Col span={6} offset={10}>
-                    <ProductPaginationBtn/>
-                </Col>
-                <Col span={4} offset={4} >
-                    <span>每页</span>
-                    <Select
-                    className="select_footer"
-                    defaultValue={DEFAULT_PAGE_SIZE}
-                    style={{width: '30%', margin: '0px 10px'}}
-                    onChange={productOptionChange}
-                    >
-                        <Option value={3} >3</Option>
-                        <Option value={10}>10</Option>
-                        <Option value={20}>20</Option>
-                        <Option value={30}>30</Option>
-                        <Option value={50}>50</Option>
-                        <Option value={100}>100</Option>
-                    </Select>
-                    <span>条记录</span>
-                </Col>
+            <Row style={{marginTop: '1%'}}>
+              <Col span={7} offset={10}>
+                  <ProductPaginationBtn/>
+              </Col>
+              <Col span={4} offset={3} >
+                  <span>每页</span>
+                  <Select
+                  className="select_footer"
+                  defaultValue={DEFAULT_PAGE_SIZE}
+                  style={{width: '30%', margin: '0px 10px'}}
+                  onChange={productOptionChange}
+                  >
+                      <Option value={3} >3</Option>
+                      <Option value={10}>10</Option>
+                      <Option value={20}>20</Option>
+                      <Option value={30}>30</Option>
+                      <Option value={50}>50</Option>
+                      <Option value={100}>100</Option>
+                  </Select>
+                  <span>条记录</span>
+              </Col>
             </Row>
         </Modal>
 

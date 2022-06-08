@@ -3,112 +3,8 @@ import {LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import "../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import moment from 'moment';
-const USER_INFO = {tenantId: 500, userId: 11000};
+import { useNavigate, useLocation } from "react-router-dom";
 const [IS_MAKING, NOT_MAKING] = [true, false];
-const testData = 
-  {
-    "status": {
-      "code": 0,
-      "msg": "success",
-      "success": true,
-      "failed": false
-    },
-    "data": {
-      "id": 10020,
-      "tenantId": 500,
-      "version": 1,
-      "auditing": {
-        "createdBy": 11000,
-        "createdAt": "2022-06-01 13:47:24",
-        "lastModifiedBy": null,
-        "lastModifiedAt": null
-      },
-      "status": "PLACED",
-      "tableNo": "A05",
-      "customerCount": 2,
-      "totalPrice": 443.60,
-      "comment": null,
-      "shopSnapshotOnPlace": {
-        "id": 102,
-        "businessNo": "1234567892",
-        "name": "皮特西餐馆"
-      },
-      "billing": {
-        "promotion": null,
-        "paid": null,
-        "paymentChannel": null
-      },
-      "items": [{
-        "id": 100076,
-        "version": 1,
-        "status": "PLACED",
-        "seqNo": "1",
-        "quantity": {
-          "latest": 1.00,
-          "onPlace": 1.00,
-          "onProduce": 0.00
-        },
-        "productSnapshotOnPlace": {
-          "id": 104,
-          "name": "啤酒鸭",
-          "unitPrice": 26.80,
-          "unitOfMeasure": "元/份"
-        },
-        "productMethodSnapshotOnPlace": {
-          "id": null,
-          "name": null,
-          "groupName": null
-        },
-        "accessories": []
-      }, {
-        "id": 100077,
-        "version": 1,
-        "status": "PLACED",
-        "seqNo": "2",
-        "quantity": {
-          "latest": 1.00,
-          "onPlace": 1.00,
-          "onProduce": 0.00
-        },
-        "productSnapshotOnPlace": {
-          "id": 102,
-          "name": "松鼠鱼",
-          "unitPrice": 128.80,
-          "unitOfMeasure": "元/份"
-        },
-        "productMethodSnapshotOnPlace": {
-          "id": null,
-          "name": null,
-          "groupName": null
-        },
-        "accessories": []
-      }, {
-        "id": 100078,
-        "version": 1,
-        "status": "PLACED",
-        "seqNo": "3",
-        "quantity": {
-          "latest": 1.00,
-          "onPlace": 1.00,
-          "onProduce": 0.00
-        },
-        "productSnapshotOnPlace": {
-          "id": 100,
-          "name": "宫保鸡丁",
-          "unitPrice": 288.00,
-          "unitOfMeasure": "元/份"
-        },
-        "productMethodSnapshotOnPlace": {
-          "id": null,
-          "name": null,
-          "groupName": null
-        },
-        "accessories": []
-      }]
-    }
- }
 
  /** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
 function useCounter() {
@@ -128,19 +24,23 @@ function useCounter() {
 export default function OrderMake() {
 
     let navigate = useNavigate();
+    let location = useLocation();
     const [form] = Form.useForm();
     const [loaddingTime, resetTime] = useCounter();
     const [orderItemList, setOrderItemList] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false);
+
+    const [orderItem, tenantId, userId, id] = [
+      location.state.data,
+      location.state.data.tenantId,
+      location.state.data.auditing.createdBy,
+      location.state.data.id,
+    ];
+
     useEffect(() => {
-      // queryOrder(USER_INFO.tenantId, USER_INFO.userId, 100);
-      const data =  configData(testData.data.items);
-      setOrderItemList(data);
-      // setOrderItemList(data);
-      initialForm(testData.data);
-
+      queryOrder(tenantId, userId, id);
     }, []);
-
+    
     const columns = [
       {
           title: '序号',
@@ -159,11 +59,15 @@ export default function OrderMake() {
                 background: 'white',
                 paddingLeft: '6%',
                 marginLeft: (records.type!=='product'?"10%":""),
+                width: (records.type!=='product'?"90%":"")
               }}
               readOnly
               placeholder={
-                records.methodName !== null ?
-                `${text}-${records.methodName}` : text
+                records.type === 'product' ?
+                  records.methodName ? 
+                    `${text}-${records.methodName}` : text
+                  :
+                  records.productAccessorySnapshotOnPlace.name
               }
             />
           )
@@ -172,49 +76,55 @@ export default function OrderMake() {
           title: '当前数量',
           dataIndex: 'quantity_',
           key: 'quantity_',
-          sorter: (a, b) => a.quantity - b.quantity
+          sorter: (a, b) => a.quantity_ - b.quantity_,
+          render: (text, records, index) => (
+            records.type === 'product' ? text : records.quantity.latest
+          )
       },
       {
         title:  '计量单位',
         dataIndex: 'unitOfMeasure',
         key: 'unitOfMeasure',
         filterSearch: true,
-              filters: [
-                  {
-                      text: '斤',
-                      value: '元/斤',
-                  },
-                  {
-                      text: '份',
-                      value: '元/份',
-                  },
-                  {
-                      text: '盘',
-                      value: '元/盘',
-                  },
-                  {
-                      text: '碗',
-                      value: '元/碗'
-                  },
-                  {
-                      text: '克',
-                      value: '元/克',
-                  },
-                  {
-                      text: '公斤',
-                      value: '元/公斤',
-                  },
-              ],
-              onFilter: (value, record) => record.unitOfMeasure.indexOf(value) === 0,
-          render: (text, records, index) => (
-          text != null && (text.indexOf('/') !== -1 ? text.split('/')[1] : text)
+        filters: [
+            {
+                text: '斤',
+                value: '元/斤',
+            },
+            {
+                text: '份',
+                value: '元/份',
+            },
+            {
+                text: '盘',
+                value: '元/盘',
+            },
+            {
+                text: '碗',
+                value: '元/碗'
+            },
+            {
+                text: '克',
+                value: '元/克',
+            },
+            {
+                text: '公斤',
+                value: '元/公斤',
+            },
+        ],
+        onFilter: (value, record) => record.unitOfMeasure.indexOf(value) === 0,
+        render: (text, records, index) => (
+          text !== undefined ? 
+            (text.split('/')[1])
+            :
+            records.productAccessorySnapshotOnPlace.unitOfMeasure
         )
       },
       {
         title: '操作',
         render: (records, index) => {
           if(records.type === 'product'){
-            if(records.status === NOT_MAKING){
+            if(records.status === 'PLACED'){
               return (
                 <div className="product-btn">
                   <Button style={{width: '100%'}} onClick={()=>handleMake(records, index)}>制作</Button>
@@ -236,6 +146,9 @@ export default function OrderMake() {
     instance
         .get(`/order/catering/${id}`)
         .then((res)=>{
+          const data = res.data.data;
+          initialForm(data);
+          setOrderItemList(configData(data.items));
         })
   }
   function orderMakeRequest(request, formValues){
@@ -243,6 +156,7 @@ export default function OrderMake() {
     const instance = axios.create({
         headers:{tenantId: tenantId, userId:userId}
     });
+    console.log(request, tenantId, userId, id);
     instance
         .post(`/order/catering/${id}/prepare`, request)
         .then(response=>{
@@ -259,6 +173,8 @@ export default function OrderMake() {
           console.log(error);
         })
   }
+
+  /** 重新组织获取到的订单数据 */
   const configData = (orderValues) => {
     orderValues.map((item, index)=>{
       if(item.accessories.length > 0){
@@ -269,9 +185,9 @@ export default function OrderMake() {
       item['unitOfMeasure'] = item.productSnapshotOnPlace.unitOfMeasure;
       item['name'] = item.productSnapshotOnPlace.name
       item['type'] = 'product';
-      item['status'] = NOT_MAKING;
       return item;
     })
+    console.log(orderValues);
     return orderValues;
   }
   const initialForm = (orderValues) => {
@@ -304,13 +220,13 @@ export default function OrderMake() {
   }
   const onFinish = (formValues) => {
     const requestBody = createRequestBody(formValues);
-    orderMakeRequest(requestBody, formValues);
+    requestBody.items.length === 0 ? navigate('/order') : orderMakeRequest(requestBody, formValues);
   }
 
   const createRequestBody = (formValues) => {
     let newOrderItemList = [];
     orderItemList.map((item, index)=>{
-      item.status === IS_MAKING && newOrderItemList.push(
+      item.checked === IS_MAKING && newOrderItemList.push(
         {
           seqNo: index+1,
           version: item.version
@@ -326,7 +242,8 @@ export default function OrderMake() {
   const handleMakeAll = () => {
     setOrderItemList(
       [].concat(orderItemList).map((item)=>{
-        item.status = IS_MAKING;
+        item.status = 'PREPARING';
+        item.checked = IS_MAKING
         return item;
       })
     )
@@ -335,7 +252,10 @@ export default function OrderMake() {
   const handleMake = (orderItem) => {
     let newOrderItemList = [].concat(orderItemList);
     newOrderItemList.map((item)=>{
-      orderItem.id === item.id && (item.status = IS_MAKING);
+      if(orderItem.id === item.id){
+        item.status = 'PREPARING';
+        item.checked = IS_MAKING;
+      }
       return item;
     })
     setOrderItemList(newOrderItemList);
@@ -345,7 +265,7 @@ export default function OrderMake() {
         <div className="create-shop-head">
           <Row>
             <Col><LeftOutlined onClick={()=>navigate('/order')}/></Col>
-            <Col span={23}>制作：{testData.data.id}</Col>
+            <Col span={23}>制作：{form.getFieldValue('id')}</Col>
             <Col>
               <UnorderedListOutlined />
             </Col>

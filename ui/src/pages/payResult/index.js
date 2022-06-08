@@ -3,12 +3,19 @@ import {LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import "../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import moment from 'moment';
+import { useNavigate, useLocation } from "react-router-dom";
+
+/**
+ * 支付成功页面
+ * @returns 
+ */
 
 export default function PayResult() {
     let navigate = useNavigate();
-    const [form] = Form.useForm();
-    
+    let location = useLocation();
+    const order = location.state.data;
+    console.log(order);
     return (
       <Result
       style={{height: 500}}
@@ -18,15 +25,16 @@ export default function PayResult() {
         <>
         <Row>
           <Col span={2} offset={10}>订单编号:</Col>
-          <span>1221243412</span>
+          <span>{order.id}</span>
         </Row>
         <Row>
           <Col span={2} offset={10}>支付时间:</Col>
-          <span>23123231</span>
+          <span>{moment().format('YYYY-MM-DD HH:mm:ss')}</span>
         </Row>
         <Row>
           <Col span={2} offset={10}>支付金额:</Col>
-          <span>231</span>
+          <span>{order.totalPrice}</span>
+          <span>元</span>
         </Row>
         </>
       }

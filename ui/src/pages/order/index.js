@@ -14,29 +14,6 @@ const ORDER_STATUS = new Map([
     ['PREPARED', '已出餐'], ['BILLED', '已结账'], ['CANCELLED', '已取消']
 ]);
 
-const testData = [
-    {
-        status: 'PLACED',
-        shopName: '门店1',
-        tableNo: 'A08',
-        customerCount: 2,
-        totalPrice: 86.6,
-    },
-    {
-        status: 'PREPARED',
-        shopName: '门店2',
-        tableNo: 'A08',
-        customerCount: 2,
-        totalPrice: 86.6,
-    },
-    {
-        status: 'PREPARING',
-        shopName: '门店3',
-        tableNo: 'A09',
-        customerCount: 3,
-        totalCount: 90,
-    }
-]
 export default function Order(){
 
     let navigate = useNavigate();
@@ -59,9 +36,8 @@ export default function Order(){
         },
         {
             title: '门店',
-            dataIndex: 'shopName',
-            key: 'shopName',
-            sorter: (a, b) => a.shopName.localeCompare(b.shopName),
+            // sorter: (a, b) => a.name.localeCompare(b.name),
+            render: (text, records, index) => (records.shopSnapshotOnPlace.name)
         },
         {
             title: '座位号',
@@ -92,7 +68,7 @@ export default function Order(){
             case 'PLACED':
                 return (
                     <>
-                    <Button type="link" onClick={()=>navigate('/orderMake')}>
+                    <Button type="link" onClick={()=>navigate('/orderMake', {state: {data: orderItem}, replace: true})}>
                         制作
                     </Button>
                     <span style={{color: 'lightgray'}}>|</span>
@@ -155,10 +131,10 @@ export default function Order(){
      const initialSearchForm = () => {
         form.setFieldsValue({
             status: null,
-            tableNo: '',
-            customerCount: '',
-            minPrice: '',
-            maxPrice: '',
+            tableNo: null,
+            customerCount: null,
+            minPrice: null,
+            maxPrice: null,
         })
     }
 
@@ -169,7 +145,6 @@ export default function Order(){
 
     /** 表单提交 */
     const onSearchFinish = searchValues => {
-        console.log(searchValues);
         createPageRequest(searchValues);
     }
 
@@ -191,7 +166,7 @@ export default function Order(){
     /** 接口request结构体 */
     const createRequestBody = (searchValues, pageIndex, pageSize) => {
         const [tableNo, customerCount, minPrice, maxPrice, status] = [
-            searchValues.tableNo,
+            searchValues.tableNo === "" ? null : searchValues.tableNo,
             searchValues.customerCount,
             searchValues.minPrice, 
             searchValues.maxPrice,
@@ -202,7 +177,7 @@ export default function Order(){
                 "customerCount": customerCount,
                 "status": status,
                 "tableNo": tableNo,
-                "unitPrice": {
+                "totalPrice": {
                     "from": minPrice,
                     "to": maxPrice
                 }
@@ -211,8 +186,8 @@ export default function Order(){
               "pageSize": pageSize,
               "sortFields": [
                 {
-                  "asc": false,
-                  "field": "status"
+                    "asc": true,
+                    "field": "status"
                 },
                 {
                   "asc": false,
@@ -245,7 +220,6 @@ export default function Order(){
         instance
             .post('/order/catering/search', request)
             .then(res => {
-                console.log(res);
                 const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
                 [
                     res.data.data.records, 
@@ -492,7 +466,7 @@ export default function Order(){
         </Form>
         <Table
             columns={columns}
-            dataSource={testData}
+            dataSource={orderList}
             pagination={false}
             scroll={{y: 320}}
             // rowClassName={(_, index) => (rowActiveIndex === index ? 'test' : '')}

@@ -16,7 +16,23 @@
     background-color: rgb(235 174 0);
     border-color: rgb(255, 189, 0);
 }
-
+.order-quantity .ant-btn-icon-only {
+    color: gray;
+}
+.order-quantity .ant-btn {
+    border: none;
+    background-color: whitesmoke;
+}
+.order-quantity .ant-btn:hover{
+    color: gray;
+    background-color: lightgray;
+    border-color: none;
+}
+.order-quantity .ant-btn:focus {
+    color: gray;
+    background-color: whitesmoke;
+    border-color: none;
+}
 /* .test {
     background: rgb(255, 189, 0);
 }
