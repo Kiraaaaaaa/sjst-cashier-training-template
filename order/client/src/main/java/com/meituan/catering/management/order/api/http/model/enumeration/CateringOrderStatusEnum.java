@@ -14,9 +14,9 @@ import java.util.Objects;
 public enum CateringOrderStatusEnum implements DescribableEnum {
 
     /**
-     * 待下单
+     * 已取消
      */
-    DRAFT(0, "待下单"),
+    CANCELLED(-100, "已取消"),
 
     /**
      * 已下单
@@ -34,11 +34,12 @@ public enum CateringOrderStatusEnum implements DescribableEnum {
      * 已结账
      */
     BILLED(400, "已结账"),
-    /**
-     * 已取消
-     */
-    CANCELLED(500, "已取消"),
 
+
+    /**
+     * 待下单
+     */
+    DRAFT(500, "待下单"),
     ;
 
     private final int code;

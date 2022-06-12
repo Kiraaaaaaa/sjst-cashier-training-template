@@ -43,7 +43,9 @@
         ,billing_paid
         ,billing_payment_channel
     </sql>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+
         insert into `catering_order` (<include refid="Base_Column_List"/>)
         values(
         0
@@ -66,6 +68,7 @@
         ,#{billingPaymentChannel}
         )
     </insert>
+
     <update id="update">
         update `catering_order`
         <set>
@@ -92,7 +95,6 @@
         </where>
     </update>
 
-
     <select id="queryById" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -115,11 +117,14 @@
             <if test="condition.tableNo != null">
                 and `table_no` = #{condition.tableNo}
             </if>
-            <if test="condition.customerCount != null">
+            <if test="condition.customerCount != null and condition.customerCount != ''.toString()">
                 and `customer_count` = #{condition.customerCount}
             </if>
-            <if test="condition.totalPrice.from != null and condition.totalPrice.to != null">
-                and `total_price` between #{condition.totalPrice.from} and #{condition.totalPrice.to}
+            <if test="condition.totalPrice.from != null ">
+                and `total_price` <![CDATA[ >= ]]> #{condition.totalPrice.from}
+            </if>
+            <if test="condition.totalPrice.to != null ">
+                and `total_price` <![CDATA[ <= ]]> #{condition.totalPrice.to}
             </if>
         </where>
         <if test="sortFields.size != 0">

@@ -41,19 +41,32 @@ public class AdjustCateringOrderRequestConverter {
 
         CateringOrderDO cateringOrderDO = new CateringOrderDO();
 
-        int code = CateringOrderStatusEnum.CANCELLED.getCode();
-        for (CateringOrderItemDO itemDO : itemDOS) {
-            if (code > itemDO.getStatus().getCode()) {
-                code = itemDO.getStatus().getCode();
-            }
+        int code = CateringOrderStatusEnum.DRAFT.getCode();
+
+        List<CateringOrderItemStatusEnum> itemStatus = itemDOS.stream().map(CateringOrderItemDO::getStatus).collect(Collectors.toList());
+        List<CateringOrderItemAccessoryStatusEnum> accessoryStatus = accessoryDOS.stream().map(CateringOrderItemAccessoryDO::getStatus).collect(Collectors.toList());
+        if (itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                || accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                || (itemStatus.contains(CateringOrderItemStatusEnum.PLACED) && itemStatus.contains(CateringOrderItemStatusEnum.PREPARED))
+                || (accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED) && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED))) {
+            code = CateringOrderStatusEnum.PREPARING.getCode();
+        } else if (itemStatus.contains(CateringOrderItemStatusEnum.PLACED)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARED)
+                && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED)) {
+            code = CateringOrderStatusEnum.PLACED.getCode();
+        } else if (itemStatus.contains(CateringOrderItemStatusEnum.PREPARED)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PLACED)
+                && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED)) {
+            code = CateringOrderStatusEnum.PREPARED.getCode();
         }
-        for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
-            if (code > accessoryDO.getStatus().getCode()) {
-                code = accessoryDO.getStatus().getCode();
-            }
-        }
-        cateringOrderDO.setId(request.getOrderId());
         cateringOrderDO.setStatus(CateringOrderStatusEnum.getEnum(code));
+        cateringOrderDO.setId(request.getOrderId());
         cateringOrderDO.setTenantId(request.getTenantId());
         cateringOrderDO.setVersion(request.getVersion());
         cateringOrderDO.setLastModifiedBy(request.getUserId());

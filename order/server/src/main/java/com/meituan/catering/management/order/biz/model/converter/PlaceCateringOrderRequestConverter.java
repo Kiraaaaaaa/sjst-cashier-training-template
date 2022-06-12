@@ -14,10 +14,9 @@ import com.meituan.catering.management.order.remote.model.response.ShopDetailRem
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -72,68 +71,73 @@ public class PlaceCateringOrderRequestConverter {
         return cateringOrderDO;
     }
 
-    public static CateringOrderItemDO toCateringOrderItemDO(CateringOrderDO cateringOrderDO, PlaceCateringOrderBizRequest.Item item, List<ProductDetailRemoteResponse> productDetailList) {
-        CateringOrderItemDO cateringOrderItemDO = new CateringOrderItemDO();
-        cateringOrderItemDO.setTenantId(cateringOrderDO.getTenantId());
-        cateringOrderItemDO.setVersion(1);
-        cateringOrderItemDO.setOrderId(cateringOrderDO.getId());
-        cateringOrderItemDO.setSeqNo(item.getSeqNo());
-        cateringOrderItemDO.setStatus(CateringOrderItemStatusEnum.PLACED);
-        cateringOrderItemDO.setPlaceQuantity(item.getQuantity());
-        cateringOrderItemDO.setProduceQuantity(BigDecimal.ZERO);
-        cateringOrderItemDO.setLatestQuantity(item.getQuantity());
-        cateringOrderItemDO.setProductId(item.getProductId());
-        productDetailList.forEach(productDetail -> {
-            if (Objects.equals(item.getProductId(), productDetail.getId())) {
-                cateringOrderItemDO.setProductNameOnPlace(productDetail.getName());
-                cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
-                cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
-                cateringOrderItemDO.setProductMethodId(item.getProductMethodId());
-                productDetail.getMethodGroups().forEach(methodGroup -> {
-                    methodGroup.getOptions().forEach(option -> {
-                        if (option.getId().equals(item.getProductMethodId())) {
-                            cateringOrderItemDO.setProductMethodGroupNameOnPlace(methodGroup.getName());
-                            cateringOrderItemDO.setProductMethodNameOnPlace(option.getName());
-                        }
+    public static List<CateringOrderItemDO> toCateringOrderItemDO(CateringOrderDO cateringOrderDO, List<PlaceCateringOrderBizRequest.Item> itemDOS, List<ProductDetailRemoteResponse> productDetailList) {
+        ArrayList<CateringOrderItemDO> list = Lists.newArrayList();
+        itemDOS.forEach(item -> {
+            CateringOrderItemDO cateringOrderItemDO = new CateringOrderItemDO();
+            cateringOrderItemDO.setTenantId(cateringOrderDO.getTenantId());
+            cateringOrderItemDO.setVersion(1);
+            cateringOrderItemDO.setOrderId(cateringOrderDO.getId());
+            cateringOrderItemDO.setSeqNo(item.getSeqNo());
+            cateringOrderItemDO.setStatus(CateringOrderItemStatusEnum.PLACED);
+            cateringOrderItemDO.setPlaceQuantity(item.getQuantity());
+            cateringOrderItemDO.setProduceQuantity(BigDecimal.ZERO);
+            cateringOrderItemDO.setLatestQuantity(item.getQuantity());
+            cateringOrderItemDO.setProductId(item.getProductId());
+            productDetailList.forEach(productDetail -> {
+                if (Objects.equals(item.getProductId(), productDetail.getId())) {
+                    cateringOrderItemDO.setProductNameOnPlace(productDetail.getName());
+                    cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
+                    cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
+                    cateringOrderItemDO.setProductMethodId(item.getProductMethodId());
+                    productDetail.getMethodGroups().forEach(methodGroup -> {
+                        methodGroup.getOptions().forEach(option -> {
+                            if (option.getId().equals(item.getProductMethodId())) {
+                                cateringOrderItemDO.setProductMethodGroupNameOnPlace(methodGroup.getName());
+                                cateringOrderItemDO.setProductMethodNameOnPlace(option.getName());
+                            }
+                        });
                     });
-                });
-            }
+                }
+            });
+            list.add(cateringOrderItemDO);
         });
 
-        return cateringOrderItemDO;
+
+        return list;
     }
 
-    public static List<CateringOrderItemAccessoryDO> toCateringOrderItemAccessoryDO(CateringOrderItemDO orderItemDO, PlaceCateringOrderBizRequest.Item request, List<ProductDetailRemoteResponse> productDetailList) {
+    public static List<CateringOrderItemAccessoryDO> toCateringOrderItemAccessoryDO(List<CateringOrderItemDO> orderItemDOS, PlaceCateringOrderBizRequest request, List<ProductDetailRemoteResponse> productDetailList) {
 
-        ArrayList<CateringOrderItemAccessoryDO> list = Lists.newArrayList();
-        request.getAccessories().forEach(accessory -> {
-            CateringOrderItemAccessoryDO accessoryDO = new CateringOrderItemAccessoryDO();
-            accessoryDO.setTenantId(orderItemDO.getTenantId());
-            accessoryDO.setVersion(1);
-            accessoryDO.setOrderItemId(orderItemDO.getId());
-            accessoryDO.setSeqNo(accessory.getSeqNo());
-            accessoryDO.setStatus(CateringOrderItemAccessoryStatusEnum.PLACED);
-            accessoryDO.setPlaceQuantity(accessory.getQuantity());
-            accessoryDO.setProduceQuantity(new BigDecimal(0));
-            accessoryDO.setLatestQuantity(new BigDecimal(0));
-            accessoryDO.setProductAccessoryId(accessory.getProductAccessoryId());
-            for (ProductDetailRemoteResponse productDetail : productDetailList) {
-                for (ProductDetailRemoteResponse.AccessoryGroup accessoryGroup : productDetail.getAccessoryGroups()) {
-                    for (ProductDetailRemoteResponse.AccessoryGroup.Option option : accessoryGroup.getOptions()) {
-                        if (accessory.getProductAccessoryId().equals(option.getId())) {
-                            accessoryDO.setProductAccessoryNameOnPlace(option.getName());
-                            accessoryDO.setProductAccessoryGroupNameOnPlace(accessoryGroup.getName());
-                            accessoryDO.setProductAccessoryUnitPriceOnPlace(BigDecimal.valueOf(option.getUnitPrice()));
-                            accessoryDO.setProductAccessoryUnitOfMeasureOnPlace(option.getUnitOfMeasure());
+        return request.getItems().stream().flatMap(item -> {
+            Map<String, CateringOrderItemDO> map = orderItemDOS.stream().collect(Collectors.toMap(CateringOrderItemDO::getSeqNo, Function.identity()));
+            CateringOrderItemDO orderItemDO = map.get(item.getSeqNo());
+            return item.getAccessories().stream().map(accessory -> {
+                CateringOrderItemAccessoryDO accessoryDO = new CateringOrderItemAccessoryDO();
+                accessoryDO.setTenantId(orderItemDO.getTenantId());
+                accessoryDO.setVersion(1);
+                accessoryDO.setOrderItemId(orderItemDO.getId());
+                accessoryDO.setSeqNo(accessory.getSeqNo());
+                accessoryDO.setStatus(CateringOrderItemAccessoryStatusEnum.PLACED);
+                accessoryDO.setPlaceQuantity(accessory.getQuantity());
+                accessoryDO.setProduceQuantity(BigDecimal.ZERO);
+                accessoryDO.setLatestQuantity(accessory.getQuantity());
+                accessoryDO.setProductAccessoryId(accessory.getProductAccessoryId());
+                for (ProductDetailRemoteResponse productDetail : productDetailList) {
+                    for (ProductDetailRemoteResponse.AccessoryGroup accessoryGroup : productDetail.getAccessoryGroups()) {
+                        for (ProductDetailRemoteResponse.AccessoryGroup.Option option : accessoryGroup.getOptions()) {
+                            if (accessory.getProductAccessoryId().equals(option.getId())) {
+                                accessoryDO.setProductAccessoryNameOnPlace(option.getName());
+                                accessoryDO.setProductAccessoryGroupNameOnPlace(accessoryGroup.getName());
+                                accessoryDO.setProductAccessoryUnitPriceOnPlace(BigDecimal.valueOf(option.getUnitPrice()));
+                                accessoryDO.setProductAccessoryUnitOfMeasureOnPlace(option.getUnitOfMeasure());
+                            }
                         }
                     }
                 }
-            }
-            list.add(accessoryDO);
-            accessoryDO = null;
-        });
-
-        return list;
+                return accessoryDO;
+            });
+        }).collect(Collectors.toList());
     }
 
     private static PlaceCateringOrderBizRequest.Item buildItem(PlaceCateringOrderHttpRequest.Item httpItem) {

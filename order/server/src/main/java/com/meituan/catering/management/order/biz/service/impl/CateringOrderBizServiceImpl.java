@@ -52,40 +52,27 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
 
     @Override
     public CateringOrderBO place(PlaceCateringOrderBizRequest request) {
+
+        ShopDetailRemoteResponse shopDetail = shopRemoteService.findByBusinessNo(request.getTenantId(), request.getUserId(), request.getShopBusinessNo());
+        Set<Long> ids = request.getItems().stream().map(PlaceCateringOrderBizRequest.Item::getProductId).filter(Objects::nonNull).collect(Collectors.toSet());
+        List<ProductDetailRemoteResponse> productDetailList = productRemoteService.findByIds(request.getTenantId(), request.getUserId(), ids);
         return transactionTemplate.execute(status -> {
-            ShopDetailRemoteResponse shopDetail = shopRemoteService.findByBusinessNo(request.getTenantId(), request.getUserId(), request.getShopBusinessNo());
-            Set<Long> ids = request.getItems().stream().map(PlaceCateringOrderBizRequest.Item::getProductId).filter(Objects::nonNull).collect(Collectors.toSet());
-            List<ProductDetailRemoteResponse> productDetailList = productRemoteService.findByIds(request.getTenantId(), request.getUserId(), ids);
             CateringOrderDO cateringOrderDO = PlaceCateringOrderRequestConverter.toCateringOrderDO(request.getTenantId(), request.getUserId(), request, shopDetail);
             Integer insert = orderMapper.insert(cateringOrderDO);
             if (insert == 0) {
                 throw new BizException(ErrorCode.INSET_ERROR);
             }
-            ArrayList<CateringOrderItemDO> itemLists = Lists.newArrayList();
-            request.getItems().forEach(item -> {
-                CateringOrderItemDO cateringOrderItemDO = PlaceCateringOrderRequestConverter.toCateringOrderItemDO(cateringOrderDO, item, productDetailList);
-                itemLists.add(cateringOrderItemDO);
-            });
-            if (!CollectionUtils.isEmpty(itemLists)) {
-                Integer itemInsert = itemMapper.batchInsert(itemLists);
-                if (itemInsert != itemLists.size()) {
+            List<CateringOrderItemDO> itemDOS = PlaceCateringOrderRequestConverter.toCateringOrderItemDO(cateringOrderDO, request.getItems(), productDetailList);
+            if (!CollectionUtils.isEmpty(itemDOS)) {
+                Integer itemInsert = itemMapper.batchInsert(itemDOS);
+                if (itemInsert != itemDOS.size()) {
                     throw new BizException(ErrorCode.INSET_ERROR);
                 }
             }
-
-            ArrayList<CateringOrderItemAccessoryDO> accessoryLists = Lists.newArrayList();
-            List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(request.getTenantId(), cateringOrderDO.getId());
-            request.getItems().forEach(item -> {
-                itemDOS.forEach(itemDO -> {
-                    if (item.getSeqNo().equals(itemDO.getSeqNo())) {
-                        List<CateringOrderItemAccessoryDO> accessoryDOS = PlaceCateringOrderRequestConverter.toCateringOrderItemAccessoryDO(itemDO, item, productDetailList);
-                        accessoryLists.addAll(accessoryDOS);
-                    }
-                });
-            });
-            if (!CollectionUtils.isEmpty(accessoryLists)) {
-                Integer accessoryInsert = accessoryMapper.batchInsert(accessoryLists);
-                if (accessoryInsert != accessoryLists.size()) {
+            List<CateringOrderItemAccessoryDO> accessoryDOS = PlaceCateringOrderRequestConverter.toCateringOrderItemAccessoryDO(itemDOS, request, productDetailList);
+            if (!CollectionUtils.isEmpty(accessoryDOS)) {
+                Integer accessoryInsert = accessoryMapper.batchInsert(accessoryDOS);
+                if (accessoryInsert != accessoryDOS.size()) {
                     throw new BizException(ErrorCode.INSET_ERROR);
                 }
             }
@@ -112,9 +99,9 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
         return transactionTemplate.execute(status -> {
             List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(request.getTenantId(), request.getOrderId());
             List<CateringOrderItemDO> itemDOList = ProduceCateringOrderRequestConverter.toCateringOrderItemDO(itemDOS, request);
-            itemDOList.forEach(orderItemDO -> {
-                Integer update = itemMapper.update(orderItemDO);
-                if (update <= 0) {
+            itemDOList.forEach(itemDO -> {
+                Integer update = itemMapper.update(itemDO);
+                if (update <= 0){
                     throw new BizException(ErrorCode.PRODUCE_ERROR);
                 }
             });
@@ -131,10 +118,9 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
                         });
                     }
                 });
-
             });
             List<CateringOrderItemDO> itemList = itemMapper.queryByOrderId(request.getTenantId(), request.getOrderId());
-            List<Long> ids = itemList.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
+            List<Long> ids = itemList.stream().map(CateringOrderItemDO::getId).filter(Objects::nonNull).collect(Collectors.toList());
             List<CateringOrderItemAccessoryDO> accessoryList = accessoryMapper.batchQueryByOrderItemId(request.getTenantId(), ids);
             CateringOrderDO cateringOrderDO = ProduceCateringOrderRequestConverter.toCateringOrderDO(accessoryList, itemList, request);
             Integer update = orderMapper.update(cateringOrderDO);
@@ -161,14 +147,15 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
 
     @Override
     public CateringOrderBO adjust(AdjustCateringOrderBizRequest request) {
+
+        List<CateringOrderItemDO> itemDOList = itemMapper.queryByOrderId(request.getTenantId(), request.getOrderId());
+        Set<Long> ids = request.getItems().stream().map(AdjustCateringOrderBizRequest.Item::getProductId).filter(Objects::nonNull).collect(Collectors.toSet());
+        ids.addAll(itemDOList.stream().map(CateringOrderItemDO::getProductId).collect(Collectors.toSet()));
+        List<ProductDetailRemoteResponse> productDetailList = productRemoteService.findByIds(request.getTenantId(), request.getUserId(), ids);
+
         return transactionTemplate.execute(status -> {
             ArrayList<CateringOrderItemDO> itemList = Lists.newArrayList();
             ArrayList<CateringOrderItemAccessoryDO> accessoryList = Lists.newArrayList();
-
-            List<CateringOrderItemDO> itemDOList = itemMapper.queryByOrderId(request.getTenantId(), request.getOrderId());
-            Set<Long> ids = request.getItems().stream().map(AdjustCateringOrderBizRequest.Item::getProductId).filter(Objects::nonNull).collect(Collectors.toSet());
-            ids.addAll(itemDOList.stream().map(CateringOrderItemDO::getProductId).collect(Collectors.toSet()));
-            List<ProductDetailRemoteResponse> productDetailList = productRemoteService.findByIds(request.getTenantId(), request.getUserId(), ids);
             request.getItems().forEach(item -> {
                 //更新
                 if (Objects.isNull(item.getProductId())) {
@@ -195,8 +182,6 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
             if (!CollectionUtils.isEmpty(itemList)) {
                 itemMapper.batchInsert(itemList);
             }
-
-
             List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(request.getTenantId(), request.getOrderId());
             request.getItems().forEach(item -> {
                 itemDOS.forEach(itemDO -> {
@@ -227,7 +212,6 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
                                 });
                             }
                         });
-
                     }
                 });
             });

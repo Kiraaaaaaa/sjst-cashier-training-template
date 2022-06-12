@@ -1,8 +1,10 @@
 package com.meituan.catering.management.order.biz.validator;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
+import com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderStatusEnum;
 import com.meituan.catering.management.order.api.http.model.request.*;
 import com.meituan.catering.management.order.dao.mapper.CateringOrderItemAccessoryMapper;
 import com.meituan.catering.management.order.dao.mapper.CateringOrderItemMapper;
@@ -19,10 +21,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,24 +101,21 @@ public class OrderBizServiceValidator {
                 throw new BizException(ErrorCode.INSET_ERROR);
             }
         }
-        AtomicInteger itemSize = new AtomicInteger();
-        HashSet<String> itemSet = Sets.newHashSet();
+        ArrayList<String> itemList = Lists.newArrayList();
         request.getItems().forEach(item -> {
-            itemSet.add(item.getSeqNo());
-            itemSize.getAndIncrement();
-            AtomicInteger accessorySize = new AtomicInteger();
-            HashSet<String> accessorySet = Sets.newHashSet();
-            item.getAccessories().forEach(accessory -> {
-                accessorySet.add(accessory.getSeqNo());
-                accessorySize.getAndIncrement();
-            });
-            if (!Objects.equals(accessorySet.size(), accessorySize.get())) {
+            if (itemList.contains(item.getSeqNo())){
                 throw new BizException(ErrorCode.INSET_ERROR);
             }
+            itemList.add(item.getSeqNo());
+
+            ArrayList<String> accessoryList = Lists.newArrayList();
+            item.getAccessories().forEach(accessory -> {
+                if (accessoryList.contains(accessory.getSeqNo())){
+                    throw new BizException(ErrorCode.INSET_ERROR);
+                }
+                accessoryList.add(accessory.getSeqNo());
+            });
         });
-        if (!Objects.equals(itemSet.size(), itemSize.get())) {
-            throw new BizException(ErrorCode.INSET_ERROR);
-        }
     }
 
     public void prepareValid(Long tenantId, Long userId, Long orderId, PrepareCateringOrderHttpRequest request) {
@@ -160,7 +156,6 @@ public class OrderBizServiceValidator {
         if (CollectionUtils.isEmpty(cateringOrderItemDOS)) {
             throw new BizException(ErrorCode.PRODUCE_ERROR);
         }
-
         cateringOrderItemDOS.forEach(cateringOrderItemDO -> {
             request.getItems().forEach(item -> {
                 if (item.getSeqNo().equals(cateringOrderItemDO.getSeqNo())) {
@@ -194,6 +189,9 @@ public class OrderBizServiceValidator {
         baseValid(tenantId, userId);
         CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
         if (!cateringOrderDO.getVersion().equals(request.getVersion())) {
+            throw new BizException(ErrorCode.BILL_ERROR);
+        }
+        if (!Objects.equals(cateringOrderDO.getStatus(), CateringOrderStatusEnum.PREPARED)){
             throw new BizException(ErrorCode.BILL_ERROR);
         }
     }
@@ -235,8 +233,6 @@ public class OrderBizServiceValidator {
         });
         request.getItems().forEach(item -> {
             CateringOrderItemDO orderItemDO = itemMapper.queryByOrderIdAndSeqNo(tenantId, orderId, item.getSeqNo());
-            AtomicInteger size = new AtomicInteger();
-            HashSet<String> set = Sets.newHashSet();
             item.getAccessories().forEach(accessory -> {
                 if (Objects.isNull(accessory.getProductAccessoryId())) {
                     CateringOrderItemAccessoryDO accessoryDO = accessoryMapper.queryByItemIdAndSeqNO(tenantId, orderItemDO.getId(), accessory.getSeqNo());
@@ -251,14 +247,14 @@ public class OrderBizServiceValidator {
                         throw new BizException(ErrorCode.ADJUST_ERROR);
                     }
                 }
+                ArrayList<String> list = Lists.newArrayList();
                 if (Objects.nonNull(accessory.getProductAccessoryId()) && Objects.nonNull(item.getProductId())) {
-                    set.add(accessory.getSeqNo());
-                    size.getAndIncrement();
+                    if (list.contains(accessory.getSeqNo())){
+                        throw new BizException(ErrorCode.ADJUST_ERROR);
+                    }
+                    list.add(accessory.getSeqNo());
                 }
             });
-            if (!Objects.equals(set.size(), size.get())) {
-                throw new BizException(ErrorCode.ADJUST_ERROR);
-            }
         });
     }
 }

@@ -9,8 +9,10 @@ import com.meituan.catering.management.order.biz.model.CateringOrderBO;
 import com.meituan.catering.management.order.dao.model.CateringOrderDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemAccessoryDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -86,7 +88,8 @@ public abstract class CateringOrderBOConverter {
         itemBO.getProductSnapShot().setUnitOfMeasure(itemDO.getProductUnitOfMeasureOnPlace());
 
         List<CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory> accessories = itemBO.getAccessories();
-        accessoryDOS.forEach(accessoryDO -> {
+        Collection<CateringOrderItemAccessoryDO> cateringOrderItemAccessoryDOS = CollectionUtils.emptyIfNull(accessoryDOS);
+        cateringOrderItemAccessoryDOS.forEach(accessoryDO -> {
             if (accessoryDO.getOrderItemId().equals(itemDO.getId())) {
                 accessories.add(buildAccessory(accessoryDO));
             }
@@ -99,7 +102,6 @@ public abstract class CateringOrderBOConverter {
         if (Objects.isNull(accessoryDO)) {
             return null;
         }
-
         CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory accessoryBO = new CateringOrderBO.CateringOrderItem.CateringOrderItemAccessory();
         accessoryBO.setId(accessoryDO.getId());
         accessoryBO.setVersion(accessoryDO.getVersion());
