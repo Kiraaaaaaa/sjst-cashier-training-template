@@ -41,19 +41,32 @@ public class AdjustCateringOrderRequestConverter {
 
         CateringOrderDO cateringOrderDO = new CateringOrderDO();
 
-        int code = itemDOS.get(0).getStatus().getCode();
-        for (CateringOrderItemDO itemDO : itemDOS) {
-            if (code > itemDO.getStatus().getCode()) {
-                code = itemDO.getStatus().getCode();
-            }
+        int code = CateringOrderStatusEnum.DRAFT.getCode();
+
+        List<CateringOrderItemStatusEnum> itemStatus = itemDOS.stream().map(CateringOrderItemDO::getStatus).collect(Collectors.toList());
+        List<CateringOrderItemAccessoryStatusEnum> accessoryStatus = accessoryDOS.stream().map(CateringOrderItemAccessoryDO::getStatus).collect(Collectors.toList());
+        if (itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                || accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                || (itemStatus.contains(CateringOrderItemStatusEnum.PLACED) && itemStatus.contains(CateringOrderItemStatusEnum.PREPARED))
+                || (accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED) && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED))) {
+            code = CateringOrderStatusEnum.PREPARING.getCode();
+        } else if (itemStatus.contains(CateringOrderItemStatusEnum.PLACED)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARED)
+                && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED)) {
+            code = CateringOrderStatusEnum.PLACED.getCode();
+        } else if (itemStatus.contains(CateringOrderItemStatusEnum.PREPARED)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PREPARING)
+                && !itemStatus.contains(CateringOrderItemStatusEnum.PLACED)
+                && accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARED)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PREPARING)
+                && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED)) {
+            code = CateringOrderStatusEnum.PREPARED.getCode();
         }
-        for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
-            if (code > accessoryDO.getStatus().getCode()) {
-                code = accessoryDO.getStatus().getCode();
-            }
-        }
-        cateringOrderDO.setId(request.getOrderId());
         cateringOrderDO.setStatus(CateringOrderStatusEnum.getEnum(code));
+        cateringOrderDO.setId(request.getOrderId());
         cateringOrderDO.setTenantId(request.getTenantId());
         cateringOrderDO.setVersion(request.getVersion());
         cateringOrderDO.setLastModifiedBy(request.getUserId());
@@ -82,15 +95,15 @@ public class AdjustCateringOrderRequestConverter {
             cateringOrderItemDO.setProductUnitPriceOnPlace(BigDecimal.valueOf(productDetail.getUnitPrice()));
             cateringOrderItemDO.setProductUnitOfMeasureOnPlace(productDetail.getUnitOfMeasure());
             if (Objects.nonNull(item.getProductMethodId())) {
-                for (ProductDetailRemoteResponse.MethodGroup methodGroup : productDetail.getMethodGroups()) {
-                    for (ProductDetailRemoteResponse.MethodGroup.Option option : methodGroup.getOptions()) {
+                productDetail.getMethodGroups().forEach(methodGroup -> {
+                    methodGroup.getOptions().forEach(option -> {
                         if (Objects.equals(item.getProductMethodId(), option.getId())) {
                             cateringOrderItemDO.setProductMethodId(option.getId());
                             cateringOrderItemDO.setProductMethodNameOnPlace(option.getName());
                             cateringOrderItemDO.setProductMethodGroupNameOnPlace(methodGroup.getName());
                         }
-                    }
-                }
+                    });
+                });
             }
         }
         //说明是更新
@@ -155,7 +168,7 @@ public class AdjustCateringOrderRequestConverter {
             cateringOrderItemAccessoryDO.setLatestQuantity(accessory.getQuantityOnAdjustment());
             cateringOrderItemAccessoryDO.setProduceQuantity(BigDecimal.ZERO);
             cateringOrderItemAccessoryDO.setPlaceQuantity(accessory.getQuantityOnAdjustment());
-            for (ProductDetailRemoteResponse.AccessoryGroup.Option option : accessoryDetail.getOptions()) {
+            accessoryDetail.getOptions().forEach(option -> {
                 if (Objects.equals(option.getId(), accessory.getProductAccessoryId())) {
                     cateringOrderItemAccessoryDO.setProductAccessoryId(option.getId());
                     cateringOrderItemAccessoryDO.setProductAccessoryNameOnPlace(option.getName());
@@ -163,7 +176,7 @@ public class AdjustCateringOrderRequestConverter {
                     cateringOrderItemAccessoryDO.setProductAccessoryUnitPriceOnPlace(BigDecimal.valueOf(option.getUnitPrice()));
                     cateringOrderItemAccessoryDO.setProductAccessoryUnitOfMeasureOnPlace(option.getUnitOfMeasure());
                 }
-            }
+            });
         }
         return cateringOrderItemAccessoryDO;
     }

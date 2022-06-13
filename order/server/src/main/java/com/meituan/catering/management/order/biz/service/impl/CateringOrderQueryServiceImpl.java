@@ -1,5 +1,6 @@
 package com.meituan.catering.management.order.biz.service.impl;
 
+import cn.hutool.core.stream.CollectorUtil;
 import com.meituan.catering.management.order.biz.model.CateringOrderBO;
 import com.meituan.catering.management.order.biz.model.converter.CateringOrderBOConverter;
 import com.meituan.catering.management.order.biz.model.converter.SearchCateringOrderResponseConverter;
@@ -15,6 +16,7 @@ import com.meituan.catering.management.order.dao.model.CateringOrderDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemAccessoryDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
 import com.meituan.catering.management.order.dao.model.request.SearchCateringOrderDataRequest;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,13 +38,13 @@ public class CateringOrderQueryServiceImpl implements CateringOrderQueryService 
     @Override
     public CateringOrderBO findById(Long tenantId, Long orderId) {
         CateringOrderDO cateringOrderDO = orderMapper.queryById(tenantId, orderId);
-        if (Objects.nonNull(cateringOrderDO)) {
-            List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(tenantId, orderId);
-            List<Long> orderItemIds = itemDOS.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
+        List<CateringOrderItemDO> itemDOS = itemMapper.queryByOrderId(tenantId, orderId);
+        List<Long> orderItemIds = itemDOS.stream().map(CateringOrderItemDO::getId).filter(Objects::nonNull).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(orderItemIds)){
             List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.batchQueryByOrderItemId(tenantId, orderItemIds);
             return CateringOrderBOConverter.toCateringOrderBO(cateringOrderDO, itemDOS, accessoryDOS);
         }
-        return null;
+        return CateringOrderBOConverter.toCateringOrderBO(cateringOrderDO,itemDOS,null);
     }
 
 

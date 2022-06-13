@@ -61,6 +61,7 @@
             )
         </foreach>
     </insert>
+
     <insert id="insert">
         insert into `catering_order_item_accessory` (<include refid="Base_Column_List"/>)
         values (
@@ -81,20 +82,6 @@
         )
     </insert>
 
-    <update id="produce">
-        update `catering_order_item_accessory`
-        <set>
-            `status` = #{accessory.status}
-            ,`version` = #{accessory.version}+1
-            ,`produce_quantity` = #{accessory.quantityOnProduce}
-        </set>
-        <where>
-            `version` = #{accessory.version}
-            and `order_item_id` = #{itemId}
-            and `tenant_id` = #{tenantId}
-            and `seq_no` = #{accessory.seqNo}
-        </where>
-    </update>
 
     <update id="update">
         update `catering_order_item_accessory`
@@ -121,6 +108,33 @@
         </where>
     </update>
 
+    <update id="batchUpdate">
+        <foreach collection="accessoryDOS" item="accessory">
+            update `catering_order_item_accessory`
+            <set>
+                `version` = #{accessory.version}+1
+                <if test="accessory.status != null">
+                    ,`status` = #{accessory.status}
+                </if>
+                <if test="accessory.latestQuantity != null">
+                    ,`latest_quantity` = #{accessory.latestQuantity}
+                </if>
+                <if test="accessory.produceQuantity != null">
+                    ,`produce_quantity` = #{accessory.produceQuantity}
+                </if>
+                <if test="accessory.latestQuantity != null">
+                    ,`latest_quantity` = #{accessory.latestQuantity}
+                </if>
+            </set>
+            <where>
+                `version` = #{accessory.version}
+                and `order_item_id` = #{accessory.orderItemId}
+                and `tenant_id` = #{accessory.tenantId}
+                and `seq_no` = #{accessory.seqNo}
+            </where>
+        </foreach>
+    </update>
+
     <select id="batchQueryByOrderItemId" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -140,6 +154,14 @@
         from `catering_order_item_accessory`
         where `tenant_id` = #{tenantId}
         and `order_item_id` = #{orderItemId}
+    </select>
+    <select id="queryByItemIdAndSeqNO" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `catering_order_item_accessory`
+        where `tenant_id` = #{tenantId}
+        and `order_item_id` = #{orderItemId}
+        and `seq_no` = #{seqNo}
     </select>
 
 

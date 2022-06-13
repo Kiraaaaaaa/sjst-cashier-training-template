@@ -16,7 +16,8 @@ public enum ErrorCode implements IError {
     PREPARE_ERROR(630009,"制作失败"),
     PRODUCE_ERROR(630010,"出餐失败"),
     BILL_ERROR(630011,"支付失败"),
-    ADJUST_ERROR(630012,"加退菜失败");
+    ADJUST_ERROR(630012,"加退菜失败"),
+    THRIFT_ERROR(630013,"远程调用失败");
 
     private final int code;
     private final String message;

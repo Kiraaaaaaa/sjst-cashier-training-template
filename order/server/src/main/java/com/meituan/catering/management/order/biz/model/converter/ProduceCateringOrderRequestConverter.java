@@ -53,15 +53,15 @@ public class ProduceCateringOrderRequestConverter {
         cateringOrderDO.setStatus(CateringOrderStatusEnum.PREPARED);
         cateringOrderDO.setLastModifiedAt(request.getLastModifiedAt());
 
-        int code = CateringOrderStatusEnum.CANCELLED.getCode();
+        int code = CateringOrderStatusEnum.PREPARED.getCode();
         for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
-            if (code > accessoryDO.getStatus().getCode()) {
-                code = accessoryDO.getStatus().getCode();
+            if (code == accessoryDO.getStatus().getCode()) {
+                code = CateringOrderStatusEnum.PREPARING.getCode();
             }
         }
         for (CateringOrderItemDO itemDO : itemDOS) {
-            if (code > itemDO.getStatus().getCode()) {
-                code = itemDO.getStatus().getCode();
+            if (code == itemDO.getStatus().getCode()) {
+                code = CateringOrderStatusEnum.PREPARING.getCode();
             }
         }
         cateringOrderDO.setStatus(CateringOrderStatusEnum.getEnum(code));

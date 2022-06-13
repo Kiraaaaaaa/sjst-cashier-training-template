@@ -4,6 +4,7 @@ import "../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getDefaultNormalizer } from "@testing-library/react";
 const { Option } = Select;
 const CURRENCY_UNIT = '元'; //统一价格单位;
 const DEFUALT_PAGE_INDEX = 1;
@@ -24,9 +25,9 @@ function useCounter() {
   return [count, reset]; 
 }
 /** 搜索结果提示 */
-const openNotification = (placement, totalpageCount) => {
+const openNotification = (placement, optionalCount, totalpageCount) => {
   notification.info({
-    message: `一共${totalpageCount}条结果`,
+    message: `当前可选${optionalCount}条，已上架${totalpageCount}条`,
     placement,
     duration: 1,
   });
@@ -38,22 +39,26 @@ export default function OrderAdjust() {
     const [form] = Form.useForm();
     const [loaddingTime, resetTime] = useCounter();
     const [orderItemList, setOrderItemList] = useState();
-    const [informationModalVisible, setInformationModalVisible] = useState(false);
-    const [productModalVisible, setProductModalVisible] = useState();
     const [baseOrderItemList, setBaseOrderItemList] = useState();
+    const [productModalVisible, setProductModalVisible] = useState();
+    const [informationModalVisible, setInformationModalVisible] = useState(false);
 
     /** 菜品选择state */
     const [productForm] = Form.useForm();
     const [lastItem, setLastItem] = useState();
+    const [backCache, setBackCache] = useState();
     const [changeItem, setChangeItem] = useState();
     const [productList, setProductList] = useState([]);
     const [isSearchBtn, setIsSearchBtn] = useState(false);
+    const [productListTitle, setProductListTitle] =useState();
+    const [productTotalPageCount, setProductTotalPageCount] = useState();
     const [productPageSize, setProductPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [checkedProductCache, setCheckedProductCache] = useState([]);
     const [productPageIndex, setProductPageIndex] = useState(DEFUALT_PAGE_INDEX);
     const [productPageBtnGroup, setProductPageBtnGroup] = useState(DEFULT_PAGE_TOTALCOUNT);
-    const [productTotalPageCount, setProductTotalPageCount] = useState();
-    const [checkedProductCache, setCheckedProductCache] = useState(new Set());
-    const [productListTitle, setProductListTitle] =useState();
+    const [methodCache, setMethodCache] = useState();
+    const [methodBackCache, setMethodBackCache] = useState();
+
     const [orderItem, tenantId, userId, id] = [
       location.state.data,
       location.state.data.tenantId,
@@ -178,12 +183,8 @@ export default function OrderAdjust() {
         )
       }
   ];
-  const changeProduct = (records) => {
-    setProductListTitle('更换菜品');
-    resetProductSearch();
-    setProductModalVisible(true);
-    setChangeItem(records);
-  }
+
+  /** 加退菜数量调整 */
   const handleQuantityChange = (records, isIncrease) =>{
     const newOrderItemList = [].concat(orderItemList);
     newOrderItemList.map((item, index)=>{
@@ -202,7 +203,7 @@ export default function OrderAdjust() {
         }
       }else{
         item.children !=null && item.children.map((i, ind)=>{
-          if(records.productAccessoryId === i.productAccessoryId){
+          if(records.id === i.id){
             const decreaseNum = Math.abs(i.quantityOnAdjustment - 1);
             if(isIncrease){
               i.quantityOnAdjustment += 1;
@@ -238,6 +239,7 @@ export default function OrderAdjust() {
         console.log(res);
       })
   }
+  
   /** 加退菜请求 */
   function orderAdjustRequest(request, formValues){
     const [tenantId, userId, id] = [formValues.tenantId, formValues.userId, formValues.id];
@@ -245,7 +247,7 @@ export default function OrderAdjust() {
       headers:{tenantId: tenantId, userId:userId}
     });
     instance
-      .post(`/order/catering/${id}/produce`, request)
+      .post(`/order/catering/${id}/adjust`, request)
       .then(response=>{
         const code = response.data.status.code;
         if(code===0){
@@ -271,7 +273,7 @@ export default function OrderAdjust() {
           {
             key: ind,
             type: 'accessory',
-            productAccessoryId: i.id,
+            id: i.id,
             name: i.productAccessorySnapshotOnPlace.name,
             unitOfMeasure: i.productAccessorySnapshotOnPlace.unitOfMeasure,
             latest: i.quantity.latest,
@@ -281,10 +283,8 @@ export default function OrderAdjust() {
             quantityOnAdjustment: 0,
           }
         )
-        children[ind].latest > children[ind].onProduce && ([children[ind]['quantityOnProduce'], children[ind]['maxOnProduce']] = [
-          children[ind].latest - children[ind].onProduce, children[ind].latest - children[ind].onProduce
-        ])
       })
+      item['methodId'] = item.productMethodSnapshotOnPlace.id;
       item['methodName'] = item.productMethodSnapshotOnPlace.name;
       item['latest'] = item.quantity.latest;
       item['onProduce'] = item.quantity.onProduce;
@@ -320,7 +320,7 @@ export default function OrderAdjust() {
     }else{
       orderItemList.map((item, index)=>{
         item.children != null && item.children.map((i, ind)=>{
-          if(orderItem.productAccessoryId === i.productAccessoryId){
+          if(orderItem.id === i.id){
             itemNo = `${index+1}-${ind+1}`;
           }
         })
@@ -332,40 +332,47 @@ export default function OrderAdjust() {
   const onFinish = (formValues) => {
     const requestBody = createRequestBody(formValues);
     console.log('结构体:', requestBody);
-    orderAdjustRequest(requestBody, formValues);
+    requestBody.items.length === 0 ? navigate('/order') : orderAdjustRequest(requestBody, formValues);
   }
 
   /** 加退菜结构体 */
   const createRequestBody = (formValues) => {
-    console.log(orderItemList);
     let newOrderItemList = [];
     orderItemList.map((item, index)=>{
-      if(item.status === 'PREPARING'){
+      if(item.quantityOnAdjustment !== 0){
         let accessories = [];
-        if(item.children !== null){
+        /**
+         * 目前数量与调整数量之和等于出餐数量的情况有两种:
+         * 一种是出餐和菜品调整数量都为0，此时配料可以增减
+         * 第二种是出餐和菜品调整数量大于0且相同，此时配料不可增减，因为已出餐完
+         */
+        if(item.children !== undefined && 
+          item.children !== null && 
+          ((item.latest + item.quantityOnAdjustment !== item.onProduce) || (item.latest + item.quantityOnAdjustment === item.onProduce && item.onProduce === 0))){ 
           item.children.map((i, ind)=>{
-            if(i.status === 'PREPARING'){
+            if((item.latest+item.quantityOnAdjustment > 0 && i.quantityOnAdjustment !== 0)){
               accessories.push(
                 {
-                  productAccessoryId: i.productAccessoryId,
-                  quantityOnProduce: i.quantityOnProduce,
+                  quantityOnAdjustment: i.quantityOnAdjustment,
                   seqNo: `${index+1}-${ind+1}`,
-                  version: i.version,
+                  version: i.version !== undefined ? i.version : 1 
                 }
               )
+              item.isAddProduct !== undefined && (accessories[accessories.length-1]['productAccessoryId'] = i.id);
             }
           })
         }
-        item.quantityOnProduce !== undefined && newOrderItemList.push(
-          { 
+        newOrderItemList.push(
+          {
+            productMethodId: item.methodId, 
             accessories: accessories,
             seqNo: index+1,
             version: item.version,
-            quantityOnProduce: item.quantityOnProduce,
+            quantityOnAdjustment: item.quantityOnAdjustment,
           }
         );
+        item.isAddProduct !== undefined && (newOrderItemList[newOrderItemList.length-1]['productId'] = item.id);
       }
-      
     });
     const bodyObj = {
       items: newOrderItemList,
@@ -378,22 +385,59 @@ export default function OrderAdjust() {
   const handleProductSelect = (index) => {
     setProductListTitle('新增菜品(可多选/取消菜品)');
     resetProductSearch();
-    // setBackCache([].concat(productCache)); //备份取消前的菜品选择缓存
+    cacheManage('backup'); //备份取消前的菜品选择缓存
     setProductModalVisible(true);
   }
 
-  /**********************************************************菜品模块******************************************************/
+  /** 更换菜品(仅支持单选) */
+  const changeProduct = (records) => {
+    setProductListTitle('更换菜品');
+    resetProductSearch();
+    setProductModalVisible(true);
+    cacheManage('backup'); //备份取消前的菜品选择缓存
+    setChangeItem(records);
+  }
 
+  /** 菜品缓存管理(备份&恢复缓存) */
+  const cacheManage = (option) => {
+    switch (option) {
+      case 'backup':
+        const backupCache = JSON.parse(JSON.stringify(checkedProductCache));
+        const backupMethodCache = structuredClone(methodCache);
+        setBackCache(backupCache); //设置菜品缓存备份
+        setMethodBackCache(backupMethodCache); //设置做法缓存备份
+        break;
+      case 'restore':
+        const restoreCache = JSON.parse(JSON.stringify(backCache));
+        const restoreMethodCache = structuredClone(methodBackCache);
+        setCheckedProductCache(restoreCache); //恢复菜品缓存备份
+        setMethodCache(restoreMethodCache); //恢复做法缓存备份
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**********************************************************菜品选择模块******************************************************/
+
+  /** 菜品取消选择事件 */
   const handleProductCancel = () => {
     setProductModalVisible(false);
-    // setProductCache(backCache);
+    cacheManage('restore'); //还原备份的菜品缓存
+    setChangeItem(undefined);
+    setLastItem(undefined);
   }
 
   /** 确认勾选菜品添加至订单 */
   const handleProductSave = () => {
-    let cacheArray = [...checkedProductCache]; //set转数组
-    let newCheckedProductCache = JSON.parse(JSON.stringify(cacheArray)) //深拷贝(多层)
+    let newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
     newCheckedProductCache.map((item, index)=>{
+      if(methodCache !== undefined && methodCache.has(item.id)){
+        const [groupIndex, memberIndex] = [methodCache.get(item.id)[0], methodCache.get(item.id)[1]];
+        item.methodGroups[groupIndex].options.map((i, ind)=>{
+          i.id === memberIndex && ([item['methodName'], item['methodId']] = [i.name, i.id]);
+        });
+      }
       item.children !== null && item.children !== undefined && (item.children = (item.children.filter((i)=> i.checked === true)));
     })
     setOrderItemList([...baseOrderItemList, ...newCheckedProductCache]);
@@ -404,8 +448,7 @@ export default function OrderAdjust() {
 
   /**重组数据(获取菜品页面时) */
   const reconfigProductList = (resList) => {
-    const newCheckedProductCache = new Set(checkedProductCache);
-    console.log('当前缓存:', newCheckedProductCache)
+    const newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
     const newBaseList = [].concat(baseOrderItemList);
     resList.map((item, index)=>{
       newBaseList.map((i, ind)=>{
@@ -417,14 +460,15 @@ export default function OrderAdjust() {
       newCheckedProductCache.forEach((cacheItem)=>{
         if(cacheItem.id === item.id){
           [item, notExist] = [cacheItem, false] //将目前菜品列表中存在的菜品替换成缓存中的菜品
-          item['key'] = index; //重新给key赋值，否则换页顺序会出问题
+          item['key'] = item.id+Math.random(); //重新给key赋值，否则换页顺序会出问题
         }
-      })
+      });
       if(notExist){
         item['latest'] = 0;
         item['onProduce'] = 0;
         item['quantityOnAdjustment'] = 1;
-        item['key'] = index;
+        item['methodId'] = null;
+        item['key'] = item.id+Math.random();
         item['type'] = 'product';
         item['checked'] = false;
         item['isAddProduct'] = true;
@@ -434,7 +478,7 @@ export default function OrderAdjust() {
             i['latest'] = 0;
             i['onProduce'] = 0;
             i['quantityOnAdjustment'] = 1;
-            i['key'] = i.id;
+            i['key'] = i.id+Math.random();
             i['type'] = 'accessory';
             i['checked'] = false;
             item['isAddProduct'] = true;
@@ -450,91 +494,189 @@ export default function OrderAdjust() {
   const handleCheckbox = (records, checked) => {
     let isChangeProduct = changeItem !== undefined; //是否为更换菜品请求
     const newProductList = [].concat(productList);
-    const cacheArray = [...checkedProductCache];
-    let newCheckedProductCache = new Set(JSON.parse(JSON.stringify(cacheArray)));
+    let newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
 
     //避免混淆新增菜品和更换菜品分两次map
+
     //1.更换菜品时的处理情况
     isChangeProduct && newProductList.map((item, index)=>{
-      if(records.type === 'product' && records.id === item.id){
-        if(records.id === changeItem.id){
-          /*什么都不做*/
-        }else{
-          if(records.checked){
-            if(lastItem === undefined || lastItem.id !== records.id){
-              message.error('此菜品已经被选择，请选择其它菜品');
-            }
-          }else{
-            if(lastItem !== undefined){
+
+      //勾选菜品的情况
+      if(records.type === 'product' && records.id === item.id){ 
+        if(records.id === changeItem.id){ //勾选自身的情况
+          if(!records.checked){ //如果自身没有被勾选则勾选并添加至缓存(已被勾选则说明还未勾选过其它菜品不作操作)
+            if(lastItem !== undefined){ //取消勾选上次选择的菜品
               newProductList.map((i, ind)=>{
-                lastItem.id === i.id && (i.checked = false);
+                if(lastItem.id === i.id){
+                  i.checked = false;
+                  i.children !== undefined && i.children.map((childItem)=>{
+                    childItem.checked = false;
+                  })
+                }
               })
             }
             item.checked = checked;
-            newProductList.map((i, ind)=>{
+            item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
+            newCheckedProductCache.push(item);
+            setLastItem(item); //设置为最新勾选的菜品
+          }
+        }else{
+          if(records.checked){
+            if(lastItem === undefined || lastItem.id !== records.id){
+              message.warn('此菜品已经被选择，请选择其它菜品');
+            }
+          }else{
+            if(lastItem !== undefined){ //勾选另一个菜品时取消上次勾选的菜品和配料
+              newProductList.map((i, ind)=>{
+                if(lastItem.id === i.id){
+                  i.checked = false;
+                  i.children !== undefined && i.children.map((childItem)=>{
+                    childItem.checked = false;
+                  })
+                }
+              })
+            }
+            item.checked = checked;
+            newProductList.map((i, ind)=>{ //勾选另一个菜品时取消勾选原来最开始的菜品和配料
               if(changeItem.id === i.id){
                 i.checked = false;
-                item.children !== undefined && item.children.map((i, ind)=>{i.checked = false});
+                i.children !== undefined && i.children.map((i, ind)=>{i.checked = false});
               }
-            })
+            });
             item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
-            newCheckedProductCache.add(item);
-            setLastItem(item);
+            newCheckedProductCache.push(item);
+            setLastItem(item); //设置为最新勾选的菜品
           }
         }
       }
+
+      //勾选配料的情况
+      else{
+        item.children !== undefined && item.children.map((i, ind)=>{
+          if(i.id === records.id){ //找到此配料项
+            if(checked){
+              let notExist = true; 
+
+              let productID = undefined; //此配料的父ID
+              newProductList.map((productItem)=>{
+                productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
+                  if(accessoryItem.id === records.id){
+                    productID = productItem.id;
+                    productItem.checked && (notExist = false);
+                  }
+                })
+              })
+              newProductList.map((productItem)=>{
+                if(productItem.id !== productID && notExist){ //如果不是此配菜则取消勾选
+                  productItem.checked = false;
+                  productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
+                    accessoryItem.checked = false;
+                  })
+                }
+              })
+
+              newCheckedProductCache.map((i, ind)=>{
+                i.children !== undefined && i.children.map((cacheItem)=>{
+                  cacheItem.id === records.id && !notExist && cacheItem.id === changeItem.id && (cacheItem.checked = checked);
+                })
+              });
+
+              if(notExist){
+                i.checked = checked;
+                item.checked = checked;
+                newCheckedProductCache.push(item);
+                setLastItem(item);
+              }else{
+                message.warn('此菜品已经被选择，请选择其它菜品');
+              };
+            }else{
+              let notExist = true;
+              newCheckedProductCache.map((cacheItem, ind)=>{
+                cacheItem.children !== undefined && cacheItem.children.map((childItem, cacheIndex)=>{
+                  if(childItem.id === records.id && cacheItem.id === changeItem.id){
+                    notExist = false;
+                    i.checked = checked;
+                    childItem.checked = checked;
+                  }
+                })
+              });
+              notExist && message.warn('此菜品已经被选择，请选择其它菜品');
+            }
+          }
+        })
+      }
     })
 
-    //2.新增菜品时的处理情况
+    //2.新增/减少多个菜品时的情况
     !isChangeProduct && newProductList.map((item, index)=>{
+
+      //勾选菜品的情况
       if(records.type === 'product' && records.id === item.id){
         if(checked){
           item.checked = checked;
           item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
-          newCheckedProductCache.add(item)
+          newCheckedProductCache.push(item);
         }else{
-          newCheckedProductCache = [...newCheckedProductCache]; //如果是取消勾选则需要先从缓存中删除再改变菜品
-          newCheckedProductCache.map((item, index)=>{
-            item.id === records.id && newCheckedProductCache.splice(index, 1);
+          //如果是取消勾选则需要先从缓存中删除再改变菜品
+          newCheckedProductCache.map((i, index)=>{
+            i.id === records.id && newCheckedProductCache.splice(index, 1);
           })
-          newCheckedProductCache = new Set(newCheckedProductCache);
 
           item.checked = checked;
           item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
         }
-      }else{
+      }
+
+      //勾选配料的情况
+      else{
         item.children !== undefined && item.children.map((i, ind)=>{
           if(records.id === i.id){
             i.checked = checked; // 勾选&取消此配料
             if(checked){
+              let notExist = true;
               item.checked = checked;
-              newCheckedProductCache.add(item);
+              newCheckedProductCache.map((i, ind)=>{
+                i.children !== undefined && i.children.map((cacheItem, cacheIndex)=>{
+                  cacheItem.id === records.id && ([cacheItem.checked, notExist] = [checked, false]);
+                })
+              })
+              notExist && newCheckedProductCache.push(item);
             }else{
-              const checkedList = item.children.filter((cacheItem)=>cacheItem.checked === true);
-              if(checkedList.length === 0){
-                item.checked = checked;
-                newCheckedProductCache.delete(item); 
-              }
+              newCheckedProductCache.map((i, ind)=>{
+                i.children !== undefined && i.children.map((cacheItem, cacheIndex)=>{
+                  cacheItem.id === records.id && (cacheItem.checked = checked);
+                })
+              })
             }
           }
         })
       }
     });
 
-    if(changeItem !== undefined){ //更换菜品时勾选其它菜品删除被更换菜品的缓存
-      newCheckedProductCache = [...newCheckedProductCache];
-      newCheckedProductCache.map((item, index)=>{
+    //更换菜品时勾选其它菜品删除被更换菜品的缓存
+    if(changeItem !== undefined && lastItem === undefined){ 
+      //缓存菜品数量大于1时再删除被更换的菜品 且确认与勾选前缓存的数据是否和勾选后一样(勾选到重复或者不勾选的情况)
+      newCheckedProductCache.length > 1 && newCheckedProductCache.toString() !== checkedProductCache.toString() && newCheckedProductCache.map((item, index)=>{
         item.id === changeItem.id && newCheckedProductCache.splice(index, 1);
       })
-      newCheckedProductCache = new Set(newCheckedProductCache);
-    }
-    if(lastItem !== undefined){ //更换菜品时勾选其它菜品删除上个被勾选菜品的缓存
-      newCheckedProductCache.delete(lastItem);
-    }
-    console.log(newCheckedProductCache);
+    };
+    //更换菜品时勾选其它菜品删除上个被勾选菜品的缓存
+    if(lastItem !== undefined){
+      newCheckedProductCache.length > 1 && newCheckedProductCache.toString() !== checkedProductCache.toString() && newCheckedProductCache.map((item, index)=>{
+        item.id === lastItem.id && newCheckedProductCache.splice(index, 1);
+      })
+    };
     setCheckedProductCache(newCheckedProductCache);
   }
 
+   /** 选择做法时将做法数据缓存 */
+   const handleMethodChange = (selectedOptions, productItem) => {
+    const newMethodCache = methodCache === undefined ? new Map() : structuredClone(methodCache);
+    //取消勾选做法则删除
+    selectedOptions === undefined ? newMethodCache.delete(productItem.id) : newMethodCache.set(productItem.id, selectedOptions);
+    setMethodCache(newMethodCache);
+  }
+  
   /** 菜品模块列 */
   const productColumns = [
     {
@@ -611,16 +753,31 @@ export default function OrderAdjust() {
               return i;
             })
             return item;
-          })
-          return <Cascader options={options} placeholder='请选择做法' onChange={(value)=>handleMethodChange(value, records.key)}/>
+          });
+          return (
+            <Cascader 
+            className="product-cascader" 
+            options={options} 
+            defaultValue={()=>getDefaultMethod(records)} 
+            placeholder='请选择做法' 
+            onChange={(value)=>handleMethodChange(value, records)} 
+            expandTrigger='hover'
+            />
+          )
         }
       }
     }
   ];
-  
-  const handleMethodChange = () => {
-    
-  }
+
+
+    /** 取出做法缓存中存在的做法 */
+    const getDefaultMethod = (productItem) => {
+      let defaultMethod = [];
+      console.log(methodCache);
+      methodCache !== undefined && methodCache.has(productItem.id) && (defaultMethod = [methodCache.get(productItem.id)[0], methodCache.get(productItem.id)[1]]);
+      return defaultMethod;
+    }
+
     /** 初始化表单 */
     const initialProductSearchForm = () => {
       productForm.setFieldsValue({
@@ -709,7 +866,7 @@ export default function OrderAdjust() {
                     res.data.data.totalCount,
                 ];
                 if(isSearchBtn){
-                  openNotification('bottomRight', totalCount);
+                  openNotification('bottomRight', data.length, totalCount);
                 }
                 setProductTotalPageCount(totalPageCount);
                 setProductTotalCountBtn(totalPageCount);   
@@ -767,6 +924,7 @@ const setProductTotalCountBtn = totalPageCount => {
     }
     setProductPageBtnGroup(pageBtn);
 }
+
 const productPageChange = (pageIndex) => {
     setProductPageIndex(pageIndex);
     productSubmitForm();

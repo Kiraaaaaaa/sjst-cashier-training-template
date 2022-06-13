@@ -49,3 +49,14 @@
     background-color: rgb(235 174 0);
     border-color: rgb(255, 189, 0);
 }
+.shop-table .ant-table-tbody>tr.ant-table-row:hover>td {
+    background: rgb(255, 189, 0);
+    cursor: pointer;
+    -webkit-transform: translateY(-3px);
+    -ms-transform: translateY(-3px);
+    transform: translateY(-3px);
+    -webkit-box-shadow: 0 0 #999;
+    box-shadow: 0 0 #999;
+    -webkit-transition: all .5s ease-out;
+    transition: all .5s ease-out;
+}

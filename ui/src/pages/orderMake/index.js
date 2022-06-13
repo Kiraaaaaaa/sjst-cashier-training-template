@@ -220,6 +220,7 @@ export default function OrderMake() {
   }
   const onFinish = (formValues) => {
     const requestBody = createRequestBody(formValues);
+    console.log('结构体:', requestBody);
     requestBody.items.length === 0 ? navigate('/order') : orderMakeRequest(requestBody, formValues);
   }
 

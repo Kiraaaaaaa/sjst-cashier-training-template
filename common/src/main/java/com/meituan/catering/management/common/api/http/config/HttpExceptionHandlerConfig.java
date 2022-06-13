@@ -64,13 +64,11 @@ public class HttpExceptionHandlerConfig {
     }
 
     @ExceptionHandler(BindException.class)
-    public ResponseEntity<Map<String, Object>> handleBindException(BindException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ImmutableMap.of(
-                        "message", "请求参数验证失败，请根据规则进行修改。",
-                        "errors", ex.getAllErrors()
-                ));
+    public BaseResponse handleBindException(BindException ex) {
+        BaseResponse<Object> baseResponse = new BaseResponse<>();
+        baseResponse.setStatus(StatusHelper.failure(ErrorCode.PARAM_ERROR));
+        logConfig.writeLog(ex,HttpExceptionHandlerConfig.class);
+        return baseResponse;
     }
 
 

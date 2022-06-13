@@ -29,6 +29,8 @@ public interface CateringOrderItemAccessoryMapper {
      */
     List<CateringOrderItemAccessoryDO> queryByOrderItemId(Long tenantId,Long orderItemId);
 
+    CateringOrderItemAccessoryDO queryByItemIdAndSeqNO(Long tenantId,Long orderItemId,String seqNo);
+
     /**
      * 批量插入
      * @param accessoryDOS
@@ -49,5 +51,7 @@ public interface CateringOrderItemAccessoryMapper {
      * @return
      */
     Integer update(CateringOrderItemAccessoryDO accessoryDO);
+
+    Integer batchUpdate(List<CateringOrderItemAccessoryDO> accessoryDOS);
 
 }

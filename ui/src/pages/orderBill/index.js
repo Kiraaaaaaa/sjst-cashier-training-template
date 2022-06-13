@@ -341,7 +341,7 @@ export default function OrderBill() {
           </Form>
 
           <Modal
-          title="请选择支付方式"
+          title={`请选择支付方式——(模拟支付中，请等待${2-loaddingTime}秒)`}
           visible={payModalVisible}
           footer={null}
           closable={false}
@@ -356,8 +356,8 @@ export default function OrderBill() {
               </Col>
             </Row>
             <Image.PreviewGroup>
-              <Image width={'50%'} src="https://s-cd-325-t1asas.oss.dogecdn.com/shixun/ye.jpg" />
-              <Image width={'50%'} src="https://s-cd-325-t1asas.oss.dogecdn.com/shixun/ye.jpg" />
+              <Image width={'50%'} src="https://s-cd-325-t1asas.oss.dogecdn.com/shixun/ye_1242x1242.jpg" />
+              <Image width={'50%'} src="https://s-cd-325-t1asas.oss.dogecdn.com/shixun/zhang_1242x1242.jpg" />
             </Image.PreviewGroup>
             <div className="bill-btn">
               <Button style={{width: '100%'}} onClick={handlePayCannel}>取消</Button>

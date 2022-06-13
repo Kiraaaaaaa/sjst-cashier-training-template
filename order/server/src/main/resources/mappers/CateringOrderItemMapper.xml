@@ -62,7 +62,7 @@
         ,#{productMethodGroupNameOnPlace}
         )
     </insert>
-    <insert id="batchInsert">
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="id">
         insert into `catering_order_item` (<include refid="Base_Column_List"/>)
         values
         <foreach collection="itemDOS" item="itemDO" separator=",">
@@ -87,29 +87,6 @@
         </foreach>
     </insert>
 
-    <update id="prepare">
-        update `catering_order_item` set
-        `status` = "PREPARING"
-        ,`version` = #{item.version}+1
-        <where>
-            `order_id` = #{orderId}
-            and `seq_no` = #{item.seqNo}
-            and `version` = #{item.version}
-            and `tenant_id` = #{tenantId}
-        </where>
-    </update>
-    <update id="produce">
-        update `catering_order_item` set
-        `status` = #{item.status}
-        ,`version` = #{item.version}+1
-        ,`produce_quantity` = #{item.quantityOnProduce}
-        <where>
-            `order_id` = #{orderId}
-            and `seq_no` = #{item.seqNo}
-            and `version` = #{item.version}
-            and `tenant_id` = #{tenantId}
-        </where>
-    </update>
     <update id="update">
         update `catering_order_item`
         <set>
@@ -134,12 +111,49 @@
             and `tenant_id` = #{tenantId}
         </where>
     </update>
+
+    <update id="batchUpdate" parameterType="List">
+        <foreach collection="itemDOS" item="itemDO" open="" close="" separator=";">
+            (update `catering_order_item`
+            <set>
+                `version` = #{itemDO.version}+1
+                <if test="itemDO.status != null">
+                    ,`status` = #{itemDO.status}
+                </if>
+                <if test="itemDO.produceQuantity != null">
+                    ,`produce_quantity` = #{itemDO.produceQuantity}
+                </if>
+                <if test="itemDO.latestQuantity != null">
+                    ,`latest_quantity` = #{itemDO.latestQuantity}
+                </if>
+                <if test="itemDO.placeQuantity != null">
+                    ,`place_quantity` = #{itemDO.placeQuantity}
+                </if>
+            </set>
+            <where>
+                `order_id` = #{itemDO.orderId}
+                and `seq_no` = #{itemDO.seqNo}
+                and `version` = #{itemDO.version}
+                and `tenant_id` = #{itemDO.tenantId}
+            </where>)
+        </foreach>
+    </update>
+
     <select id="queryByOrderId" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `catering_order_item`
         where `tenant_id` = #{tenantId}
         and `order_id` = #{orderId}
+    </select>
+
+    <select id="queryByOrderIdAndSeqNo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `catering_order_item`
+        where `tenant_id` = #{tenantId}
+        and `order_id` = #{orderId}
+        and `seq_no` = #{seqNo}
     </select>
 
 </mapper>

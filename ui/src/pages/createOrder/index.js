@@ -82,10 +82,13 @@ export default function CreatProduct(){
   const [productPageBtnGroup, setProductPageBtnGroup] = useState(DEFULT_PAGE_TOTALCOUNT);
   const [productTotalPageCount, setProductTotalPageCount] = useState();
   const [productModalVisible, setProductModalVisible] = useState();
-  const [productCache, setProductCache] = useState([]);
   const [backCache, setBackCache] = useState();
   const [changeItem, setChangeItem] = useState();
   const [lastItem, setLastItem] = useState();
+  const [productListTitle, setProductListTitle] =useState();
+  const [methodCache, setMethodCache] = useState();
+  const [methodBackCache, setMethodBackCache] = useState();
+  const [checkedProductCache, setCheckedProductCache] = useState([]);
 
   const columns = [
     {
@@ -204,27 +207,59 @@ export default function CreatProduct(){
       ),
     },
 ];
+/** 选择菜品(支持多选) */
+const handleProductSelect = (index) => {
+  setProductListTitle('新增菜品(可多选/取消菜品)');
+  resetProductSearch();
+  cacheManage('backup'); //备份取消前的菜品选择缓存
+  setProductModalVisible(true);
+};
 
+/** 更换菜品(仅支持单选) */
 const changeProduct = (records) => {
-  setChangeItem(records);
+  setProductListTitle('更换菜品');
   resetProductSearch();
   setProductModalVisible(true);
-}
+  cacheManage('backup'); //备份取消前的菜品选择缓存
+  setChangeItem(records);
+};
+/** 菜品缓存管理(备份&恢复缓存) */
+const cacheManage = (option) => {
+  switch (option) {
+    case 'backup':
+      const backupCache = JSON.parse(JSON.stringify(checkedProductCache));
+      const backupMethodCache = structuredClone(methodCache);
+      setBackCache(backupCache); //设置菜品缓存备份
+      setMethodBackCache(backupMethodCache); //设置做法缓存备份
+      break;
+    case 'restore':
+      const restoreCache = JSON.parse(JSON.stringify(backCache));
+      const restoreMethodCache = structuredClone(methodBackCache);
+      setCheckedProductCache(restoreCache); //恢复菜品缓存备份
+      setMethodCache(restoreMethodCache); //恢复做法缓存备份
+      break;
+    default:
+      break;
+  }
+};
+
 /** 生成订单项的序号 */
 const getOrderItemNo = (orderItem, index) => {
   let itemNo = null;
   if(orderItem.type === 'product'){
     itemNo = index + 1;
-  }
-  orderItemList.map((item, index)=>{
-    item.children != null && item.children.length > 0 && item.children.map((i, ind)=>{
-      if(orderItem.id === i.id){
-        itemNo = `${index+1}-${ind+1}`;
-      }
+  }else{
+    orderItemList.map((item, index)=>{
+      item.children != null && item.children.map((i, ind)=>{
+        if(orderItem.id === i.id){
+          itemNo = `${index+1}-${ind+1}`;
+        }
+      })
     })
-  })
+  }
   return itemNo;
-}
+};
+
 /** 订单项中菜品或者配料数量的修改 */
 const quantityChange = (value, records, index) =>{
   let newOrderItemList = [].concat(orderItemList);
@@ -245,14 +280,17 @@ const quantityChange = (value, records, index) =>{
 
 const confirm = (records, index) => {
   let newOrderItemList = [].concat(orderItemList);
+  let newCheckedProductCache = structuredClone(checkedProductCache);
   let isError = false;
   records.type ===  'product' ? 
     newOrderItemList.length === 1 ? 
-      isError = true : newOrderItemList.splice(index, 1) 
+      isError = true : (newOrderItemList.splice(index, 1) && checkedProductCache.splice(index, 1))
     :
-    newOrderItemList.map((item)=>{
+    newOrderItemList.map((item, itemIndex)=>{
       item.children != null && item.children.map((i, ind)=>{
-        i.id === records.id && (item.children.length === 1 ? item.children = null : item.children.splice(ind, 1)) ;
+        i.id === records.id && (item.children.length === 1 ? item.children = null : 
+            (item.children.splice(ind, 1) && newCheckedProductCache[itemIndex].children.splice(ind, 1))
+          );
         return i;
       })
       return item;
@@ -286,7 +324,15 @@ const cancel = () => {
   }
   
   const requestValid = (orderInfo) => {
-    return true;
+    if(orderInfo.shopBusinessNo === undefined){
+      message.error('请选择门店');
+      return false;
+    }
+    else if(orderInfo.table.length === 1 && orderInfo.table[0].key === "DEFAULT_ITEM"){
+      message.error('请选择至少一项菜品');
+      return false;
+    }
+    else return true;
   }
   /** 创建下单request结构体 */
   const createRequestBody = (orderInfo) => {
@@ -294,7 +340,7 @@ const cancel = () => {
     let totalPrice = 0;
     orderInfo.table.map((item, index)=>{
       let accessoryGroups = [];
-      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
+      item.children !== null && item.children !== undefined && item.children.map((i, ind)=>{
         accessoryGroups.push(
           {
             productAccessoryId: i.id,
@@ -308,7 +354,7 @@ const cancel = () => {
         {
           accessories: accessoryGroups,
           productId: item.id,
-          productMethodId: item.methodId!==undefined?item.methodId:null,
+          productMethodId: item.methodId, 
           quantity: item.quantity,
           seqNo: index+1
         }
@@ -386,17 +432,6 @@ const cancel = () => {
     resetShopSearch();
     setShopModalVisible(true);
   }
-
-  /** 选择菜品(支持多选) */
-  const handleProductSelect = (index) => {
-    setChangeItem(undefined);
-    setLastItem(undefined);
-    resetProductSearch();
-    setBackCache([].concat(productCache)); //备份取消前的菜品选择缓存
-    setProductModalVisible(true);
-  }
-
-
 
   /*****************************************************  门店选择模块 ***************************************************************/
 
@@ -671,178 +706,252 @@ const cancel = () => {
 
 /*********************************************************菜品选择模块****************************************************************/
 
-  /** 取消菜品选择 */
-  const handleProductCancel = () => {
-    setProductModalVisible(false);
-    setProductCache(backCache);
-  }
+/** 菜品取消选择事件 */
+const handleProductCancel = () => {
+  setProductModalVisible(false);
+  cacheManage('restore'); //还原备份的菜品缓存
+  setChangeItem(undefined);
+  setLastItem(undefined);
+}
   
-/** 勾选菜品或者配料的触发事件 */
-const handleCheckbox = (productItem) => {
-  if(changeItem !== undefined){
-    if(productItem.checked){
-      message.error('不能选择已被选中的菜品, 请更换其它菜品');
-      return;
-    } 
-    setLastItem(productItem);
-  }
-  const newLastItem = lastItem;
-  console.log('上次选择', newLastItem);
-  let selectProductCache = [].concat(productList);
-  selectProductCache.map((item, index)=>{
-    if(changeItem !== undefined && changeItem.type === 'product' && changeItem.id === item.id){
-      item.checked = false;
-      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
-        i.checked = false;
-        return i;
-      })
-    }
-    if(newLastItem !== undefined && newLastItem.type === 'product' && newLastItem.id === item.id){
-      item.checked = false;
-      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
-        i.checked = false;
-        return i;
-      })
-    }
-    if(productItem.type === 'product' && productItem.id === item.id){
-      item.checked = !item.checked;
-      item.accessoryGroups.length > 0 && item.children.map((i, ind)=>{
-        i.checked = item.checked;
-        return i;
-      })
-    }
-    if(productItem.type === 'accessory' && item.accessoryGroups.length > 0){
-      let productNotCheck = true;
-      item.children.map((i, ind)=>{
-        if(productItem.id === i.id){
-          !i.checked && (item.checked = true);
-          i.checked = !i.checked;
+/** 勾选菜品并缓存勾选信息 */
+const handleCheckbox = (records, checked) => {
+  let isChangeProduct = changeItem !== undefined; //是否为更换菜品请求
+  const newProductList = [].concat(productList);
+  let newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
+
+  //避免混淆新增菜品和更换菜品分两次map
+
+  //1.更换菜品时的处理情况
+  isChangeProduct && newProductList.map((item, index)=>{
+
+    //勾选菜品的情况
+    if(records.type === 'product' && records.id === item.id){ 
+      if(records.id === changeItem.id){ //勾选自身的情况
+        if(!records.checked){ //如果自身没有被勾选则勾选并添加至缓存(已被勾选则说明还未勾选过其它菜品不作操作)
+          if(lastItem !== undefined){ //取消勾选上次选择的菜品
+            newProductList.map((i, ind)=>{
+              if(lastItem.id === i.id){
+                i.checked = false;
+                i.children !== undefined && i.children.map((childItem)=>{
+                  childItem.checked = false;
+                })
+              }
+            })
+          }
+          item.checked = checked;
+          item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
+          newCheckedProductCache.push(item);
+          setLastItem(item); //设置为最新勾选的菜品
         }
-        i.checked && (productNotCheck = false);
-        return i;
-      })
-      productNotCheck && (item.checked = false);
+      }else{
+        if(records.checked){
+          if(lastItem === undefined || lastItem.id !== records.id){
+            message.warn('此菜品已经被选择，请选择其它菜品');
+          }
+        }else{
+          if(lastItem !== undefined){ //勾选另一个菜品时取消上次勾选的菜品和配料
+            newProductList.map((i, ind)=>{
+              if(lastItem.id === i.id){
+                i.checked = false;
+                i.children !== undefined && i.children.map((childItem)=>{
+                  childItem.checked = false;
+                })
+              }
+            })
+          }
+          item.checked = checked;
+          newProductList.map((i, ind)=>{ //勾选另一个菜品时取消勾选原来最开始的菜品和配料
+            if(changeItem.id === i.id){
+              i.checked = false;
+              i.children !== undefined && i.children.map((i, ind)=>{i.checked = false});
+            }
+          });
+          item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
+          newCheckedProductCache.push(item);
+          setLastItem(item); //设置为最新勾选的菜品
+        }
+      }
     }
-    return item;
+
+    //勾选配料的情况
+    else{
+      item.children !== undefined && item.children.map((i, ind)=>{
+        if(i.id === records.id){ //找到此配料项
+          if(checked){
+            let notExist = true; 
+
+            let productID = undefined; //此配料的父ID
+            newProductList.map((productItem)=>{
+              productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
+                if(accessoryItem.id === records.id){
+                  productID = productItem.id;
+                  productItem.checked && (notExist = false);
+                }
+              })
+            })
+            newProductList.map((productItem)=>{
+              if(productItem.id !== productID && notExist){ //如果不是此配菜则取消勾选
+                productItem.checked = false;
+                productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
+                  accessoryItem.checked = false;
+                })
+              }
+            })
+
+            newCheckedProductCache.map((i, ind)=>{
+              i.children !== undefined && i.children.map((cacheItem)=>{
+                cacheItem.id === records.id && !notExist && cacheItem.id === changeItem.id && (cacheItem.checked = checked);
+              })
+            });
+
+            if(notExist){
+              i.checked = checked;
+              item.checked = checked;
+              newCheckedProductCache.push(item);
+              setLastItem(item);
+            }else{
+              message.warn('此菜品已经被选择，请选择其它菜品');
+            };
+          }else{
+            let notExist = true;
+            newCheckedProductCache.map((cacheItem, ind)=>{
+              cacheItem.children !== undefined && cacheItem.children.map((childItem, cacheIndex)=>{
+                if(childItem.id === records.id && cacheItem.id === changeItem.id){
+                  notExist = false;
+                  i.checked = checked;
+                  childItem.checked = checked;
+                }
+              })
+            });
+            notExist && message.warn('此菜品已经被选择，请选择其它菜品');
+          }
+        }
+      })
+    }
   })
-  setProductList(selectProductCache);
+
+  //2.新增/减少多个菜品时的情况
+  !isChangeProduct && newProductList.map((item, index)=>{
+
+    //勾选菜品的情况
+    if(records.type === 'product' && records.id === item.id){
+      if(checked){
+        item.checked = checked;
+        item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
+        newCheckedProductCache.push(item);
+      }else{
+        //如果是取消勾选则需要先从缓存中删除再改变菜品
+        newCheckedProductCache.map((i, index)=>{
+          i.id === records.id && newCheckedProductCache.splice(index, 1);
+        })
+
+        item.checked = checked;
+        item.children !== undefined && item.children.map((i, ind)=>{i.checked = checked});
+      }
+    }
+
+    //勾选配料的情况
+    else{
+      item.children !== undefined && item.children.map((i, ind)=>{
+        if(records.id === i.id){
+          i.checked = checked; // 勾选&取消此配料
+          if(checked){
+            let notExist = true;
+            item.checked = checked;
+            newCheckedProductCache.map((i, ind)=>{
+              i.children !== undefined && i.children.map((cacheItem, cacheIndex)=>{
+                cacheItem.id === records.id && ([cacheItem.checked, notExist] = [checked, false]);
+              })
+            })
+            notExist && newCheckedProductCache.push(item);
+          }else{
+            newCheckedProductCache.map((i, ind)=>{
+              i.children !== undefined && i.children.map((cacheItem, cacheIndex)=>{
+                cacheItem.id === records.id && (cacheItem.checked = checked);
+              })
+            })
+          }
+        }
+      })
+    }
+  });
+
+  //更换菜品时勾选其它菜品删除被更换菜品的缓存
+  if(changeItem !== undefined && lastItem === undefined){ 
+    //缓存菜品数量大于1时再删除被更换的菜品 且确认与勾选前缓存的数据是否和勾选后一样(勾选到重复或者不勾选的情况)
+    newCheckedProductCache.length > 1 && newCheckedProductCache.toString() !== checkedProductCache.toString() && newCheckedProductCache.map((item, index)=>{
+      item.id === changeItem.id && newCheckedProductCache.splice(index, 1);
+    })
+  };
+  //更换菜品时勾选其它菜品删除上个被勾选菜品的缓存
+  if(lastItem !== undefined){
+    newCheckedProductCache.length > 1 && newCheckedProductCache.toString() !== checkedProductCache.toString() && newCheckedProductCache.map((item, index)=>{
+      item.id === lastItem.id && newCheckedProductCache.splice(index, 1);
+    })
+  };
+  setCheckedProductCache(newCheckedProductCache);
+};
+
+/** 确认勾选菜品添加至订单 */
+const handleProductSave = () => {
+  let newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
+  newCheckedProductCache.map((item, index)=>{
+    if(methodCache !== undefined && methodCache.has(item.id)){
+      const [groupIndex, memberIndex] = [methodCache.get(item.id)[0], methodCache.get(item.id)[1]];
+      item.methodGroups[groupIndex].options.map((i, ind)=>{
+        i.id === memberIndex && ([item['methodName'], item['methodId']] = [i.name, i.id]);
+      });
+    }
+    item.children !== null && item.children !== undefined && (item.children = (item.children.filter((i)=> i.checked === true)));
+  })
+  setOrderItemList(newCheckedProductCache);
+  setProductModalVisible(false);
+  setChangeItem(undefined);
+  setLastItem(undefined);
 }
 
-/** 勾选完菜品后将其添加到一个或多个订单项中 */
-const handleProductSave = () => {
-  let newOrderItemList = [].concat(orderItemList);
-  let newProductCache = productCache;
-  let newChildren = [];
-  let isDefaultItem = false;
-  if(changeItem !== undefined && changeItem.key === 'DEFAULT_ITEM'){
-    newOrderItemList.splice(0, 1);
-    isDefaultItem = true;
-  }
-  newProductCache.map((item)=>{
-    if(item.checked){
-      if(item.accessoryGroups.length > 0){
-        item.children.map((i, ind)=>{
-          i['quantity'] = MIN_SALE_NUMBER;
-          i['totalPrice'] = i.quantity * i.unitPrice;
-        })
-        newChildren = item.children.filter((i)=>i.checked === true)
-        item.children = newChildren;
-      }
-      item['key'] = item.id;
-      item['quantity'] = MIN_SALE_NUMBER;
-      item['totalPrice'] = item.quantity * item.unitPrice;
-      let notExist = true;
-      newOrderItemList.map((i, ind)=>{
-        if(item.id === i.id){
-          notExist = false;
-        }
-      })
-      if(notExist){
-        isDefaultItem ? newOrderItemList.unshift(item) : newOrderItemList.push(item);
-      }
-    }
-    else
-    {
-      newOrderItemList.map((i, ind)=>{
-        if(item.id === i.id){
-          newOrderItemList.splice(i, 1);
-        }
-      })
-    }
-  })
-  setProductModalVisible(false);
-  setOrderItemList(newOrderItemList);
-}
-/** 重新组织查询到的菜品分页数据用于填充表单显示配料和做法 */
+/**重组数据(获取菜品页面时) */
 const reconfigProductList = (resList) => {
-  const newProductCache = [].concat(productCache);
-  const newProductList = [].concat(productList);
-  if(productCache.length === 0){
-    setProductCache(resList);
-  }
-  if(productCache.length > 0){
-    newProductList.map((item, index)=>{
-      let notExist = true;
-      newProductCache.map((i, ind)=>{
-        if(i.id === item.id){
-          notExist = false;
-        }
-      })
-      if(notExist){
-        newProductCache.push(item);
-      }
-    })
-    setProductCache(newProductCache);
-  }
-  let arr = [];
+  const newCheckedProductCache = JSON.parse(JSON.stringify(checkedProductCache));
   const newResList = resList.map((item, index)=>{
-    newProductCache.map((i, ind)=>{
-      if(i.id === item.id){
-        arr.push(
-          {
-            seat: index,
-            product: i,
-          }
-        )
+    let notExist = true;
+    newCheckedProductCache.forEach((cacheItem)=>{
+      if(cacheItem.id === item.id){
+        [item, notExist] = [cacheItem, false] //将目前菜品列表中存在的菜品替换成缓存中的菜品
+        item['key'] = item.id+Math.random(); //重新给key赋值，否则换页顺序会出问题
       }
-    })
-    item['key'] = index;
-    item['type'] = 'product';
-    item['checked'] = false;
-    if(item.accessoryGroups.length > 0){
-      item['children'] = item.accessoryGroups[0].options;
-      item.children.map((i, ind)=>{
-        i['key'] = i.id;
-        i['type'] = 'accessory';
-        i['checked'] = false;
-      })
-    }
+    });
+    if(notExist){
+      item['quantity'] = 1;
+      item['methodId'] = null;
+      item['key'] = item.id+Math.random();
+      item['type'] = 'product';
+      item['checked'] = false;
+      item['totalPrice'] = item.unitPrice;
+      if(item.accessoryGroups.length > 0){
+        item['children'] = item.accessoryGroups[0].options;
+        item.children.map((i, ind)=>{
+          i['quantity'] = 1;
+          i['key'] = i.id+Math.random();
+          i['type'] = 'accessory';
+          i['checked'] = false;
+          i['totalPrice'] = i.unitPrice;
+        })
+      }
+    };
     return item;
-  })
-  arr.map((item, index)=>{
-    newResList[item.seat] = item.product
   })
   return newResList;
 }
 
-/** 选择做法时将做法数据添加到对应订单项中 */
-const handleMethodChange = (selectedOptions, productIndex) => {
-  let newProductList = [].concat(productList);
-  if(selectedOptions === undefined){
-    newProductList[productIndex].methodId = null;
-    newProductList[productIndex].methodName = null;
-  }
-  else{
-    const [groupId, methodId] = [selectedOptions[0], selectedOptions[1]];
-    newProductList[productIndex]['methodId'] = methodId;
-    newProductList[productIndex].methodGroups[groupId].children.map((item, index)=>{
-      if(item.id === methodId){
-        newProductList[productIndex]['methodName'] = item.name;
-      }
-      return item;
-    })
-  }
-  setProductList(newProductList);
+/** 选择做法时将做法数据缓存 */
+const handleMethodChange = (selectedOptions, productItem) => {
+  const newMethodCache = methodCache === undefined ? new Map() : structuredClone(methodCache);
+  //取消勾选做法则删除
+  selectedOptions === undefined ? newMethodCache.delete(productItem.id) : newMethodCache.set(productItem.id, selectedOptions);
+  setMethodCache(newMethodCache);
+  console.log(newMethodCache);
 }
 
 const productColumns = [
@@ -850,7 +959,7 @@ const productColumns = [
     width: '8%',
     render: (text, records, index) => {
       return (
-        <Checkbox onChange={()=>handleCheckbox(records)} checked={records.checked}/>
+        <Checkbox onChange={(e)=>handleCheckbox(records, e.target.checked)} checked={records.checked}/>
       )
     }
   },
@@ -921,12 +1030,28 @@ const productColumns = [
           })
           return item;
         })
-        return <Cascader options={options} placeholder='请选择做法' onChange={(value)=>handleMethodChange(value, records.key)}/>
+        return (
+          <Cascader 
+          className="product-cascader"
+          options={options} 
+          placeholder='请选择做法' 
+          defaultValue={()=>getDefaultMethod(records)} 
+          onChange={(value)=>handleMethodChange(value, records)} 
+          expandTrigger='hover'
+          />
+        )
       }
     }
   }
 ];
 
+/** 取出做法缓存中存在的做法 */
+const getDefaultMethod = (productItem) => {
+  let defaultMethod = [];
+  console.log(methodCache);
+  methodCache !== undefined && methodCache.has(productItem.id) && (defaultMethod = [methodCache.get(productItem.id)[0], methodCache.get(productItem.id)[1]]);
+  return defaultMethod;
+}
   /** 初始化表单 */
   const initialProductSearchForm = () => {
     productForm.setFieldsValue({
@@ -1305,7 +1430,7 @@ const productColumns = [
                     </Col>
                 </Row>
             </Form>
-
+            <div className="shop-table">
             {/** 骨架屏和表格显示逻辑 */}
             {
               shopList.length === 0?
@@ -1331,6 +1456,7 @@ const productColumns = [
                 }}
                 />
             }
+            </div>
             <Row style={{marginTop: '1%'}}>  
                 <Col span={6} offset={10}>
                     <PaginationBtn/>
@@ -1357,7 +1483,7 @@ const productColumns = [
         </Modal>
 
         <Modal
-        title="选择菜品"
+        title={productListTitle}
         bodyStyle={{height: 560}}
         visible={productModalVisible}
         footer={

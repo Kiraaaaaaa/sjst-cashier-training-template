@@ -1,4 +1,4 @@
-import { Button, Form, Row, Col, Select, Input, Table, Tag, InputNumber, notification } from "antd";
+import { Button, Form, Row, Col, Select, Input, Table, Tag, InputNumber, notification, Skeleton } from "antd";
 import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined } from "@ant-design/icons"
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,21 @@ const ORDER_STATUS = new Map([
     ['PREPARED', '已出餐'], ['BILLED', '已结账'], ['CANCELLED', '已取消']
 ]);
 
+/** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
+function useCounter() {
+    const [count, setCount] = useState(0); // 计数
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        count<=1 && setCount(count + 1); // 时间小于2s，计数+1，否则暂停计数器
+      }, 1000);
+      return () => clearTimeout(timer); // 组件销毁前和更新前，清理 timer
+    }, [count]); // 监听依赖列表
+    // 重新搜索时重置计数
+    const reset = () => setCount(0);
+
+    return [count, reset]; 
+}
+
 export default function Order(){
 
     let navigate = useNavigate();
@@ -21,29 +36,55 @@ export default function Order(){
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pageIndex, setPageIndex] = useState(DEFUALT_PAGE_INDEX);
     const [isSearchBtn, setIsSearchBtn] = useState(false);
+    const [loaddingTime, resetTime] = useCounter();
     const [orderList, setOrderList] = useState([]);
     const [rowActiveIndex, setRowActiveIndex] = useState();
     const [pageBtnGroup, setPageNum] = useState(DEFULT_PAGE_TOTALCOUNT);
     const [totalPageCount, setTotalPageCount] = useState();
+
+
     const columns = [
         {
             title: '状态',
             dataIndex: 'status',
             key: 'status',
-            sorter: (a, b) => a.status - b.status,
+            filterSearch: true,
+            filters: [
+                {
+                    text: '已下单',
+                    value: 'PLACED',
+                },
+                {
+                    text: '制作中',
+                    value: 'PREPARING',
+                },
+                {
+                    text: '已出餐',
+                    value: 'PREPARED',
+                },
+                {
+                    text: '已结账',
+                    value: 'BILLED',
+                },
+                {
+                    text: '已取消',
+                    value: 'CANCELLED',
+                }
+            ],
+            onFilter: (value, record) => record.status.indexOf(value) === 0,
             render: status => 
             <Tag style={{fontSize: 15}} >{ORDER_STATUS.get(status)}</Tag>,
         },
         {
             title: '门店',
-            // sorter: (a, b) => a.name.localeCompare(b.name),
+            sorter: (a, b) => a.shopSnapshotOnPlace.name.localeCompare(b.shopSnapshotOnPlace.name),
             render: (text, records, index) => (records.shopSnapshotOnPlace.name)
         },
         {
             title: '座位号',
             dataIndex: 'tableNo',
             key: 'tableNo',
-            sorter: (a, b) => a.tableNo - b.tableNo,
+            sorter: (a, b) => a.tableNo.replace(/[^0-9]/ig,"") - b.tableNo.replace(/[^0-9]/ig,""),
         },
         {
             title: '就餐人数',
@@ -150,6 +191,7 @@ export default function Order(){
 
     /** 手动搜索结果 */
     const onSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         submitForm();
@@ -157,6 +199,7 @@ export default function Order(){
 
     /** 重置搜索 */
     const resetSearch = () => {
+        resetTime();
         setIsSearchBtn(true);
         setPageIndex(DEFUALT_PAGE_INDEX);
         initialSearchForm();
@@ -233,6 +276,7 @@ export default function Order(){
                 setTotalCountBtn(totalPageCount);   
                 setIsSearchBtn(false);
                 setOrderList(data);
+                console.log(res);
             }, error => {
                 console.log(error);
             })
@@ -464,18 +508,26 @@ export default function Order(){
                 </Col>
             </Row>
         </Form>
-        <Table
-            columns={columns}
-            dataSource={orderList}
-            pagination={false}
-            scroll={{y: 320}}
-            // rowClassName={(_, index) => (rowActiveIndex === index ? 'test' : '')}
-            // onRow={(records, index)=>{
-            //     return {
-            //         onClick: () => hangdleInboundReceiptClick(index)
-            //     }
-            // }}
-        />
+        {/** 骨架屏和表格显示逻辑 */}
+        {
+            orderList.length === 0 ?
+                loaddingTime >= 1 ? 
+                    <Table
+                    columns={columns}
+                    dataSource={orderList}
+                    pagination={false}
+                    scroll={{y: 320}}
+                    /> 
+                    :
+                    <Skeleton active paragraph={{ rows: 10 }}/>
+                :
+                <Table
+                columns={columns}
+                dataSource={orderList}
+                pagination={false}
+                scroll={{y: 320}}
+                />
+        }
         <Row style={{marginTop: '1%'}}>  
             <Col span={8} offset={8}>
                 <PaginationBtn/>

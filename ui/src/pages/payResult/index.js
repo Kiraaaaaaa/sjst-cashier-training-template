@@ -15,7 +15,6 @@ export default function PayResult() {
     let navigate = useNavigate();
     let location = useLocation();
     const order = location.state.data;
-    console.log(order);
     return (
       <Result
       style={{height: 500}}
@@ -42,7 +41,7 @@ export default function PayResult() {
         <Button key="console" onClick={()=>navigate('/order')}>
           返回主页面
         </Button>,
-        <Button key="buy" onClick={()=>{}}>查看订单</Button>,
+        <Button key="buy" onClick={()=>navigate('/orderCheck', {state: {data: order}, replace: true})}>查看订单</Button>,
       ]}
     />
     )

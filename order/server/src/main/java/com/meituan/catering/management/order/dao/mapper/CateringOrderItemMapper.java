@@ -1,5 +1,6 @@
 package com.meituan.catering.management.order.dao.mapper;
 
+import com.meituan.catering.management.order.dao.model.CateringOrderDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,6 +19,8 @@ public interface CateringOrderItemMapper {
      * @return
      */
     List<CateringOrderItemDO> queryByOrderId(Long tenantId, Long orderId);
+
+    CateringOrderItemDO queryByOrderIdAndSeqNo(Long tenantId, Long orderId, String seqNo);
 
     /**
      * 插入
@@ -39,5 +42,7 @@ public interface CateringOrderItemMapper {
      * @return
      */
     Integer update(CateringOrderItemDO cateringOrderItemDO);
+
+    Integer batchUpdate(List<CateringOrderItemDO> itemDOS);
 
 }

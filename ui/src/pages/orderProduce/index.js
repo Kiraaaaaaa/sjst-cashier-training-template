@@ -117,7 +117,10 @@ export default function OrderProduce() {
         title: '本次出餐',
         dataIndex: 'quantityOnProduce',
         render: (text, records, index) => (
-          records.status !== 'PLACED' && text !== undefined && <InputNumber min={0} max={records.maxOnProduce} value={text} onChange={(value)=>handleProduce(value, records)}/>
+          records.status !== 'PLACED' ? 
+            (text !== undefined && <InputNumber min={0} max={records.maxOnProduce} value={text} onChange={(value)=>handleProduce(value, records)}/>)
+            :
+            <span>尚未制作</span>
         )
       }
   ];
@@ -172,7 +175,7 @@ export default function OrderProduce() {
             productAccessoryId: i.id,
             name: i.productAccessorySnapshotOnPlace.name,
             unitOfMeasure: i.productAccessorySnapshotOnPlace.unitOfMeasure,
-            latest: i.quantity.latest,
+            latest: i.quantity.onPlace,
             onProduce: i.quantity.onProduce,
             version: i.version,
             status: i.status,
@@ -226,7 +229,6 @@ export default function OrderProduce() {
     return itemNo;
   }
 
-  //TODO:出餐为0时的验证
   const onFinish = (formValues) => {
     const requestBody = createRequestBody(formValues);
     console.log('结构体:', requestBody);
@@ -237,12 +239,11 @@ export default function OrderProduce() {
   const createRequestBody = (formValues) => {
     let newOrderItemList = [];
     orderItemList.map((item, index)=>{
-      if(item.status === 'PREPARING'){
+      if(item.status === 'PREPARING' && item.quantityOnProduce !== 0){
         let accessories = [];
         if(item.children !== null){
           item.children.map((i, ind)=>{
-            console.log(item);
-            if(i.status === 'PREPARING'){
+            if(i.status === 'PREPARING' && i.quantityOnProduce !== 0){
               accessories.push(
                 {
                   productAccessoryId: i.productAccessoryId,

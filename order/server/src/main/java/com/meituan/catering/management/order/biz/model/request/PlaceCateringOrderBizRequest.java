@@ -23,6 +23,10 @@ import java.util.List;
 @Data
 public class PlaceCateringOrderBizRequest {
 
+    private Long tenantId;
+
+    private Long userId;
+
     private String shopBusinessNo;
 
     private String tableNo;
