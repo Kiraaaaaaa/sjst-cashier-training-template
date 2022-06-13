@@ -102,38 +102,20 @@
         </set>
         <where>
             `version` = #{version}
-            and `order_item_id` = #{orderItemId}
             and `tenant_id` = #{tenantId}
-            and `seq_no` = #{seqNo}
+            <if test="orderItemId != null">
+                and `order_item_id` = #{orderItemId}
+            </if>
+            <if test="seqNo != null">
+                and `seq_no` = #{seqNo}
+            </if>
+            <if test="id != null">
+                and `id` = #{id}
+            </if>
         </where>
     </update>
 
-    <update id="batchUpdate">
-        <foreach collection="accessoryDOS" item="accessory">
-            update `catering_order_item_accessory`
-            <set>
-                `version` = #{accessory.version}+1
-                <if test="accessory.status != null">
-                    ,`status` = #{accessory.status}
-                </if>
-                <if test="accessory.latestQuantity != null">
-                    ,`latest_quantity` = #{accessory.latestQuantity}
-                </if>
-                <if test="accessory.produceQuantity != null">
-                    ,`produce_quantity` = #{accessory.produceQuantity}
-                </if>
-                <if test="accessory.latestQuantity != null">
-                    ,`latest_quantity` = #{accessory.latestQuantity}
-                </if>
-            </set>
-            <where>
-                `version` = #{accessory.version}
-                and `order_item_id` = #{accessory.orderItemId}
-                and `tenant_id` = #{accessory.tenantId}
-                and `seq_no` = #{accessory.seqNo}
-            </where>
-        </foreach>
-    </update>
+
 
     <select id="batchQueryByOrderItemId" resultMap="BaseResultMap">
         select

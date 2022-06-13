@@ -55,12 +55,14 @@ public class ProduceCateringOrderRequestConverter {
 
         int code = CateringOrderStatusEnum.PREPARED.getCode();
         for (CateringOrderItemAccessoryDO accessoryDO : accessoryDOS) {
-            if (code == accessoryDO.getStatus().getCode()) {
+            if (!Objects.equals(accessoryDO.getStatus(),CateringOrderItemAccessoryStatusEnum.PREPARED)
+                    && !Objects.equals(accessoryDO.getStatus(),CateringOrderItemAccessoryStatusEnum.CANCELLED)){
                 code = CateringOrderStatusEnum.PREPARING.getCode();
             }
         }
         for (CateringOrderItemDO itemDO : itemDOS) {
-            if (code == itemDO.getStatus().getCode()) {
+            if (!Objects.equals(itemDO.getStatus(),CateringOrderItemStatusEnum.PREPARED)
+                    && !Objects.equals(itemDO.getStatus(),CateringOrderItemStatusEnum.CANCELLED)) {
                 code = CateringOrderStatusEnum.PREPARING.getCode();
             }
         }

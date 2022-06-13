@@ -20,8 +20,24 @@ public interface CateringOrderItemMapper {
      */
     List<CateringOrderItemDO> queryByOrderId(Long tenantId, Long orderId);
 
+    /**
+     *
+     * @param tenantId
+     * @param orderId
+     * @param seqNo
+     * @return
+     */
     CateringOrderItemDO queryByOrderIdAndSeqNo(Long tenantId, Long orderId, String seqNo);
 
+
+    /**
+     *
+     * @param tenantId
+     * @param orderId
+     * @param seqNoList
+     * @return
+     */
+    List<CateringOrderItemDO> queryByOrderIdAndSeqNoList(Long tenantId,Long orderId,List<String> seqNoList);
     /**
      * 插入
      * @param itemDO

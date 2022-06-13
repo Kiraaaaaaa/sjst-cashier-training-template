@@ -44,30 +44,24 @@ public class ShopBizServiceImpl implements ShopBizService {
 
     @Override
     public ShopBO create(Long tenantId, Long userId, SaveShopBizRequest saveShopBizRequest) {
-        return transactionTemplate.execute(status -> {
             ShopDO shopDO = ShopDOConverter.toShopDO(tenantId, userId, saveShopBizRequest);
             int id = shopMapper.insert(shopDO);
             if (id == 0) {
-                status.setRollbackOnly();
                 throw new BizException(ErrorCode.PARAM_ERROR);
             }
             ShopDO shopDOLater = shopMapper.selectById(shopDO.getId());
             return ShopBOConverter.toShopBO(shopDOLater);
-        });
     }
 
     @Override
     public ShopBO update(Long tenantId, Long userId, String businessNo, UpdateShopBizRequest updateShopBizRequest) {
-        return transactionTemplate.execute(status -> {
             ShopDO shopDO = ShopDOConverter.toShopDO(tenantId, userId, businessNo, updateShopBizRequest);
             int id = shopMapper.update(shopDO);
             if (id == 0) {
-                status.setRollbackOnly();
                 throw new BizException(ErrorCode.UPDATE_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);
-        });
     }
 
     @Override
@@ -79,35 +73,26 @@ public class ShopBizServiceImpl implements ShopBizService {
     }
 
 
-
-
     @Override
     public ShopBO open(Long tenantId, Long userId, String businessNo, OpenShopBizRequest openShopBizRequest) throws BizException {
-        return transactionTemplate.execute(status -> {
-            OpenShopDataRequest openShopDataRequest = SwitchShopDateRequestConverter.toOpenShopDataRequest(tenantId, userId, businessNo, openShopBizRequest);
-            //todo:合并
-            int id = shopMapper.open(openShopDataRequest);
+            ShopDO shopDO = SwitchShopDateRequestConverter.toShopDO(tenantId, userId, businessNo, openShopBizRequest);
+            int id = shopMapper.update(shopDO);
             if (id == 0) {
-                status.setRollbackOnly();
                 throw new BizException(ErrorCode.OPEN_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);
-        });
     }
 
     @Override
     public ShopBO close(Long tenantId, Long userId, String businessNo, CloseShopBizRequest closeShopBizRequest) throws BizException {
-        return transactionTemplate.execute(status -> {
-            CloseShopDataRequest closeShopDataRequest = SwitchShopDateRequestConverter.toCloseShopDataRequest(tenantId, userId, businessNo, closeShopBizRequest);
-            int id = shopMapper.close(closeShopDataRequest);
+            ShopDO shopDO = SwitchShopDateRequestConverter.toShopDO(tenantId, userId, businessNo, closeShopBizRequest);
+            int id = shopMapper.update(shopDO);
             if (id == 0) {
-                status.setRollbackOnly();
                 throw new BizException(ErrorCode.CLOSE_ERROR);
             }
             ShopDO shopDOLater = shopMapper.findByBusinessNo(tenantId, userId, businessNo);
             return ShopBOConverter.toShopBO(shopDOLater);
-        });
     }
 
 }

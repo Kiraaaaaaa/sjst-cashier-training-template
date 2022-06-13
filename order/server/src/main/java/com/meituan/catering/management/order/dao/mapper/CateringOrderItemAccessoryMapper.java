@@ -52,6 +52,4 @@ public interface CateringOrderItemAccessoryMapper {
      */
     Integer update(CateringOrderItemAccessoryDO accessoryDO);
 
-    Integer batchUpdate(List<CateringOrderItemAccessoryDO> accessoryDOS);
-
 }

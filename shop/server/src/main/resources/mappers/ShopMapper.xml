@@ -174,24 +174,46 @@
         </where>
     </select>
 
-    <update id="update"
-            keyProperty="id"
-            useGeneratedKeys="true">
+    <update id="update">
         UPDATE `shop`
-        set
-        `name` = #{name}
-        , `business_type` = #{businessType}
-        , `management_type` = #{managementType}
-        , `contact_telephone` = #{contactTelephone}
-        , `contact_cellphone` = #{contactCellphone}
-        , `contact_name` = #{contactName}
-        , `contact_address` = #{contactAddress}
-        , `opening_hours_open_time` = #{openingHoursOpenTime}
-        , `opening_hours_close_time` = #{openingHoursCloseTime}
-        , `business_area` = #{businessArea}
-        , `last_modified_by` = #{lastModifiedBy}
-        , `last_modified_at` = #{lastModifiedAt}
-        , `version` = #{version}+1
+        <set>
+            `last_modified_by` = #{lastModifiedBy}
+            , `last_modified_at` = #{lastModifiedAt}
+            , `version` = #{version}+1
+            <if test="name != null">
+                , `name` = #{name}
+            </if>
+            <if test="businessType != null">
+                , `business_type` = #{businessType}
+            </if>
+            <if test="managementType != null">
+                , `management_type` = #{managementType}
+            </if>
+            <if test="contactTelephone != null">
+                , `contact_telephone` = #{contactTelephone}
+            </if>
+            <if test="contactCellphone != null">
+                , `contact_cellphone` = #{contactCellphone}
+            </if>
+            <if test="contactName != null">
+                , `contact_name` = #{contactName}
+            </if>
+            <if test="contactAddress != null">
+                , `contact_address` = #{contactAddress}
+            </if>
+            <if test="openingHoursOpenTime != null">
+                , `opening_hours_open_time` = #{openingHoursOpenTime}
+            </if>
+            <if test="openingHoursCloseTime != null">
+                , `opening_hours_close_time` = #{openingHoursCloseTime}
+            </if>
+            <if test="businessArea != null">
+                , `business_area` = #{businessArea}
+            </if>
+            <if test="enabled != null">
+                , `enabled` = #{enabled}
+            </if>
+        </set>
         <where>
             `tenant_id` = #{tenantId}
             and `business_no` = #{businessNo}

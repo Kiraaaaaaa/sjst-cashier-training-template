@@ -1,13 +1,17 @@
 package com.meituan.catering.management.order.biz.model.converter;
 
 import com.google.common.collect.Lists;
+import com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderItemAccessoryStatusEnum;
 import com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderItemStatusEnum;
 import com.meituan.catering.management.order.api.http.model.enumeration.CateringOrderStatusEnum;
 import com.meituan.catering.management.order.api.http.model.request.PrepareCateringOrderHttpRequest;
 import com.meituan.catering.management.order.biz.model.request.PrepareCateringOrderBizRequest;
 import com.meituan.catering.management.order.dao.model.CateringOrderDO;
+import com.meituan.catering.management.order.dao.model.CateringOrderItemAccessoryDO;
 import com.meituan.catering.management.order.dao.model.CateringOrderItemDO;
+import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +64,20 @@ public class PrepareCateringOrderRequestConverter {
         }
         return list;
     }
+
+    public static List<CateringOrderItemAccessoryDO> toCateringOrderItemAccessoryDO(List<CateringOrderItemAccessoryDO> accessoryDOS){
+        ArrayList<CateringOrderItemAccessoryDO> list = Lists.newArrayList();
+        accessoryDOS.forEach(itemAccessoryDO -> {
+            CateringOrderItemAccessoryDO accessoryDO = new CateringOrderItemAccessoryDO();
+            accessoryDO.setId(itemAccessoryDO.getId());
+            accessoryDO.setStatus(CateringOrderItemAccessoryStatusEnum.PREPARING);
+            accessoryDO.setTenantId(itemAccessoryDO.getTenantId());
+            accessoryDO.setVersion(itemAccessoryDO.getVersion());
+            list.add(accessoryDO);
+        });
+        return list;
+    }
+
 
     private static PrepareCateringOrderBizRequest.Item buildItem(PrepareCateringOrderHttpRequest.Item item) {
         PrepareCateringOrderBizRequest.Item bizItem = new PrepareCateringOrderBizRequest.Item();

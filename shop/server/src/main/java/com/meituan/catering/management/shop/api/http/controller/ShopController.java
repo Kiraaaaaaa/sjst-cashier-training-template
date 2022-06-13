@@ -55,9 +55,7 @@ public class ShopController {
     public ShopPageHttpResponse searchForPage(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("搜索条件") @Valid @RequestBody  SearchShopHttpRequest request) throws Exception {
-
-
+            @ApiParam("搜索条件") @Valid @RequestBody SearchShopHttpRequest request) {
         shopBizServiceValidator.searchByValid(tenantId, userId, request);
         ShopPageHttpResponse response = new ShopPageHttpResponse();
         SearchShopBizRequest searchShopBizRequest = SearchShopBizRequestConverter.toSearchShopBizRequest(request);
@@ -72,7 +70,7 @@ public class ShopController {
     public ShopDetailHttpResponse findByBusinessNo(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("门店业务号") @PathVariable String businessNo) throws Exception {
+            @ApiParam("门店业务号") @PathVariable String businessNo)  {
         shopBizServiceValidator.searchValid(tenantId, userId, businessNo);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         ShopBO shopBO = shopBizService.findByBusinessNo(tenantId, userId, businessNo);
@@ -84,11 +82,10 @@ public class ShopController {
 
     @ApiOperation("创建新门店")
     @PostMapping
-//    @RepeatSubmit()
     public ShopDetailHttpResponse create(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
-            @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) throws Exception {
+            @ApiParam("门店信息") @Valid @RequestBody CreateShopHttpRequest request) {
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         shopBizServiceValidator.createValid(tenantId, userId, request);
         SaveShopBizRequest saveShopBizRequest = SaveShopBizRequestConverter.toSaveShopBizRequest(request);
@@ -100,12 +97,11 @@ public class ShopController {
 
     @ApiOperation("更新已有门店的信息")
     @PutMapping("/{businessNo}")
-//    @RepeatSubmit()
     public ShopDetailHttpResponse update(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo,
-            @ApiParam("门店信息") @Valid @RequestBody UpdateShopHttpRequest request) throws Exception {
+            @ApiParam("门店信息") @Valid @RequestBody UpdateShopHttpRequest request) {
         shopBizServiceValidator.updateValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         UpdateShopBizRequest updateShopBizRequest = UpdateShopBizRequestConverter.toUpdateShopBizRequest(request);
@@ -115,15 +111,13 @@ public class ShopController {
         return response;
     }
 
-//    @RepeatSubmit()
     @ApiOperation("开放一个已关闭的门店")
     @PostMapping("/{businessNo}/open")
     public ShopDetailHttpResponse open(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @ApiParam("门店业务号") @PathVariable String businessNo,
-            @ApiParam("开放信息") @Valid @RequestBody OpenShopHttpRequest request) throws Exception {
-        //todo:verson
+            @ApiParam("开放信息") @Valid @RequestBody OpenShopHttpRequest request) {
         shopBizServiceValidator.openValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         OpenShopBizRequest openShopBizRequest = SwitchShopBizRequestConverter.toOpenShopBizRequest(request);
@@ -133,14 +127,13 @@ public class ShopController {
         return response;
     }
 
-//    @RepeatSubmit()
     @ApiOperation("关闭一个已开放的门店")
     @PostMapping("/{businessNo}/close")
     public ShopDetailHttpResponse close(
             @ApiParam("租户ID") @RequestHeader Long tenantId,
             @ApiParam("用户ID") @RequestHeader Long userId,
             @PathVariable String businessNo,
-            @ApiParam("关闭信息") @Valid @RequestBody CloseShopHttpRequest request) throws Exception {
+            @ApiParam("关闭信息") @Valid @RequestBody CloseShopHttpRequest request) {
         shopBizServiceValidator.closeValid(tenantId, userId, businessNo, request);
         ShopDetailHttpResponse response = new ShopDetailHttpResponse();
         CloseShopBizRequest closeShopBizRequest = SwitchShopBizRequestConverter.toCloseShopBizRequest(request);
@@ -149,7 +142,4 @@ public class ShopController {
         response.setData(ShopDetailHttpDTOConverter.toShopDetailHttpResponse(shopBO));
         return response;
     }
-
-
-
 }

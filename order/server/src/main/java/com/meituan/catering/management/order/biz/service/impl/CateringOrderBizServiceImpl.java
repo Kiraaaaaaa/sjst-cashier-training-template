@@ -1,6 +1,7 @@
 package com.meituan.catering.management.order.biz.service.impl;
 
 
+import cn.hutool.core.stream.CollectorUtil;
 import com.google.common.collect.Lists;
 import com.meituan.catering.management.common.exception.BizException;
 import com.meituan.catering.management.common.model.enumeration.ErrorCode;
@@ -90,6 +91,14 @@ public class CateringOrderBizServiceImpl implements CateringOrderBizService {
             }
             List<CateringOrderItemDO> itemDOS = PrepareCateringOrderRequestConverter.toCateringOrderItemDO(request);
             itemDOS.forEach(itemDO -> itemMapper.update(itemDO));
+            List<String> seqNoList = request.getItems().stream().map(PrepareCateringOrderBizRequest.Item::getSeqNo).collect(Collectors.toList());
+            List<CateringOrderItemDO> itemDOList = itemMapper.queryByOrderIdAndSeqNoList(request.getTenantId(), request.getOrderId(), seqNoList);
+            List<Long> idList = itemDOList.stream().map(CateringOrderItemDO::getId).collect(Collectors.toList());
+            List<CateringOrderItemAccessoryDO> accessoryDOS = accessoryMapper.batchQueryByOrderItemId(request.getTenantId(), idList);
+            List<CateringOrderItemAccessoryDO> dos = PrepareCateringOrderRequestConverter.toCateringOrderItemAccessoryDO(accessoryDOS);
+            if (!CollectionUtils.isEmpty(dos)){
+                dos.forEach(accessoryDO -> accessoryMapper.update(accessoryDO));
+            }
             return getCateringOrderBO(request.getTenantId(), request.getOrderId());
         });
     }
