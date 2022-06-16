@@ -1,6 +1,6 @@
 import { Button, Form, Row, Col, Input, message, Modal, InputNumber, Divider, Skeleton } from "antd";
 import { LeftOutlined, UnorderedListOutlined, MinusCircleOutlined,  } from "@ant-design/icons";
-import "../../css/createAndEditProduct.css";
+import "../../../css/createAndEditProduct.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";

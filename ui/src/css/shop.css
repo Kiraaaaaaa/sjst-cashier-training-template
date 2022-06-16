@@ -46,6 +46,10 @@ input:not([type=range]) {
 .ant-modal-body {
     padding: 10px 24px 24px !important;
 }
+.ant-btn-primary {
+    border-color: rgb(255, 189, 0) !important;
+    background: rgb(255, 189, 0) !important;
+}
 /* .test {
     background: rgb(235 174 0);
 }

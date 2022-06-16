@@ -1,6 +1,6 @@
 import { Button, Form, Row, Col, Input, Modal, InputNumber, Space, notification, Tag, Divider } from "antd";
 import {LeftOutlined, UnorderedListOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import "../../css/createAndEditShop.css";
+import "../../../css/createAndEditShop.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,12 @@ const HEADER = {tenantId: 500, userId: 11000};
 const CURRENCY_UNIT = '元'; //统一价格单位;
 const ACCESSORY_GROUP_NAME = '配菜'; //由于需求不需要加料组名，统一加料组为配菜;
 
-/** 默认做法组 */
+/** 默认加料数量 */
+const defaultAccessoryGroup = [1, 2, 3];
+
+export default function CreatProduct(){
+
+  /** 默认做法组 */
 const defaultMethodGroup = [
   {
     key: 1,
@@ -48,12 +53,6 @@ const defaultMethodGroup = [
     ]
   },
 ]
-
-/** 默认加料数量 */
-const defaultAccessoryGroup = [1, 2, 3];
-
-export default function CreatProduct(){
-
   let toProduct = false;
   let navigate = useNavigate();
   const [form] = Form.useForm();

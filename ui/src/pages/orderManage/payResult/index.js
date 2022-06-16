@@ -1,6 +1,6 @@
 import { Form, Result, Button, Col, Row } from "antd";
 import {LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
-import "../../css/createAndEditOrder.css";
+import "../../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import moment from 'moment';

@@ -10,7 +10,7 @@ const DEFAULT_PAGE_SIZE = 10;
 const USER_INFO = {tenantId:500, userId:11000};
 const DEFULT_PAGE_TOTALCOUNT = [1, 2, 3, 4, 5];
 const ORDER_STATUS = new Map([
-    ['PLACED', '已下单'], ['PREPARING', '制作中'],
+    ['PLACED', '已下单'], ['PREPARING', '制作中'], ['DRAFT', '待下单'],
     ['PREPARED', '已出餐'], ['BILLED', '已结账'], ['CANCELLED', '已取消']
 ]);
 
@@ -69,6 +69,10 @@ export default function Order(){
                 {
                     text: '已取消',
                     value: 'CANCELLED',
+                },
+                {
+                    text: '待下单',
+                    value: 'DRAFT',
                 }
             ],
             onFilter: (value, record) => record.status.indexOf(value) === 0,
@@ -154,6 +158,12 @@ export default function Order(){
                 );
             case 'CANCELLED':
                 return (
+                    <Button type="link" onClick={()=>navigate('/orderCheck', {state: {data: orderItem}, replace: true})}>
+                        查看
+                    </Button>
+                );
+            case 'DRAFT':
+                return  (
                     <Button type="link" onClick={()=>navigate('/orderCheck', {state: {data: orderItem}, replace: true})}>
                         查看
                     </Button>
@@ -263,10 +273,9 @@ export default function Order(){
         instance
             .post('/order/catering/search', request)
             .then(res => {
-                const [data, totalPageCount, totalCount] = res.data.data === null ? [[], DEFULT_PAGE_TOTALCOUNT, 0] : 
-                [
+                const [data, totalPageCount, totalCount] = [
                     res.data.data.records, 
-                    res.data.data.totalPageCount, 
+                    res.data.data.totalPageCount === 0 ? 1 : res.data.data.totalPageCount, 
                     res.data.data.totalCount,
                 ];
                 if(isSearchBtn){
@@ -291,7 +300,7 @@ export default function Order(){
                 {
                     pageBtnGroup.map(index=>{
                         return (
-                            <Button type="text" key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
+                            <Button type={pageIndex === index ? "primary" : "text"} key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
                         )
                     })
                 }

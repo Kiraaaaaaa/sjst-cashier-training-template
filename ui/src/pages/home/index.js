@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Col } from "antd";
+import { Row, Col, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 export default function Home(){
@@ -10,15 +10,15 @@ export default function Home(){
         <>
         <p><strong>welcome</strong></p>
         <p>
-            <button onClick={()=>{
+            <Button onClick={()=>{
                 navigate("/shop")
-            }}>跳转到门店</button>
-            <button onClick={()=>{
+            }}>跳转到门店</Button>
+            <Button onClick={()=>{
                 navigate("/product")
-            }}>跳转到菜品</button>
-            <button onClick={()=>{
+            }}>跳转到菜品</Button>
+            <Button onClick={()=>{
                 navigate("/order")
-            }}>跳转到订单</button>
+            }}>跳转到订单</Button>
             
         </p>
         </>

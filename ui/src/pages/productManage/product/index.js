@@ -300,7 +300,7 @@ export default function Product(){
                 {
                     pageBtnGroup.map(index=>{
                         return (
-                            <Button type="text" key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
+                            <Button type={pageIndex === index ? "primary" : "text"} key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
                         )
                     })
                 }

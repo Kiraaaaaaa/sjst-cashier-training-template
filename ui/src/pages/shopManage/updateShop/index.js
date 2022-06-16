@@ -1,64 +1,97 @@
-import { Button, Form, Row, Col, Select, Input, TimePicker, Space, Modal, notification, Tag } from "antd";
-import {LeftOutlined, UnorderedListOutlined} from "@ant-design/icons";
-import "../../css/createAndEditShop.css";
+import { Button, Form, Row, Col, Select, Input, TimePicker, message, Modal, notification, Space, Tag } from "antd";
+import { LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import "../../../css/createAndEditShop.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import moment from 'moment';
+
 const { Option } = Select;
 
-const HEADER = {tenantId: 500, userId: 11000};
-const SHOP_VERSION = {version: 1};
+export default function UpdateShop(){
 
-export default function CreatShop(){
-
-  let toShop = false;
+  let location = useLocation();
   let navigate = useNavigate();
-  const [form] = Form.useForm();
+  let toShop = false;
   const [modalVisible, setModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [shopItem, tenantId, userId, businessNo] = [
+    location.state.data,
+    location.state.data.tenantId,
+    location.state.data.auditing.createdBy,
+    location.state.data.businessNo,
+  ];
 
   useEffect(()=>{
-    initialForm();
+    queryShop(tenantId, userId, businessNo);
   }, []);
 
-  const initialForm = () =>{
+  /** 自动填充表单 */
+  const initialForm = (shopInfo)  => {
+    const timeFormatList = ['HH:mm:ss', 'HH:mm'];
+    const openAndCloseTime = [moment(shopInfo.openingHours.openTime, timeFormatList[1]), moment(shopInfo.openingHours.closeTime, timeFormatList[1])];
     form.setFieldsValue({
-      businessType: 'DINNER',
-      managementType: 'DIRECT_SALES',
-    })
+      name: shopInfo.name, 
+      businessType: shopInfo.businessType,
+      managementType: shopInfo.managementType,
+      telephone: shopInfo.contact.telephone,
+      cellphone: shopInfo.contact.cellphone,
+      contactName: shopInfo.contact.name,
+      address: shopInfo.contact.address,
+      openingHours: openAndCloseTime,
+      businessArea: shopInfo.businessArea,
+      comment: shopInfo.comment,
+      businessNo: shopInfo.businessNo,
+      createdBy: shopInfo.auditing.createdBy,
+      tenantId: shopInfo.tenantId,
+      version: shopInfo.version,
+    });
   }
 
-  /** 创建门店request请求 */
-  const creatAxiosRequest = (request, headerValues) => {
-    const [tenantId, userId, shopName] = [headerValues.tenantId, headerValues.userId, request.name];
+  /** 查询所需编辑门店 */
+  function queryShop(tenantId, userId, businessNo){
     const instance = axios.create({
-      headers:{tenantId, userId}
+        headers:{tenantId:tenantId, userId:userId}
     });
     instance
-      .post('/shop', request)
-      .then(response => {
+        .get(`/shop/${businessNo}`)
+        .then((res)=>{
+          initialForm(res.data.data);
+        })
+  }
+
+  /** 更新门店请求 */
+  const creatAxiosRequest = (request, formValues) => {
+    const [tenantId, userId, businessNo, shopName] = [formValues.tenantId, formValues.createdBy, formValues.businessNo, formValues.name];
+    const instance = axios.create({
+      headers:{tenantId:tenantId, userId:userId}
+    });
+    instance
+      .put(`/shop/${businessNo}`, request)
+      .then(response=>{
         const code = response.data.status.code;
         if(code === 0){
           notification['success']({
-            message: `门店${shopName}创建成功`,
+            message: `门店${shopName}更新成功`,
             description:
             <Space direction="vertical">
               <div>
-                <Tag color='green'>创建者</Tag>
+                <Tag color='green'>修改者</Tag>
                 <span>{userId}</span>
               </div>
               <div>
-                <Tag color='blue'>创建时间</Tag>
+                <Tag color='blue'>更新时间</Tag>
                 <span>{moment().format('YYYY-MM-DD HH:mm:ss')}</span>
               </div>
             </Space>
           });
+          queryShop(tenantId, userId, businessNo);
           if(toShop){
             navigate('/shop');
           }
         }else{
           notification['error']({
-            message: `门店${shopName}创建失败`,
+            message: `门店${shopName}更新失败`,
             description:
             <Space direction="vertical">
               <div>
@@ -74,13 +107,14 @@ export default function CreatShop(){
         }
         console.log(response);
       }, error => {
+        message.error(`更新门店失败，响应码${error.response.status}`);
         console.log(error);
       })
   }
 
-  /** request结构体 */
+  /** 创建接口所需request结构体 */
   const createRequestBody = (formValues) => {
-    const bodyObj = {
+    const requestBody = {
       "businessArea": formValues.businessArea,
       "businessType": formValues.businessType,
       "comment": formValues.comment,
@@ -96,40 +130,38 @@ export default function CreatShop(){
         "closeTime": moment(formValues.openingHours[1]._d.getTime()).format("HH:mm"),
         "openTime": moment(formValues.openingHours[0]._d.getTime()).format("HH:mm"),
       },
+      "version": formValues.version,
     }
-
-    const bodyMap = new Map(Object.entries(bodyObj));
-    bodyMap.set(SHOP_VERSION);
-    const requestBody = Object.fromEntries(bodyMap);
-
     return requestBody;
   }
 
-  const onFinish = (values) =>{
+  /** 提交表单 */
+  const onFinish = values => {
     const requestBody = createRequestBody(values);
-    creatAxiosRequest(requestBody, HEADER);
+    creatAxiosRequest(requestBody, values);
   }
-
+  
   /** 保存并返回 */
   const saveToShop = () =>{
     toShop = true;
     form.submit();
   }
-
+  
     return (
       <>
         <div className="create-shop-head">
           <Row>
-            <Col><LeftOutlined onClick={()=>navigate('/shop')}/></Col>
-            <Col offset={11}>新门店</Col>
-            <Col offset={10}>
+            <Col span={1}><LeftOutlined onClick={()=>navigate('/shop')}/></Col>
+            <Col span={21}>编辑-{shopItem.name}</Col>
+            <Col span={1}>
               <UnorderedListOutlined />
             </Col>
+            <Col span={1}></Col>
           </Row>
         </div>
         <Form
-        form={form}
         style={{margin: 20}}
+        form={form}
         onFinish={onFinish}
         colon={false}
         >
@@ -263,8 +295,8 @@ export default function CreatShop(){
           </Row>
           <Row>
             <Col span={12}>
-              <Form.Item
-              label='营业时间'
+              <Form.Item 
+              label='营业时间' 
               name='openingHours'
               rules={[
                 {
@@ -325,7 +357,7 @@ export default function CreatShop(){
           <Row className="create-shop-footer">
             <Col span={6} offset={6}>
               <Form.Item>
-                <Button style={{background: 'white'}} onClick={()=>setModalVisible(true)}>取消</Button>
+                <Button style={{background: 'white'}} onClick={()=>{setModalVisible(true)}}>取消</Button>
               </Form.Item> 
             </Col>
             <Col span={6}>
@@ -339,6 +371,11 @@ export default function CreatShop(){
               </Form.Item> 
             </Col>
           </Row>
+          
+          <Form.Item name='businessNo' hidden></Form.Item>
+          <Form.Item name='createdBy' hidden></Form.Item>
+          <Form.Item name='tenantId' hidden></Form.Item>
+          <Form.Item name='version' hidden></Form.Item>
         </Form>
         <Modal
         title="确认丢失修改的内容"

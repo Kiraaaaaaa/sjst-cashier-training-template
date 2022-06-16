@@ -1,6 +1,6 @@
 import { Form, Row, Col, Input, InputNumber, Tag, Table, Skeleton, Button, Modal, message, Select, Cascader, notification, Checkbox } from "antd";
 import {LeftOutlined, UnorderedListOutlined, PlusOutlined, MinusOutlined, DoubleLeftOutlined, RightOutlined, DoubleRightOutlined } from "@ant-design/icons";
-import "../../css/createAndEditOrder.css";
+import "../../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -284,6 +284,7 @@ export default function OrderAdjust() {
           }
         )
       })
+      item['key'] = item.id + Math.random();
       item['methodId'] = item.productMethodSnapshotOnPlace.id;
       item['methodName'] = item.productMethodSnapshotOnPlace.name;
       item['latest'] = item.quantity.latest;
@@ -554,53 +555,56 @@ export default function OrderAdjust() {
       else{
         item.children !== undefined && item.children.map((i, ind)=>{
           if(i.id === records.id){ //找到此配料项
-            if(checked){
-              let notExist = true; 
-
-              let productID = undefined; //此配料的父ID
-              newProductList.map((productItem)=>{
-                productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
-                  if(accessoryItem.id === records.id){
-                    productID = productItem.id;
-                    productItem.checked && (notExist = false);
-                  }
-                })
-              })
-              newProductList.map((productItem)=>{
-                if(productItem.id !== productID && notExist){ //如果不是此配菜则取消勾选
-                  productItem.checked = false;
-                  productItem.children !== undefined && productItem.children.map((accessoryItem)=>{
-                    accessoryItem.checked = false;
-                  })
-                }
-              })
-
-              newCheckedProductCache.map((i, ind)=>{
-                i.children !== undefined && i.children.map((cacheItem)=>{
-                  cacheItem.id === records.id && !notExist && cacheItem.id === changeItem.id && (cacheItem.checked = checked);
-                })
-              });
-
-              if(notExist){
-                i.checked = checked;
-                item.checked = checked;
-                newCheckedProductCache.push(item);
-                setLastItem(item);
-              }else{
-                message.warn('此菜品已经被选择，请选择其它菜品');
-              };
-            }else{
+  
+            if(checked){ //当前如果是勾选
               let notExist = true;
               newCheckedProductCache.map((cacheItem, ind)=>{
                 cacheItem.children !== undefined && cacheItem.children.map((childItem, cacheIndex)=>{
-                  if(childItem.id === records.id && cacheItem.id === changeItem.id){
+                  if(childItem.id === records.id){
                     notExist = false;
-                    i.checked = checked;
-                    childItem.checked = checked;
+                    //如果是当前选中的菜品则可以自由勾选或取消勾选
+                    if(cacheItem.id === changeItem.id || cacheItem.id === lastItem.id){
+                      i.checked = checked;
+                      childItem.checked = checked;
+                    }
                   }
                 })
               });
-              notExist && message.warn('此菜品已经被选择，请选择其它菜品');
+              if(notExist){ //如果不在缓存中则为缓存新增所勾选菜品
+                item.checked = checked;
+                i.checked = checked;
+  
+                let changeItemChecked = false; //待修改菜品取消勾选后是否再勾选的特殊判断
+                newCheckedProductCache.map((i, ind)=>{
+                  i.id === changeItem.id && (changeItemChecked = true);
+                });
+                
+                newProductList.map((cacheItem, cacheInd)=>{ 
+                  //去取消勾选上个选择的菜品
+                  if((lastItem !== undefined && lastItem.id === cacheItem.id) || (changeItem.id === cacheItem.id && changeItemChecked)){
+                    cacheItem.checked = false;
+                    cacheItem.children !== undefined && cacheItem.children.map((childItem)=>{
+                      childItem.checked = false;
+                    })
+                    newCheckedProductCache.map((i, ind)=>{
+                      i.id === cacheItem.id && newCheckedProductCache.splice(ind, 1);
+                    })
+                  }
+                })
+                newCheckedProductCache.push(item);
+                setLastItem(item);
+              }
+            }else{ //如果当前是取消勾选，直接修改缓存记录即可
+              newCheckedProductCache.map((cacheItem, ind)=>{
+                cacheItem.children !== undefined && cacheItem.children.map((childItem, cacheIndex)=>{
+                  if(childItem.id === records.id){
+                    if(cacheItem.id === changeItem.id || (lastItem !== undefined && cacheItem.id === lastItem.id)){
+                      i.checked = checked;
+                      childItem.checked = checked;
+                    }
+                  }
+                })
+              });
             }
           }
         })
@@ -886,7 +890,7 @@ export default function OrderAdjust() {
         {
             productPageBtnGroup.map(index=>{
                 return (
-                    <Button type="text" key={index} onClick={productPageChange.bind(this, index)}>{index}</Button>
+                    <Button type={productPageIndex === index ? "primary" : "text"} key={index} onClick={productPageChange.bind(this, index)}>{index}</Button>
                 )
             })
         }

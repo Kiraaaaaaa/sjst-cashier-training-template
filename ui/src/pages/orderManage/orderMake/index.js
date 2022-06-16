@@ -1,9 +1,10 @@
 import { Form, Row, Col, Input, InputNumber, Tag, Table, Skeleton, Button, Modal, message } from "antd";
 import {LeftOutlined, UnorderedListOutlined } from "@ant-design/icons";
-import "../../css/createAndEditOrder.css";
+import "../../../css/createAndEditOrder.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+const [IS_MAKING, NOT_MAKING] = [true, false];
 
  /** 骨架屏计时器(限制搜索过程中没有物品时骨架屏所显示时间1s) */
 function useCounter() {
@@ -19,12 +20,9 @@ function useCounter() {
 
   return [count, reset]; 
 }
-/**
- * 出餐页面
- * @returns 
- */
-export default function OrderProduce() {
-    
+
+export default function OrderMake() {
+
     let navigate = useNavigate();
     let location = useLocation();
     const [form] = Form.useForm();
@@ -42,36 +40,46 @@ export default function OrderProduce() {
     useEffect(() => {
       queryOrder(tenantId, userId, id);
     }, []);
-
-    /** 订单项模块列 */
+    
     const columns = [
       {
-        title: '序号',
-        render: (text, records, index)=> 
-        <Tag style={{fontSize: 15}}>{getOrderItemNo(records, index)}</Tag>,
+          title: '序号',
+          render: (text, records, index)=> 
+          <Tag style={{fontSize: 15}}>{getOrderItemNo(records, index)}</Tag>,
       },
       {
-        title: '菜品名',
-        dataIndex: 'name',
-        width: '33%',
-        render: (text, records, index) => (
-          <span style={{color: 'gray', marginLeft: (records.type!=='product'?"5%":""),
-          width: (records.type!=='product'?"90%":"")}}>
-            {
-              records.type === 'product' ?
-              records.methodName ? 
-                `${text}-${records.methodName}` : text
-              :
-              ' - '+records.name
-            }
-          </span>
-        )
+          title: '菜品名',
+          dataIndex: 'name',
+          width: '33%',
+          render: (text, records, index) => (
+            <Input 
+              style={{
+                borderRadius: 10,
+                pointerEvents: "none",
+                background: 'white',
+                paddingLeft: '6%',
+                marginLeft: (records.type!=='product'?"10%":""),
+                width: (records.type!=='product'?"90%":"")
+              }}
+              readOnly
+              placeholder={
+                records.type === 'product' ?
+                  records.methodName ? 
+                    `${text}-${records.methodName}` : text
+                  :
+                  records.productAccessorySnapshotOnPlace.name
+              }
+            />
+          )
       },
       {
-        title: '当前数量',
-        dataIndex: 'latest',
-        key: 'latest',
-        sorter: (a, b) => a.latest - b.latest
+          title: '当前数量',
+          dataIndex: 'quantity_',
+          key: 'quantity_',
+          sorter: (a, b) => a.quantity_ - b.quantity_,
+          render: (text, records, index) => (
+            records.type === 'product' ? text : records.quantity.latest
+          )
       },
       {
         title:  '计量单位',
@@ -80,126 +88,109 @@ export default function OrderProduce() {
         filterSearch: true,
         filters: [
             {
-              text: '斤',
-              value: '元/斤',
+                text: '斤',
+                value: '元/斤',
             },
             {
-              text: '份',
-              value: '元/份',
+                text: '份',
+                value: '元/份',
             },
             {
-              text: '盘',
-              value: '元/盘',
+                text: '盘',
+                value: '元/盘',
             },
             {
-              text: '碗',
-              value: '元/碗'
+                text: '碗',
+                value: '元/碗'
             },
             {
-              text: '克',
-              value: '元/克',
+                text: '克',
+                value: '元/克',
             },
             {
-              text: '公斤',
-              value: '元/公斤',
+                text: '公斤',
+                value: '元/公斤',
             },
-          ],
-          onFilter: (value, record) => record.unitOfMeasure.indexOf(value) === 0,
-          render: (text, records, index) => (
-          text != null && (text.indexOf('/') !== -1 ? text.split('/')[1] : text)
-        )
-      },
-      {
-        title: '已出餐',
-        dataIndex: 'onProduce',
-      },
-      {
-        title: '本次出餐',
-        dataIndex: 'quantityOnProduce',
+        ],
+        onFilter: (value, record) => record.unitOfMeasure.indexOf(value) === 0,
         render: (text, records, index) => (
-          records.status !== 'PLACED' ? 
-            (text !== undefined && <InputNumber min={0} max={records.maxOnProduce} value={text} onChange={(value)=>handleProduce(value, records)}/>)
+          text !== undefined ? 
+            (text.split('/')[1])
             :
-            <span>尚未制作</span>
+            records.productAccessorySnapshotOnPlace.unitOfMeasure
         )
+      },
+      {
+        title: '操作',
+        render: (records, index) => {
+          if(records.type === 'product'){
+            if(records.status === 'PLACED'){
+              return (
+                <div className="product-btn">
+                  <Button style={{width: '100%'}} onClick={()=>handleMake(records, index)}>制作</Button>
+                </div>
+              )
+            }else{
+              return '制作中';
+            }
+          }else{
+            return '';
+          }
+        }
       }
   ];
-
-  /** 查询订单 */
   function queryOrder(tenantId, userId, id){
     const instance = axios.create({
-      headers:{tenantId:tenantId, userId:userId}
+        headers:{tenantId:tenantId, userId:userId}
     });
     instance
-      .get(`/order/catering/${id}`)
-      .then((res)=>{
-        const data = res.data.data;
-        initialForm(data);
-        setOrderItemList(configData(data.items));
-      })
+        .get(`/order/catering/${id}`)
+        .then((res)=>{
+          const data = res.data.data;
+          initialForm(data);
+          setOrderItemList(configData(data.items));
+        })
   }
-
-  /** 出餐请求 */
-  function orderProduceRequest(request, formValues){
+  function orderMakeRequest(request, formValues){
     const [tenantId, userId, id] = [formValues.tenantId, formValues.userId, formValues.id];
     const instance = axios.create({
-      headers:{tenantId: tenantId, userId:userId}
+        headers:{tenantId: tenantId, userId:userId}
     });
+    console.log(request, tenantId, userId, id);
     instance
-      .post(`/order/catering/${id}/produce`, request)
-      .then(response=>{
-        const code = response.data.status.code;
-        if(code===0){
-          message.success('出餐中');
-          navigate('/order');
-        }else{
-          message.error(`操作失败，响应码${code}`);
-        };
-        console.log(response);
-      }, error => {
-        message.error(`操作失败，响应码${error.response.status}`);
-        console.log(error);
-      })
-  };
+        .post(`/order/catering/${id}/prepare`, request)
+        .then(response=>{
+          const code = response.data.status.code;
+          if(code===0){
+            message.success('制作中');
+            navigate('/order');
+          }else{
+            message.error(`操作失败，响应码${code}`);
+          };
+          console.log(response);
+        }, error => {
+          message.error(`操作失败，响应码${error.response.status}`);
+          console.log(error);
+        })
+  }
 
-  /** 重组订单信息 */
+  /** 重新组织获取到的订单数据 */
   const configData = (orderValues) => {
-    let newOrderItemList = orderValues;
-    newOrderItemList.map((item, index)=>{
-      let children = [];
-      item.accessories.length > 0 && item.accessories.map((i, ind)=>{
-        children.push(
-          {
-            key: ind,
-            type: 'accessory',
-            productAccessoryId: i.id,
-            name: i.productAccessorySnapshotOnPlace.name,
-            unitOfMeasure: i.productAccessorySnapshotOnPlace.unitOfMeasure,
-            latest: i.quantity.onPlace,
-            onProduce: i.quantity.onProduce,
-            version: i.version,
-            status: i.status,
-          }
-        )
-        children[ind].latest > children[ind].onProduce && ([children[ind]['quantityOnProduce'], children[ind]['maxOnProduce']] = [
-          children[ind].latest - children[ind].onProduce, children[ind].latest - children[ind].onProduce
-        ])
-      })
+    orderValues.map((item, index)=>{
+      if(item.accessories.length > 0){
+        item['children'] = item.accessories;
+      }
+      item['key'] = item.id + Math.random();
       item['methodName'] = item.productMethodSnapshotOnPlace.name;
-      item['latest'] = item.quantity.latest;
-      item['onProduce'] = item.quantity.onProduce;
+      item['quantity_'] = item.quantity.latest;
       item['unitOfMeasure'] = item.productSnapshotOnPlace.unitOfMeasure;
-      item['name'] = item.productSnapshotOnPlace.name;
+      item['name'] = item.productSnapshotOnPlace.name
       item['type'] = 'product';
-      item['children'] = children.length>1?children:null;
-      item.latest > item.onProduce && ([item['quantityOnProduce'], item['maxOnProduce']] = [item.latest - item.onProduce, item.latest - item.onProduce]);
       return item;
     })
-    return newOrderItemList;
-  };
-
-
-  /** 初始化表单 */
+    console.log(orderValues);
+    return orderValues;
+  }
   const initialForm = (orderValues) => {
     form.setFieldsValue({
       shopName: orderValues.shopSnapshotOnPlace.name,
@@ -221,50 +212,28 @@ export default function OrderProduce() {
     }
     orderItemList.map((item, index)=>{
       item.children != null && item.children.length > 0 && item.children.map((i, ind)=>{
-        if(orderItem.productAccessoryId === i.productAccessoryId){
+        if(orderItem.id === i.id){
           itemNo = `${index+1}-${ind+1}`;
         }
       })
     })
     return itemNo;
   }
-
   const onFinish = (formValues) => {
     const requestBody = createRequestBody(formValues);
     console.log('结构体:', requestBody);
-    orderProduceRequest(requestBody, formValues);
+    requestBody.items.length === 0 ? navigate('/order') : orderMakeRequest(requestBody, formValues);
   }
-  
-  /** 出餐结构体 */
+
   const createRequestBody = (formValues) => {
     let newOrderItemList = [];
     orderItemList.map((item, index)=>{
-      if(item.status === 'PREPARING' && item.quantityOnProduce !== 0){
-        let accessories = [];
-        if(item.children !== null){
-          item.children.map((i, ind)=>{
-            if(i.status === 'PREPARING' && i.quantityOnProduce !== 0){
-              accessories.push(
-                {
-                  productAccessoryId: i.productAccessoryId,
-                  quantityOnProduce: i.quantityOnProduce,
-                  seqNo: `${index+1}-${ind+1}`,
-                  version: i.version,
-                }
-              )
-            }
-          })
+      item.checked === IS_MAKING && newOrderItemList.push(
+        {
+          seqNo: index+1,
+          version: item.version
         }
-        item.quantityOnProduce !== undefined && newOrderItemList.push(
-          { 
-            accessories: accessories,
-            seqNo: index+1,
-            version: item.version,
-            quantityOnProduce: item.quantityOnProduce,
-          }
-        );
-      }
-      
+      )
     });
     const bodyObj = {
       items: newOrderItemList,
@@ -272,25 +241,33 @@ export default function OrderProduce() {
     }
     return bodyObj;
   }
-
-  /** 获取出餐数量更改 */
-  const handleProduce = (value, orderItem) => {
-    let newOrderItemList = [].concat(orderItemList);
-    newOrderItemList.map((item, index)=>{
-      orderItem.type === 'product' && orderItem.id === item.id && (item.quantityOnProduce = value);
-      orderItem.type === 'accessory' && item.children != null && item.children.map((i, ind)=>{
-        orderItem.productAccessoryId === i.productAccessoryId && (i.quantityOnProduce = value);
+  const handleMakeAll = () => {
+    setOrderItemList(
+      [].concat(orderItemList).map((item)=>{
+        item.status = 'PREPARING';
+        item.checked = IS_MAKING
+        return item;
       })
-    });
+    )
+  }
+
+  const handleMake = (orderItem) => {
+    let newOrderItemList = [].concat(orderItemList);
+    newOrderItemList.map((item)=>{
+      if(orderItem.id === item.id){
+        item.status = 'PREPARING';
+        item.checked = IS_MAKING;
+      }
+      return item;
+    })
     setOrderItemList(newOrderItemList);
   }
-  
     return (
         <>
         <div className="create-shop-head">
           <Row>
             <Col><LeftOutlined onClick={()=>navigate('/order')}/></Col>
-            <Col span={23}>出餐：{form.getFieldValue('id')}</Col>
+            <Col span={23}>制作：{form.getFieldValue('id')}</Col>
             <Col>
               <UnorderedListOutlined />
             </Col>
@@ -331,6 +308,11 @@ export default function OrderProduce() {
           </Row>
           <Row className="create-shop-info">
             <Col>菜品信息</Col>
+              <Col span={4} offset={18}>
+                <div className="product-btn">
+                  <Button style={{width: '100%'}} onClick={handleMakeAll}>全部制作</Button>
+                </div>
+            </Col>
           </Row>
           {/** 骨架屏和表格显示逻辑 */}
           {

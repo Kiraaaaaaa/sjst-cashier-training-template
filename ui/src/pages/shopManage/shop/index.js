@@ -1,6 +1,6 @@
 import { Button, Form, Row, Col, Select, Input, Table, Tag, message, Popconfirm, notification, Skeleton } from "antd";
 import { LeftOutlined, RightOutlined, DoubleLeftOutlined, DoubleRightOutlined, UnorderedListOutlined} from "@ant-design/icons";
-import "../../css/shop.css";
+import "../../../css/shop.css";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -321,7 +321,7 @@ export default function Shop(){
                 {
                     pageBtnGroup.map(index=>{
                         return (
-                            <Button type="text" key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
+                            <Button type={pageIndex === index ? "primary" : "text"} key={index} onClick={pageChange.bind(this, index)}>{index}</Button>
                         )
                     })
                 }

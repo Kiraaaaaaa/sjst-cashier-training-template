@@ -65,6 +65,13 @@ public class AdjustCateringOrderRequestConverter {
                 && !accessoryStatus.contains(CateringOrderItemAccessoryStatusEnum.PLACED)) {
             code = CateringOrderStatusEnum.PREPARED.getCode();
         }
+        BigDecimal totalCount = BigDecimal.ZERO;
+        for (CateringOrderItemDO item : itemDOS) {
+            totalCount = totalCount.add(item.getProductUnitPriceOnPlace());
+        }
+        for (CateringOrderItemAccessoryDO accessory : accessoryDOS) {
+            totalCount = totalCount.add(accessory.getProductAccessoryUnitPriceOnPlace());
+        }
         cateringOrderDO.setStatus(CateringOrderStatusEnum.getEnum(code));
         cateringOrderDO.setId(request.getOrderId());
         cateringOrderDO.setTenantId(request.getTenantId());
